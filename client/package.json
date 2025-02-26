@@ -8,7 +8,8 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "dev:css": "npx tailwindcss -i ./src/css/App.css -o ./src/css/output.css --watch"
   },
   "dependencies": {
     "dotenv": "^16.4.5",

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, createContext } from 'react';
-import './output.css';
+import './css/output.css';
 import {createBrowserRouter, RouterProvider} from "react-router-dom";
 import SpecificFish from './page/SpecificFish';
 import MainPage from './page/MainPage';
