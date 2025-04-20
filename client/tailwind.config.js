@@ -3,6 +3,15 @@ export default {
   content: ["src/**/*.{html,jsx}"],
   theme: {
     extend: {
+      colors: {
+        moja_plava: {
+          DEFAULT: "#6993CD",
+          tamna: "#5884BE",
+        },
+      },
+      fontFamily: {
+        glavno: "Josefin Sans, sans-serif",
+      },
       keyframes: {
         spawn: {
           from: {
@@ -18,5 +27,20 @@ export default {
       },
     },
   },
-  plugins: [],
+  plugins: [
+    require("tailwindcss/plugin")(function ({ addComponents }) {
+      addComponents({
+        ".glavno-naslov": {
+          fontFamily: '"Josefin Sans", sans-serif',
+          fontWeight: "700",
+          fontSize: "1.7rem",
+        },
+        ".glavno-nav": {
+          fontFamily: '"Josefin Sans", sans-serif',
+          fontWeight: "500",
+          fontSize: "1.2rem",
+        },
+      });
+    }),
+  ],
 };

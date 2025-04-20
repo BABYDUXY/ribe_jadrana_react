@@ -1,17 +1,16 @@
-import { useState, useEffect } from 'react';
-import SveRibe from '../components/SveRibe';
-import FilterButtons from '../components/FilterButtons';
+import { useState, useEffect } from "react";
+import SveRibe from "../components/SveRibe";
+import FilterButtons from "../components/FilterButtons";
+import Navigacija from "../components/Navigacija";
 
-function MainPage({backendData, endpointUrl, setUrl}) {
-
-    
+function MainPage({ backendData, endpointUrl, setUrl }) {
   return (
     <>
-    <h1 className="mb-20 text-5xl text-center mt-14">Ribe Jadrana</h1>
-    <FilterButtons endpointUrl={endpointUrl} setUrl={setUrl}/>
-    <SveRibe backEndData={backendData}/>
+      <Navigacija />
+      <FilterButtons endpointUrl={endpointUrl} setUrl={setUrl} />
+      <SveRibe backEndData={backendData} />
     </>
-  )
+  );
 }
 
-export default MainPage
+export default MainPage;
