@@ -3,7 +3,7 @@ import NavButton from "./NavButton";
 
 const Navigacija = () => {
   return (
-    <nav className="w-full h-[15vh] bg-moja_plava flex items-center  ">
+    <nav className="w-full h-[15vh] bg-moja_plava flex items-center  border-b-[7px] border-white">
       <div className="flex items-center  w-max ml-[5vw]">
         <img className="h-[60px]" src="../logo/logo.svg" alt="" />
         <h1 className="text-white glavno-naslov ml-[5vw]">Ribe Jadrana</h1>

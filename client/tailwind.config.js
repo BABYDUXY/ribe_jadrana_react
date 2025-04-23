@@ -1,8 +1,12 @@
 /** @type {import('tailwindcss').Config} */
 export default {
   content: ["src/**/*.{html,jsx}"],
+  safelist: ["p-[0.6rem_1.6rem]", "p-[0.6rem_1.7rem]", "p-[0.6rem_2.3rem]"],
   theme: {
     extend: {
+      screens: {
+        "3xl": "1920px",
+      },
       colors: {
         moja_plava: {
           DEFAULT: "#6993CD",
@@ -24,6 +28,9 @@ export default {
       },
       animation: {
         spawn: "spawn 300ms ease-in 200ms forwards",
+      },
+      padding: {
+        nav_small: "0.6rem 1.6rem",
       },
     },
   },
