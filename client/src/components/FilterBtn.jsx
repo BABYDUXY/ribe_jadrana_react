@@ -3,7 +3,7 @@ import React from "react";
 function FilterBtn({ name, dropdown, endpointUrl, setUrl, setFilter }) {
   return (
     <li class="group relative">
-      <div className="flex items-center  p-[0.4rem_1rem] gap-2 group-hover:cursor-pointer">
+      <div className="flex items-center p-[0.4rem_1rem] gap-2 group-hover:cursor-pointer">
         <button class=" glavno-nav text-white  ">{name}</button>
         <img
           className="h-[7px] transition-transform duration-300 group-hover:rotate-180"
@@ -18,7 +18,11 @@ function FilterBtn({ name, dropdown, endpointUrl, setUrl, setFilter }) {
             key={key}
             class=" hover:bg-moja_plava-tamna p-[0.5rem_1rem] border border-white "
             onClick={() => {
-              setUrl(`${endpointUrl}/${podfilter.url}`);
+              {
+                podfilter.url == ""
+                  ? setUrl(podfilter.sort)
+                  : setUrl(`${endpointUrl}/${podfilter.url}`);
+              }
               setFilter(podfilter.fullname);
             }}
           >

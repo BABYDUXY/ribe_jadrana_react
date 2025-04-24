@@ -4,44 +4,31 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import SpecificFish from "./page/SpecificFish";
 import AllFishes from "./page/AllFishes";
 
-export const RandContext = createContext();
+/* export const RandContext = createContext(); */
 
 const App = () => {
   const endpointUrl = "http://localhost:5000";
   const [url, setUrl] = useState(endpointUrl);
-  const [backendData, setBackendData] = useState([{}]);
-  const [broj, SetBroj] = useState(0);
+  const [backendData, setBackendData] = useState([]);
+  const [filteredData, setFilteredData] = useState([]);
+  /*  const [broj, SetBroj] = useState(0); */
 
   const router = createBrowserRouter([
     {
       path: "/",
       element: (
-        <RandContext.Provider value={broj}>
-          <AllFishes
-            backendData={backendData}
-            endpointUrl={endpointUrl}
-            setUrl={setUrl}
-          />
-        </RandContext.Provider>
+        <AllFishes
+          backendData={backendData}
+          endpointUrl={endpointUrl}
+          setUrl={setUrl}
+        />
       ),
     },
     {
       path: "/fish/:id",
-      element: (
-        <RandContext.Provider value={broj}>
-          <SpecificFish data={backendData} />
-        </RandContext.Provider>
-      ),
+      element: <SpecificFish data={backendData} />,
     },
   ]);
-
-  useEffect(() => {
-    fetch(`${endpointUrl}/broj`)
-      .then((res) => res.json())
-      .then((data) => {
-        SetBroj(data[0]["COUNT(ID)"]);
-      });
-  }, []);
 
   useEffect(() => {
     fetch(url)

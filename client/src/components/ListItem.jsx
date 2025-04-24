@@ -2,18 +2,6 @@ import React from "react";
 import { Link } from "react-router-dom";
 
 function ListItem({ value }) {
-  let atributes = [
-    "ime",
-    "ostali_nazivi",
-    "lat_ime",
-    "vrsta",
-    "min_dubina",
-    "max_dubina",
-    "max_duljina",
-    "max_tezina",
-    "otrovna",
-  ];
-
   return (
     <Link
       to={`/fish/${value.ID}`}
