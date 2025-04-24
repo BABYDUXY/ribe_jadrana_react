@@ -3,7 +3,7 @@ import SveRibe from "../components/SveRibe";
 import FilterButtons from "../components/FilterButtons";
 import Navigacija from "../components/Navigacija";
 
-function MainPage({ backendData, endpointUrl, setUrl }) {
+function AllFishes({ backendData, endpointUrl, setUrl }) {
   const [sortedData, setSortedData] = useState([]);
   const [sortOptions, setSortOptions] = useState({
     field: "ime",
@@ -37,7 +37,7 @@ function MainPage({ backendData, endpointUrl, setUrl }) {
       setSortedData(backendData);
       return;
     } else {
-      const searched = sortedData.filter(
+      const searched = backendData.filter(
         (item) =>
           (item.ime &&
             item.ime.toLowerCase().includes(searchQuery.toLowerCase())) ||
@@ -65,4 +65,4 @@ function MainPage({ backendData, endpointUrl, setUrl }) {
   );
 }
 
-export default MainPage;
+export default AllFishes;
