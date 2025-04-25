@@ -34,7 +34,14 @@ function SveRibe({ backEndData }) {
     <>
       <div className="grid grid-cols-1 gap-6 m-auto mb-20 w-max md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {!Array.isArray(backEndData) || backEndData.length === 0 ? (
-          <p>Loading...</p>
+          <div className="h-[20rem]  w-[30rem] col-span-4 place-self-center glavno-nav text-white flex flex-col items-center justify-center">
+            <div className="relative inline-block">
+              <p className="text-4xl">Nema Sadržaja</p>
+              <span className="absolute left-0 bottom-0 w-full h-[3px] rounded-full overflow-hidden">
+                <span className="block w-1/3 h-full bg-white rounded-full animate-underlinePingPong" />
+              </span>
+            </div>
+          </div>
         ) : (
           paginatedData.map((riba) => <ListItem key={riba.ID} value={riba} />)
         )}
@@ -45,8 +52,6 @@ function SveRibe({ backEndData }) {
           itemsPerPage={itemsPerPage}
         />
       </div>
-
-      {/* Use the Pagination component */}
     </>
   );
 }

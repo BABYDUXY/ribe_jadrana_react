@@ -3,6 +3,7 @@ import SveRibe from "../components/SveRibe";
 import FilterButtons from "../components/FilterButtons";
 import Navigacija from "../components/Navigacija";
 import { PaginationContext } from "../kontekst/PaginationContext";
+import Footer from "../components/Footer";
 
 function AllFishes({ backendData, endpointUrl, setUrl }) {
   const [sortedData, setSortedData] = useState([]);
@@ -54,18 +55,21 @@ function AllFishes({ backendData, endpointUrl, setUrl }) {
 
   return (
     <>
-      <Navigacija />
-      <PaginationContext.Provider value={{ currentPage, setCurrentPage }}>
-        <FilterButtons
-          endpointUrl={endpointUrl}
-          setUrl={setUrl}
-          setSortOptions={setSortOptions}
-          setSearchQuery={setSearchQuery}
-          searchQuery={searchQuery}
-          setCurrentPage={setCurrentPage}
-        />
-        <SveRibe backEndData={sortedData} />
-      </PaginationContext.Provider>
+      <div class="min-h-screen flex flex-col">
+        <Navigacija />
+        <PaginationContext.Provider value={{ currentPage, setCurrentPage }}>
+          <FilterButtons
+            endpointUrl={endpointUrl}
+            setUrl={setUrl}
+            setSortOptions={setSortOptions}
+            setSearchQuery={setSearchQuery}
+            searchQuery={searchQuery}
+            setCurrentPage={setCurrentPage}
+          />
+          <SveRibe backEndData={sortedData} />
+        </PaginationContext.Provider>
+        <Footer />
+      </div>
     </>
   );
 }

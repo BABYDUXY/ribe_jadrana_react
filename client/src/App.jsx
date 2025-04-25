@@ -3,6 +3,7 @@ import "./css/output.css";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import SpecificFish from "./page/SpecificFish";
 import AllFishes from "./page/AllFishes";
+import Navigacija from "./components/Navigacija";
 
 /* export const RandContext = createContext(); */
 
@@ -10,8 +11,6 @@ const App = () => {
   const endpointUrl = "http://localhost:5000";
   const [url, setUrl] = useState(endpointUrl);
   const [backendData, setBackendData] = useState([]);
-  const [filteredData, setFilteredData] = useState([]);
-  /*  const [broj, SetBroj] = useState(0); */
 
   const router = createBrowserRouter([
     {
@@ -27,6 +26,10 @@ const App = () => {
     {
       path: "/fish/:id",
       element: <SpecificFish data={backendData} />,
+    },
+    {
+      path: "/prijava",
+      element: <Navigacija />,
     },
   ]);
 
