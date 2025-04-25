@@ -1,7 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, createContext, useContext } from "react";
 import SveRibe from "../components/SveRibe";
 import FilterButtons from "../components/FilterButtons";
 import Navigacija from "../components/Navigacija";
+import { PaginationContext } from "../kontekst/PaginationContext";
 
 function AllFishes({ backendData, endpointUrl, setUrl }) {
   const [sortedData, setSortedData] = useState([]);
@@ -9,6 +10,7 @@ function AllFishes({ backendData, endpointUrl, setUrl }) {
     field: "ime",
     direction: "asc",
   });
+  const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
   /* ZA SORTIRANJE U FRONTENDU */
   useEffect(() => {
@@ -53,14 +55,17 @@ function AllFishes({ backendData, endpointUrl, setUrl }) {
   return (
     <>
       <Navigacija />
-      <FilterButtons
-        endpointUrl={endpointUrl}
-        setUrl={setUrl}
-        setSortOptions={setSortOptions}
-        setSearchQuery={setSearchQuery}
-        searchQuery={searchQuery}
-      />
-      <SveRibe backEndData={sortedData} />
+      <PaginationContext.Provider value={{ currentPage, setCurrentPage }}>
+        <FilterButtons
+          endpointUrl={endpointUrl}
+          setUrl={setUrl}
+          setSortOptions={setSortOptions}
+          setSearchQuery={setSearchQuery}
+          searchQuery={searchQuery}
+          setCurrentPage={setCurrentPage}
+        />
+        <SveRibe backEndData={sortedData} />
+      </PaginationContext.Provider>
     </>
   );
 }

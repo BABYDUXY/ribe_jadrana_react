@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import FilterBtn from "./FilterBtn";
+
 const vrstaFilters = {
   1: { url: "plave", fullname: "Plave", name: "Plave" },
   2: { url: "bijele", fullname: "Bijele", name: "Bijele" },
@@ -134,7 +135,7 @@ function FilterButtons({
         />
       </ul>
       {/* prikaz filtera aktivnih*/}
-      <div className="flex flex-row col-start-2 row-start-2 gap-2 mt-10 -mb-4 place-self-start">
+      <div className="flex flex-row col-start-2 row-start-2 gap-2 mt-10 -mb-4 place-self-start 3xl:ml-32">
         <div className=" text-white  font-glavno text-[1.1rem] font-medium">
           {filter == "" ? setUrl(endpointUrl) : ""}
           {filter == "" ? (

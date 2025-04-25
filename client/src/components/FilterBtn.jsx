@@ -1,6 +1,8 @@
-import React from "react";
+import React, { useContext } from "react";
+import { PaginationContext } from "../kontekst/PaginationContext";
 
 function FilterBtn({ name, dropdown, endpointUrl, setUrl, setFilter }) {
+  const { currentPage, setCurrentPage } = useContext(PaginationContext);
   return (
     <li class="group relative">
       <div className="flex items-center p-[0.4rem_1rem] gap-2 group-hover:cursor-pointer">
@@ -24,6 +26,7 @@ function FilterBtn({ name, dropdown, endpointUrl, setUrl, setFilter }) {
                   : setUrl(`${endpointUrl}/${podfilter.url}`);
               }
               setFilter(podfilter.fullname);
+              setCurrentPage(1);
             }}
           >
             {" "}
