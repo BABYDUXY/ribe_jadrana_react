@@ -47,6 +47,11 @@ export default {
           fontWeight: "500",
           fontSize: "1.2rem",
         },
+        ".glavno-small": {
+          fontFamily: '"Josefin Sans", sans-serif',
+          fontWeight: "400",
+          fontSize: "1.1rem",
+        },
       });
     }),
   ],
