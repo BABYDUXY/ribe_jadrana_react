@@ -54,23 +54,21 @@ function AllFishes({ backendData, endpointUrl, setUrl }) {
   }, [searchQuery, backendData]);
 
   return (
-    <>
-      <div class="min-h-screen flex flex-col">
-        <Navigacija />
-        <PaginationContext.Provider value={{ currentPage, setCurrentPage }}>
-          <FilterButtons
-            endpointUrl={endpointUrl}
-            setUrl={setUrl}
-            setSortOptions={setSortOptions}
-            setSearchQuery={setSearchQuery}
-            searchQuery={searchQuery}
-            setCurrentPage={setCurrentPage}
-          />
-          <SveRibe backEndData={sortedData} />
-        </PaginationContext.Provider>
-        <Footer />
-      </div>
-    </>
+    <div class="min-h-screen flex flex-col">
+      <Navigacija />
+      <PaginationContext.Provider value={{ currentPage, setCurrentPage }}>
+        <FilterButtons
+          endpointUrl={endpointUrl}
+          setUrl={setUrl}
+          setSortOptions={setSortOptions}
+          setSearchQuery={setSearchQuery}
+          searchQuery={searchQuery}
+          setCurrentPage={setCurrentPage}
+        />
+        <SveRibe backEndData={sortedData} />
+      </PaginationContext.Provider>
+      <Footer />
+    </div>
   );
 }
 

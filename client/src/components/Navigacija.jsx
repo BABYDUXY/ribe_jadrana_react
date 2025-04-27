@@ -14,7 +14,7 @@ const Navigacija = () => {
         <NavButton naziv="Novosti" url="#" pad="0.6rem_1.6rem" />
       </div>
       <div className="ml-auto mr-[5vw]">
-        <NavButton naziv="Prijava" url="#" pad="0.6rem_1.7rem" />
+        <NavButton naziv="Prijava" url="/prijava" pad="0.6rem_1.7rem" />
       </div>
     </nav>
   );

@@ -3,9 +3,8 @@ import "./css/output.css";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import SpecificFish from "./page/SpecificFish";
 import AllFishes from "./page/AllFishes";
-import Navigacija from "./components/Navigacija";
-
-/* export const RandContext = createContext(); */
+import Prijava from "./page/Prijava";
+import Registracija from "./page/Registracija";
 
 const App = () => {
   const endpointUrl = "http://localhost:5000";
@@ -29,7 +28,11 @@ const App = () => {
     },
     {
       path: "/prijava",
-      element: <Navigacija />,
+      element: <Prijava />,
+    },
+    {
+      path: "/registracija",
+      element: <Registracija endpointUrl={endpointUrl} />,
     },
   ]);
 

@@ -42,7 +42,7 @@ function FishAllInfo({ value }) {
               <ul className="w-full h-full flex flex-col justify-between  [&>li>h8]:text-white [&>li>h8]:glavno-nav [&>li>h8]:font-semibold [&>li>p]:text-white [&>li>p]:leading-[20px] [&>li>p]:text-[1.05rem] [&>li>p]:-mt-1">
                 <li className="pb-2">
                   <h8>Ostali nazivi:</h8>
-                  <p>{value.ostali_nazivi}</p>
+                  <p>{value.ostali_nazivi ? value.ostali_nazivi : "Nema"}</p>
                 </li>
                 <li className="flex items-center gap-3">
                   <h8>Dubina: </h8>
