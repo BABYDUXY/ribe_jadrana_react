@@ -1,7 +1,9 @@
 import React from "react";
 import NavButton from "./NavButton";
+import { useLogin } from "../kontekst/loginContext";
 
 const Navigacija = () => {
+  const { user } = useLogin();
   return (
     <nav className="w-full h-[15vh] bg-moja_plava flex items-center  border-b-[7px] border-white">
       <div className="flex items-center  w-max ml-[5vw]">
@@ -14,7 +16,11 @@ const Navigacija = () => {
         <NavButton naziv="Novosti" url="#" pad="0.6rem_1.6rem" />
       </div>
       <div className="ml-auto mr-[5vw]">
-        <NavButton naziv="Prijava" url="/prijava" pad="0.6rem_1.7rem" />
+        {user ? (
+          user
+        ) : (
+          <NavButton naziv="Prijava" url="/prijava" pad="0.6rem_1.7rem" />
+        )}
       </div>
     </nav>
   );

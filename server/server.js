@@ -3,6 +3,7 @@ const cors = require("cors");
 const mysql = require("mysql");
 const dotenv = require("dotenv");
 const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
 
 dotenv.config();
 
@@ -14,6 +15,7 @@ const host = process.env.HOST;
 const user = process.env.USER;
 const password = process.env.PASSWORD;
 const database = process.env.DATABASE;
+const tajni_token = process.env.TAJNI_KLJUC;
 
 console.log(host);
 
@@ -173,8 +175,18 @@ app.post("/api/prijava", async (req, res) => {
       return res.status(401).json({ poruka: "Neispravni podaci za prijavu." });
     }
 
-    // Ako je sve OK
-    return res.status(200).json({ poruka: "Prijava uspješna!" });
+    const token = jwt.sign(
+      { id: korisnik.id, korisnicko_ime: korisnik.korisnicko_ime },
+      tajni_token, // Tajni ključ za potpis tokena
+      { expiresIn: "2h" } // Trajanje tokena
+    );
+
+    // Šaljemo token + podatke
+    return res.status(200).json({
+      poruka: "Prijava uspješna!",
+      token,
+      korisnicko_ime: korisnik.korisnicko_ime,
+    });
   } catch (err) {
     console.error("Greška kod prijave:", err);
     return res.status(500).json({ poruka: "Greška kod prijave." });

@@ -36,6 +36,8 @@ function Prijava({ endpointUrl }) {
         })
         .then((data) => {
           console.log("Uspješno:", data);
+          sessionStorage.setItem("token", data.token);
+          sessionStorage.setItem("korisnicko_ime", data.korisnicko_ime);
           alert("Uspješna Prijava!");
           navigate("/");
         })
