@@ -81,7 +81,7 @@ function FilterButtons({
         alt=""
       />
       <ul
-        class={`col-start-3 row-start-1 transition-all duration-500 ease-in flex flex-row justify-evenly justify-self-end [&>li]:inline-block px-7 border-white border-[3px] rounded-full  h-min ${
+        className={`col-start-3 row-start-1 transition-all duration-500 ease-in flex flex-row justify-evenly justify-self-end [&>li]:inline-block px-7 border-white border-[3px] rounded-full  h-min ${
           toggleFilteri
             ? " w-[35rem] opacity-100 overflow-visible"
             : "w-0 opacity-0 overflow-hidden"

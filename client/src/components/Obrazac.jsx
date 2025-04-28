@@ -10,8 +10,13 @@ function Obrazac({ naslov, polja, onSubmit, errors }) {
       formData[key] = e.target[index].value;
     });
 
+    const medeni = e.target.querySelector('[name="ime"]').value; // This is the last input
+    formData["ime"] = medeni;
+
     onSubmit(formData);
   };
+
+  const brojPolja = Object.keys(polja).length;
 
   return (
     <div className=" w-[20rem] min-h-[27rem] 3xl:h-[32rem] m-10 self-center flex flex-col items-center font-glavno text-white">
@@ -37,6 +42,12 @@ function Obrazac({ naslov, polja, onSubmit, errors }) {
             )}
           </div>
         ))}
+        <input
+          key={brojPolja + 1}
+          type="text"
+          name="ime"
+          className="left-[-9999] absolute opacity-0"
+        ></input>
         <button
           className="w-[50%] bg-moja_plava-tamna p-[0.3rem_0rem] mt-2 self-center rounded-[7px] outline outline-white outline-[3px]"
           type="submit"

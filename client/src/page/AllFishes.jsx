@@ -54,7 +54,7 @@ function AllFishes({ backendData, endpointUrl, setUrl }) {
   }, [searchQuery, backendData]);
 
   return (
-    <div class="min-h-screen flex flex-col">
+    <div className="flex flex-col min-h-screen">
       <Navigacija />
       <PaginationContext.Provider value={{ currentPage, setCurrentPage }}>
         <FilterButtons

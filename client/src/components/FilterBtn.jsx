@@ -4,9 +4,9 @@ import { PaginationContext } from "../kontekst/PaginationContext";
 function FilterBtn({ name, dropdown, endpointUrl, setUrl, setFilter }) {
   const { currentPage, setCurrentPage } = useContext(PaginationContext);
   return (
-    <li class="group relative">
+    <li className="relative group">
       <div className="flex items-center p-[0.4rem_1rem] gap-2 group-hover:cursor-pointer">
-        <button class=" glavno-nav text-white  ">{name}</button>
+        <button className="text-white  glavno-nav">{name}</button>
         <img
           className="h-[7px] transition-transform duration-300 group-hover:rotate-180"
           src="/logo/arrow.svg"
@@ -18,7 +18,7 @@ function FilterBtn({ name, dropdown, endpointUrl, setUrl, setFilter }) {
         {Object.entries(dropdown).map(([key, podfilter]) => (
           <button
             key={key}
-            class=" hover:bg-moja_plava-tamna p-[0.5rem_1rem] border border-white "
+            className=" hover:bg-moja_plava-tamna p-[0.5rem_1rem] border border-white "
             onClick={() => {
               {
                 podfilter.url == ""

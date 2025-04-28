@@ -7,10 +7,10 @@ function ListItem({ value }) {
       to={`/fish/${value.ID}`}
       className="hover:scale-y-[1.15] hover:z-10 group outline w-[18rem] aspect-video outline-[4px] outline-white rounded-[9px] transition-all ease-in-out duration-[300ms] bg-moja_plava hover:cursor-pointer overflow-hidden "
     >
-      <div class="animate-spawn opacity-0 w-[100%] h-[80%]  justify-self-center flex  items-end justify-center rounded-[9px]  group-hover:h-[85%] transition-all ease-in-out duration-[300ms]  overflow-hidden relative flex-col outline outline-[3px] outline-white">
+      <div className="animate-spawn opacity-0 w-[100%] h-[80%]  justify-self-center flex  items-end justify-center rounded-[9px]  group-hover:h-[85%] transition-all ease-in-out duration-[300ms]  overflow-hidden relative flex-col outline outline-[3px] outline-white">
         <img
           src={value.slika}
-          class="group-hover:scale-y-[0.95] scale-110 self-center justify-self-center w-full transition-all duration-[300ms] ease-in-out  relative"
+          className="group-hover:scale-y-[0.95] scale-110 self-center justify-self-center w-full transition-all duration-[300ms] ease-in-out  relative"
           alt=""
         />
       </div>

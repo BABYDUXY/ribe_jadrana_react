@@ -71,7 +71,12 @@ app.post("/api/registracija", async (req, res) => {
   const korisnicko_ime = podaci["1"];
   const email = podaci["2"];
   const lozinka = podaci["3"];
+  const honeypot = podaci["ime"];
 
+  if (honeypot) {
+    console.log("Bot detektiran! [Honeypot polje je popunjeno]");
+    return res.status(400).json({ poruka: "Neuspješna registracija [BOT]!" });
+  }
   const provjera = `
     SELECT * FROM korisnik WHERE korisnicko_ime = ? OR email = ?
   `;
@@ -121,6 +126,58 @@ app.post("/api/registracija", async (req, res) => {
   } catch (err) {
     console.error("Greška kod registracije:", err);
     return res.status(500).json({ poruka: "Greška kod registracije" });
+  }
+});
+
+/* PRIJAVA */
+app.post("/api/prijava", async (req, res) => {
+  const podaci = req.body;
+
+  const honeypot = podaci["ime"];
+  console.log(podaci);
+
+  if (honeypot) {
+    console.log("Bot detektiran! [Honeypot polje je popunjeno]");
+    return res.status(400).json({ poruka: "Neuspješna Prijava [BOT]!" });
+  }
+
+  if (!podaci["1"] || !podaci["2"]) {
+    return res.status(400).json({ poruka: "Email i lozinka su obavezni." });
+  }
+
+  try {
+    const sql = "SELECT * FROM korisnik WHERE email = ?";
+    const korisnici = await new Promise((resolve, reject) => {
+      db.query(sql, podaci["1"], (err, results) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(results);
+        }
+      });
+    });
+
+    if (korisnici.length === 0) {
+      return res.status(401).json({ poruka: "Neispravni podaci za prijavu." });
+    }
+
+    const korisnik = korisnici[0];
+
+    /* LOZINKA CHECK */
+    const ispravnaLozinka = await bcrypt.compare(
+      podaci["2"],
+      korisnik.lozinka_hash
+    );
+
+    if (!ispravnaLozinka) {
+      return res.status(401).json({ poruka: "Neispravni podaci za prijavu." });
+    }
+
+    // Ako je sve OK
+    return res.status(200).json({ poruka: "Prijava uspješna!" });
+  } catch (err) {
+    console.error("Greška kod prijave:", err);
+    return res.status(500).json({ poruka: "Greška kod prijave." });
   }
 });
 

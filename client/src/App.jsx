@@ -28,7 +28,7 @@ const App = () => {
     },
     {
       path: "/prijava",
-      element: <Prijava />,
+      element: <Prijava endpointUrl={endpointUrl} />,
     },
     {
       path: "/registracija",
