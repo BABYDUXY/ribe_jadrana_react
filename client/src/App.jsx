@@ -5,6 +5,7 @@ import SpecificFish from "./page/SpecificFish";
 import AllFishes from "./page/AllFishes";
 import Prijava from "./page/Prijava";
 import Registracija from "./page/Registracija";
+import MojProfil from "./page/MojProfil";
 
 const App = () => {
   const endpointUrl = "http://localhost:5000";
@@ -33,6 +34,10 @@ const App = () => {
     {
       path: "/registracija",
       element: <Registracija endpointUrl={endpointUrl} />,
+    },
+    {
+      path: "/mojprofil",
+      element: <MojProfil />,
     },
   ]);
 

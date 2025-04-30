@@ -2,6 +2,7 @@ import React from "react";
 import { useContext } from "react";
 import { Link } from "react-router-dom";
 import Navigacija from "./Navigacija";
+import Footer from "./Footer";
 
 function FishAllInfo({ value }) {
   return (
@@ -34,7 +35,7 @@ function FishAllInfo({ value }) {
           <div className="row-span-2  p-[2rem_2rem_2rem_0]">
             <div
               dangerouslySetInnerHTML={{ __html: value.opis }}
-              className="w-full h-full bg-moja_plava-tamna rounded-[17px] outline outline-white outline-[3px] p-[2rem] text-white font-glavno [&>*]:mb-5 overflow-auto leading-[20px] text-base"
+              className="scrollbar-custom w-full h-full bg-moja_plava-tamna rounded-[17px] outline outline-white outline-[3px] p-[2rem] text-white font-glavno [&>*]:mb-5 overflow-auto leading-[20px] text-base"
             ></div>
           </div>
           <div className="flex justify-center  pb-[2rem] pt-[1.5rem]">
@@ -69,6 +70,7 @@ function FishAllInfo({ value }) {
           </div>
         </div>
       </div>
+      <Footer />
     </>
   );
 }

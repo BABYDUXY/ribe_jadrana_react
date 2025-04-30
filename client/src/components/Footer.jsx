@@ -1,8 +1,10 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import { useLogin } from "../kontekst/loginContext";
 function Footer() {
+  const { user } = useLogin();
   return (
-    <div className="w-full h-[10rem] bg-black mt-10 grid grid-cols-[20%_1fr_20%] place-items-center">
+    <div className="w-full h-[10rem] bg-black mt-auto grid grid-cols-[20%_1fr_20%] place-items-center">
       <div className="h-max  w-[80%] col-start-2">
         <ul className="flex text-gray-300 justify-evenly glavno-nav">
           <li className="transition-all duration-200 hover:text-white">
@@ -12,10 +14,15 @@ function Footer() {
           <li className="transition-all duration-200 hover:text-white">
             <Link to="/">Uvijeti korištenja</Link>
           </li>
-
-          <li className="transition-all duration-200 hover:text-white">
-            <Link to="/">Prijava </Link>
-          </li>
+          {user ? (
+            <li className="transition-all duration-200 hover:text-white">
+              <Link to="/mojprofil">Moj profil </Link>
+            </li>
+          ) : (
+            <li className="transition-all duration-200 hover:text-white">
+              <Link to="/">Prijava </Link>
+            </li>
+          )}
         </ul>
         <h6 className="flex justify-center mt-8 text-white glavno-nav">
           2025. &copy; David Gušćić | Sva prava pridržana

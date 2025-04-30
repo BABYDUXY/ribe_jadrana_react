@@ -2,7 +2,8 @@ import React, { useState } from "react";
 import Navigacija from "../components/Navigacija";
 import Footer from "../components/Footer";
 import Obrazac from "../components/Obrazac";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useLogin } from "../kontekst/loginContext";
 
 const polja = {
   1: { type: "email", naziv: "Email:", placeholder: "example@gmail.com" },
@@ -13,6 +14,7 @@ const naslov = ["Prijava", "Prijavi se", "Registriraj se", "/registracija"];
 function Prijava({ endpointUrl }) {
   const [errors, setErrors] = useState({});
   const navigate = useNavigate();
+  const { user, isLoading, login, logout } = useLogin();
 
   function prijavaUSustav(formData) {
     let newErrors = {};
@@ -37,7 +39,7 @@ function Prijava({ endpointUrl }) {
         .then((data) => {
           console.log("Uspješno:", data);
           sessionStorage.setItem("token", data.token);
-          sessionStorage.setItem("korisnicko_ime", data.korisnicko_ime);
+          login(data.korisnicko_ime);
           alert("Uspješna Prijava!");
           navigate("/");
         })
@@ -52,12 +54,32 @@ function Prijava({ endpointUrl }) {
   return (
     <div className="flex flex-col min-h-screen">
       <Navigacija />
-      <Obrazac
-        naslov={naslov}
-        polja={polja}
-        onSubmit={prijavaUSustav}
-        errors={""}
-      />
+      {user ? (
+        <div className="min-h-[35rem]  w-[30rem] col-span-4 place-self-center glavno-nav text-white flex flex-col items-center justify-center">
+          <div className="relative inline-block">
+            <p className="text-4xl">Već ste prijavljeni!</p>
+            <span className="absolute left-0 bottom-0 w-full h-[3px] rounded-full overflow-hidden">
+              <span className="block w-1/3 h-full bg-white rounded-full animate-underlinePingPong" />
+            </span>
+          </div>
+          <Link
+            onClick={() => {
+              logout();
+            }}
+            className="mt-10"
+          >
+            Odjava
+          </Link>
+        </div>
+      ) : (
+        <Obrazac
+          naslov={naslov}
+          polja={polja}
+          onSubmit={prijavaUSustav}
+          errors={""}
+        />
+      )}
+
       <Footer />
     </div>
   );

@@ -19,7 +19,7 @@ function Obrazac({ naslov, polja, onSubmit, errors }) {
   const brojPolja = Object.keys(polja).length;
 
   return (
-    <div className=" w-[20rem] min-h-[27rem] 3xl:h-[32rem] m-10 self-center flex flex-col items-center font-glavno text-white">
+    <div className=" w-[20rem] min-h-[27rem] 3xl:h-[32rem] m-10 self-center flex flex-col items-center font-glavno text-white mb-16">
       <h1 className="mb-10 glavno-naslov text-[2rem]">{naslov[0]}</h1>
       <form
         onSubmit={handleSubmit}
