@@ -176,7 +176,11 @@ app.post("/api/prijava", async (req, res) => {
     }
 
     const token = jwt.sign(
-      { id: korisnik.id, korisnicko_ime: korisnik.korisnicko_ime },
+      {
+        id: korisnik.id,
+        korisnicko_ime: korisnik.korisnicko_ime,
+        email: korisnik.email,
+      },
       tajni_token, // Tajni ključ za potpis tokena
       { expiresIn: "2h" } // Trajanje tokena
     );
@@ -185,7 +189,6 @@ app.post("/api/prijava", async (req, res) => {
     return res.status(200).json({
       poruka: "Prijava uspješna!",
       token,
-      korisnicko_ime: korisnik.korisnicko_ime,
     });
   } catch (err) {
     console.error("Greška kod prijave:", err);

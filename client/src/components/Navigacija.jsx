@@ -19,7 +19,7 @@ const Navigacija = () => {
 
       {user ? (
         <div className="ml-auto mr-[5vw] h-full flex justify-center flex-col items-center">
-          <NavDropdown user={user} role="" />
+          <NavDropdown role="" />
         </div>
       ) : (
         <div className="ml-auto mr-[5vw]">

@@ -150,7 +150,7 @@ function FilterButtons({
               <h6 className="relative flex items-center justify-center mr-4 mb-[-5px]">
                 {filter}{" "}
               </h6>
-              <img className="h-[15px] " src="/logo/x.svg" alt="" srcset="" />
+              <img className="h-[15px] " src="/logo/x.svg" alt="" srcSet="" />
             </div>
           )}
         </div>
@@ -170,7 +170,7 @@ function FilterButtons({
               <h6 className="relative flex items-center justify-center mr-4 mb-[-5px]">
                 {sortFilter}{" "}
               </h6>
-              <img className="h-[15px] " src="/logo/x.svg" alt="" srcset="" />
+              <img className="h-[15px] " src="/logo/x.svg" alt="" srcSet="" />
             </div>
           )}
         </div>

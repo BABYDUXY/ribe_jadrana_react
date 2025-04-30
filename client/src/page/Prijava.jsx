@@ -4,6 +4,7 @@ import Footer from "../components/Footer";
 import Obrazac from "../components/Obrazac";
 import { Link, useNavigate } from "react-router-dom";
 import { useLogin } from "../kontekst/loginContext";
+import { jwtDecode } from "jwt-decode";
 
 const polja = {
   1: { type: "email", naziv: "Email:", placeholder: "example@gmail.com" },
@@ -38,8 +39,12 @@ function Prijava({ endpointUrl }) {
         })
         .then((data) => {
           console.log("Uspješno:", data);
-          sessionStorage.setItem("token", data.token);
-          login(data.korisnicko_ime);
+
+          const token = data.token;
+
+          const decodedUser = jwtDecode(token);
+
+          login(decodedUser);
           alert("Uspješna Prijava!");
           navigate("/");
         })

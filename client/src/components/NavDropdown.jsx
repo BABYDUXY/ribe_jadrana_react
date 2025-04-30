@@ -2,17 +2,17 @@ import React from "react";
 import { useLogin } from "../kontekst/loginContext";
 import { Link } from "react-router-dom";
 
-function NavDropdown({ user, role }) {
-  const { logout } = useLogin();
+function NavDropdown({ role }) {
+  const { user, logout } = useLogin();
   return (
     <div className="relative z-20 flex items-center justify-center h-full group">
       <div className="flex items-center p-[0.4rem_1rem] gap-2 group-hover:cursor-default">
-        <h5 className="text-white glavno-nav">{user}</h5>
+        <h5 className="text-white glavno-nav">{user?.korisnicko_ime}</h5>
         <img
           className="h-[7px] transition-transform duration-300 group-hover:rotate-180"
           src="/logo/arrow.svg"
           alt=""
-          srcset=""
+          srcSet=""
         />
       </div>
       <ul
