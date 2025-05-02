@@ -20,7 +20,7 @@ function NavDropdown({ role }) {
       [&>li>a]:px-2 [&>li:nth-last-child(1)]:border-0 [&>li:hover>a]:px-3 [&>li:nth-last-child(1)>a]:border-0 [&>li>a]:transition-all [&>li>a]:duration-300 [&>li>a]:ease-in-out h-0 opacity-0 overflow-hidden transition-all duration-300 ease-in group-hover:h-[9rem] group-hover:opacity-100"
       >
         <li className="">
-          <Link to="/">Moj profil</Link>
+          <Link to="/mojprofil">Moj profil</Link>
         </li>
         <li>
           <Link to="/">Moji ulovi</Link>

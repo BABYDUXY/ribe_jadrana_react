@@ -4,6 +4,7 @@ const mysql = require("mysql");
 const dotenv = require("dotenv");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const verifyToken = require("./middleware/verifyToken");
 
 dotenv.config();
 
@@ -177,9 +178,9 @@ app.post("/api/prijava", async (req, res) => {
 
     const token = jwt.sign(
       {
-        id: korisnik.id,
         korisnicko_ime: korisnik.korisnicko_ime,
         email: korisnik.email,
+        datum_kreiranja: korisnik.datum_kreiranja,
       },
       tajni_token, // Tajni ključ za potpis tokena
       { expiresIn: "2h" } // Trajanje tokena
@@ -193,6 +194,37 @@ app.post("/api/prijava", async (req, res) => {
   } catch (err) {
     console.error("Greška kod prijave:", err);
     return res.status(500).json({ poruka: "Greška kod prijave." });
+  }
+});
+
+app.put("/api/korisnik/update", verifyToken, async (req, res) => {
+  const { korisnicko_ime } = req.body;
+  const userInfo = req.user;
+  const email = userInfo.email;
+  console.log("email: ", email, "user:", korisnicko_ime);
+
+  if (!email || !korisnicko_ime) {
+    return res.status(400).json({ poruka: "Nedostaju podaci." });
+  }
+
+  try {
+    const sql = "UPDATE korisnik SET korisnicko_ime = ? WHERE email = ?";
+    db.query(sql, [korisnicko_ime, email], (err, result) => {
+      if (err) {
+        console.error("Greška kod upita:", err);
+        return res.status(500).json({ poruka: "Greška na serveru." });
+      }
+
+      if (result.affectedRows === 0) {
+        return res.status(404).json({ poruka: "Korisnik nije pronađen." });
+      }
+      return res
+        .status(200)
+        .json({ poruka: "Korisničko ime ažurirano uspješno." });
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ poruka: "Greška na serveru." });
   }
 });
 

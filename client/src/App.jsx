@@ -6,6 +6,7 @@ import AllFishes from "./page/AllFishes";
 import Prijava from "./page/Prijava";
 import Registracija from "./page/Registracija";
 import MojProfil from "./page/MojProfil";
+import { EndpointUrlContext } from "./kontekst/EndpointUrlContext";
 
 const App = () => {
   const endpointUrl = "http://localhost:5000";
@@ -52,7 +53,9 @@ const App = () => {
 
   return (
     <>
-      <RouterProvider router={router} />
+      <EndpointUrlContext.Provider value={{ endpointUrl }}>
+        <RouterProvider router={router} />
+      </EndpointUrlContext.Provider>
     </>
   );
 };

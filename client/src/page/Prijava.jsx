@@ -41,6 +41,7 @@ function Prijava({ endpointUrl }) {
           console.log("Uspješno:", data);
 
           const token = data.token;
+          sessionStorage.setItem("token", token);
 
           const decodedUser = jwtDecode(token);
 

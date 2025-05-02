@@ -1,7 +1,7 @@
 import { useContext, useEffect, useState } from "react";
 import ListItem from "./ListItem";
 import { PaginationContext } from "../kontekst/PaginationContext";
-import Pagination from "./Pagination"; // Import the new component
+import Pagination from "./Pagination";
 
 function SveRibe({ backEndData }) {
   const [itemsPerPage, setItemsPerPage] = useState(16);
