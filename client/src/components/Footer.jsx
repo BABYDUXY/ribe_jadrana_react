@@ -20,7 +20,7 @@ function Footer() {
             </li>
           ) : (
             <li className="transition-all duration-200 hover:text-white">
-              <Link to="/">Prijava </Link>
+              <Link to="/prijava">Prijava </Link>
             </li>
           )}
         </ul>
@@ -34,12 +34,14 @@ function Footer() {
           src="/logo/facebook.png"
           alt=""
           srcSet=""
+          draggable="false"
         />
         <img
           className="w-[50px] hover:scale-105 hover:cursor-pointer transition-all duration-200"
           src="/logo/instagram.png"
           alt=""
           srcSet=""
+          draggable="false"
         />
       </div>
     </div>

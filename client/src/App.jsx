@@ -7,6 +7,7 @@ import Prijava from "./page/Prijava";
 import Registracija from "./page/Registracija";
 import MojProfil from "./page/MojProfil";
 import { EndpointUrlContext } from "./kontekst/EndpointUrlContext";
+import ForumObjava from "./page/ForumObjava";
 
 const App = () => {
   const endpointUrl = "http://localhost:5000";
@@ -40,6 +41,10 @@ const App = () => {
       path: "/mojprofil",
       element: <MojProfil />,
     },
+    {
+      path: "/ulovi",
+      element: <ForumObjava />,
+    },
   ]);
 
   useEffect(() => {
@@ -47,13 +52,12 @@ const App = () => {
       .then((res) => res.json())
       .then((data) => {
         setBackendData(data);
-        console.log(data);
       });
   }, [url]);
 
   return (
     <>
-      <EndpointUrlContext.Provider value={{ endpointUrl }}>
+      <EndpointUrlContext.Provider value={{ endpointUrl, setUrl, backendData }}>
         <RouterProvider router={router} />
       </EndpointUrlContext.Provider>
     </>

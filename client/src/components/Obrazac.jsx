@@ -47,7 +47,8 @@ function Obrazac({ naslov, polja, onSubmit, errors }) {
                   <img
                     src="/logo/oko.svg"
                     type="button"
-                    className={`absolute transition-all duration-300 ease-in-out -right-12 w-[25px] ${
+                    draggable="false"
+                    className={`absolute transition-all duration-300 ease-in-out -right-12 select-none w-[25px] ${
                       showPassword[key]
                         ? "opacity-100 -mt-2 hover:cursor-pointer hover:scale-105 z-10"
                         : "opacity-0 z-0"
@@ -62,7 +63,8 @@ function Obrazac({ naslov, polja, onSubmit, errors }) {
                   <img
                     src="/logo/trepavica.svg"
                     type="button"
-                    className={`absolute transition-all duration-300 ease-in-out -right-12 w-[25px] ${
+                    draggable="false"
+                    className={`absolute transition-all duration-300 ease-in-out -right-12 w-[25px] select-none ${
                       showPassword[key]
                         ? "opacity-0 z-0 -mt-2"
                         : "opacity-100 hover:cursor-pointer z-10 hover:scale-105 mt-0"

@@ -6,24 +6,26 @@ function Pagination({ currentPage, setCurrentPage, totalPages }) {
       <div className="flex justify-center col-span-1 gap-2 text-lg text-white md:col-span-2 lg:col-span-3 xl:col-span-4 font-glavno">
         <img
           src="/logo/arrow.svg"
+          draggable="false"
           onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
-          className={`transition-all duration-200 w-[20px] rotate-90 ${
+          className={`transition-all duration-200 w-[20px] rotate-90 select-none ${
             currentPage === 1
               ? "opacity-50"
-              : "hover:cursor-pointer hover:scale-105 hover:-translate-x-1"
+              : "hover:cursor-pointer hover:scale-105 hover:-translate-x-1 "
           }`}
           disabled={currentPage === 1}
           alt="Prethodna stranica"
         />
 
-        <span className="px-3 py-1">
+        <span className="px-3 py-1 select-none">
           {currentPage} / {totalPages}
         </span>
 
         <img
           src="/logo/arrow.svg"
+          draggable="false"
           onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
-          className={`transition-all duration-200 w-[20px] -rotate-90 ${
+          className={`transition-all select-none duration-200 w-[20px] -rotate-90 ${
             currentPage === totalPages
               ? "opacity-50"
               : "hover:cursor-pointer hover:scale-105 hover:translate-x-1"

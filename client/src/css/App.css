@@ -33,5 +33,5 @@
 }
 
 .animated-overflow {
-  animation: overflowAnimation 0.5s ease-in-out 0s forwards;
+  animation: overflowAnimation 1.2s ease-in-out 0s forwards;
 }

@@ -1,6 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import { Link } from "react-router-dom";
 import FilterBtn from "./FilterBtn";
+import { EndpointUrlContext } from "../kontekst/EndpointUrlContext";
 
 const vrstaFilters = {
   1: { url: "plave", fullname: "Plave", name: "Plave" },
@@ -52,16 +53,10 @@ const nazivFilters = {
   },
 };
 
-function FilterButtons({
-  endpointUrl,
-  setUrl,
-  setSortOptions,
-  setSearchQuery,
-  searchQuery,
-}) {
+function ForumFilters({ setSortOptions }) {
+  const { endpointUrl, setUrl, backendData } = useContext(EndpointUrlContext);
   const [filter, setFilter] = useState("");
   const [sortFilter, setSortFilter] = useState("");
-  const [searchInput, setSearchInput] = useState(false);
   const [toggleFilteri, setToggleFilteri] = useState(false);
 
   return (
@@ -73,7 +68,6 @@ function FilterButtons({
         draggable="false"
         onClick={() => {
           setToggleFilteri((prev) => !prev);
-          setSearchInput(false);
         }}
       />
       <img
@@ -87,7 +81,7 @@ function FilterButtons({
           toggleFilteri
             ? " w-[35rem] opacity-100 overflow-visible"
             : "w-0 opacity-0 overflow-hidden"
-        }${searchInput ? " !w-[40rem]" : ""}`}
+        }`}
       >
         <FilterBtn
           name="Vrsta"
@@ -120,24 +114,6 @@ function FilterButtons({
           endpointUrl={endpointUrl}
           setFilter={setSortFilter}
           toggleFilteri={toggleFilteri}
-        />
-        <input
-          type="text"
-          className={` relative transition-all duration-500 ease-in-out px-2 h-[full] bg-moja_plava border-b-2 border-gray-200 placeholder:text-[1rem]  focus:outline-none placeholder-gray-200 text-white glavno-nav focus:border-white  active:border-white place-self-center
-          ${
-            searchInput ? "w-[8rem] opacity-100" : "w-0 opacity-0"
-          } overflow-hidden`}
-          name=""
-          id=""
-          placeholder="Pretraži"
-          onChange={(e) => setSearchQuery(e.target.value)}
-          value={searchQuery}
-        />
-        <img
-          className="place-self-center ml-5 h-[23px] hover:cursor-pointer hover:scale-105 transition-all duration-200 ease-in-out"
-          src="/logo/povecalo.svg"
-          alt=""
-          onClick={() => setSearchInput((prev) => !prev)}
         />
       </ul>
       {/* prikaz filtera aktivnih*/}
@@ -185,4 +161,4 @@ function FilterButtons({
   );
 }
 
-export default FilterButtons;
+export default ForumFilters;
