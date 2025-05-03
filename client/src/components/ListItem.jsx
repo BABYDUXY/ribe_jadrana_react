@@ -9,7 +9,7 @@ function ListItem({ value }) {
       style={{
         transform: "", // Force hardware acceleration
         willChange: "transform", // Hint to browser to optimize performance
-        transition: "all 280ms ease-in-out",
+        transition: "all 250ms ease-in-out",
       }}
     >
       <div className="animate-spawn opacity-0 w-[100%] h-[80%]  justify-self-center flex  items-end justify-center rounded-[9px]  group-hover:h-[85%] transition-all ease-in-out duration-[340ms]  overflow-hidden relative flex-col outline outline-[3px] outline-white">
