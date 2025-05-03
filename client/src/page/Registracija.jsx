@@ -26,12 +26,12 @@ function Registracija({ endpointUrl }) {
 
     // Provjera lozinki
     if (formData["3"] !== formData["4"]) {
+      console.log(formData);
       newErrors["3"] = "Lozinke se ne podudaraju!";
       newErrors["4"] = "Lozinke se ne podudaraju!";
     }
 
     if (Object.keys(newErrors).length === 0) {
-      console.log("Podaci za registraciju:", formData);
       fetch(`${endpointUrl}/api/registracija`, {
         method: "POST",
         headers: {
@@ -48,7 +48,6 @@ function Registracija({ endpointUrl }) {
           return response.json();
         })
         .then((data) => {
-          console.log("Uspješno:", data);
           alert("Uspješna registracija!");
           navigate("/prijava");
         })

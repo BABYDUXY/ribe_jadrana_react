@@ -28,6 +28,10 @@ function MojProfil() {
   const { endpointUrl } = useContext(EndpointUrlContext);
 
   const updateUsernameFunction = async () => {
+    if (user?.korisnicko_ime == editableUsername) {
+      setUpdateUsername(false);
+      return;
+    }
     const token = sessionStorage.getItem("token");
     try {
       const response = await fetch(`${endpointUrl}/api/korisnik/update`, {
@@ -163,7 +167,7 @@ function MojProfil() {
             />
           </div>
           <button
-            className="w-[50%] bg-moja_plava-tamna p-[0.3rem_0rem] mt-2 self-center rounded-[7px] outline outline-white outline-[3px]"
+            className="w-[50%] form-btn-hover hover:w-[55%] bg-moja_plava-tamna p-[0.3rem_0rem] mt-2 self-center rounded-[7px] outline outline-white outline-[3px]"
             type="submit"
             onClick={logout}
           >

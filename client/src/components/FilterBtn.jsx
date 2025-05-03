@@ -1,10 +1,21 @@
 import React, { useContext } from "react";
 import { PaginationContext } from "../kontekst/PaginationContext";
 
-function FilterBtn({ name, dropdown, endpointUrl, setUrl, setFilter }) {
+function FilterBtn({
+  name,
+  dropdown,
+  endpointUrl,
+  setUrl,
+  setFilter,
+  toggleFilteri,
+}) {
   const { currentPage, setCurrentPage } = useContext(PaginationContext);
   return (
-    <li className="relative group">
+    <li
+      className={`relative group  ${
+        toggleFilteri ? "animated-overflow" : "overflow-hidden"
+      }`}
+    >
       <div className="flex items-center p-[0.4rem_1rem] gap-2 group-hover:cursor-pointer">
         <button className="text-white glavno-nav">{name}</button>
         <img

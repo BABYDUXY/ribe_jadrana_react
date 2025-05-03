@@ -93,6 +93,7 @@ function FilterButtons({
           setUrl={setUrl}
           endpointUrl={endpointUrl}
           setFilter={setFilter}
+          toggleFilteri={toggleFilteri}
         />
         <FilterBtn
           name="Težina"
@@ -100,6 +101,7 @@ function FilterButtons({
           setUrl={setSortOptions}
           endpointUrl={endpointUrl}
           setFilter={setSortFilter}
+          toggleFilteri={toggleFilteri}
         />
         <FilterBtn
           name="Duljina"
@@ -107,6 +109,7 @@ function FilterButtons({
           setUrl={setSortOptions}
           endpointUrl={endpointUrl}
           setFilter={setSortFilter}
+          toggleFilteri={toggleFilteri}
         />
         <FilterBtn
           name="Naziv"
@@ -114,6 +117,7 @@ function FilterButtons({
           setUrl={setSortOptions}
           endpointUrl={endpointUrl}
           setFilter={setSortFilter}
+          toggleFilteri={toggleFilteri}
         />
         <input
           type="text"

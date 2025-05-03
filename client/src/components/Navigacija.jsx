@@ -12,7 +12,7 @@ const Navigacija = () => {
         <h1 className="text-white glavno-naslov ml-[5vw]">Ribe Jadrana</h1>
       </div>
       <div className="mx-auto">
-        <NavButton naziv="Ribe" url="#" pad="0.6rem_2.3rem" />
+        <NavButton naziv="Ribe" url="/" pad="0.6rem_2.3rem" />
         <NavButton naziv="Ulovi" url="#" pad="0.6rem_2.3rem" />
         <NavButton naziv="Novosti" url="#" pad="0.6rem_1.6rem" />
       </div>
