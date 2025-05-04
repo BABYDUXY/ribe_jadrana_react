@@ -10,11 +10,16 @@ function ForumObjava() {
     direction: "asc",
   });
   const [currentPage, setCurrentPage] = useState(1);
+  const [searchQuery, setSearchQuery] = useState("");
   return (
     <div className="flex flex-col min-h-screen">
       <Navigacija />
       <PaginationContext.Provider value={{ currentPage, setCurrentPage }}>
-        <ForumFilters setSortOptions={setSortOptions} />
+        <ForumFilters
+          setSortOptions={setSortOptions}
+          setSearchQuery={setSearchQuery}
+          searchQuery={searchQuery}
+        />
       </PaginationContext.Provider>
       <Footer />
     </div>
