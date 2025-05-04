@@ -8,6 +8,7 @@ import Registracija from "./page/Registracija";
 import MojProfil from "./page/MojProfil";
 import { EndpointUrlContext } from "./kontekst/EndpointUrlContext";
 import ForumObjava from "./page/ForumObjava";
+import NovaObjava from "./page/NovaObjava";
 
 const App = () => {
   const endpointUrl = "http://localhost:5000";
@@ -44,6 +45,10 @@ const App = () => {
     {
       path: "/ulovi",
       element: <ForumObjava />,
+    },
+    {
+      path: "/novaobjava",
+      element: <NovaObjava />,
     },
   ]);
 
