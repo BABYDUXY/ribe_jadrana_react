@@ -29,7 +29,7 @@ const db = mysql.createConnection({
 
 // prettier-ignore
 app.get("/", (req, res) => {
-  const sql = "SELECT * FROM riba";
+  const sql = "SELECT * FROM riba ORDER BY ime ASC;";
   db.query(sql,(err,data)=>{
     if (err) return res.json(err);
     return res.json(data);
