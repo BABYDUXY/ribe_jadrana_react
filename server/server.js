@@ -5,13 +5,38 @@ const dotenv = require("dotenv");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const verifyToken = require("./middleware/verifyToken");
+const crypto = require("crypto");
+const multer = require("multer");
+const path = require("path");
+const fs = require("fs");
 
 dotenv.config();
+
+const uploadDir = "uploads_javno";
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir);
+}
+
+function generateHash() {
+  return crypto.randomBytes(6).toString("hex");
+}
 
 const app = express();
 app.use(cors());
 app.use(express.json());
-// importing enviromental variables
+app.use("/uploads_javno", express.static("uploads_javno"));
+
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, "uploads_javno/");
+  },
+  filename: function (req, file, cb) {
+    const uniqueName = Date.now() + path.extname(file.originalname);
+    cb(null, uniqueName);
+  },
+});
+const upload = multer({ storage });
+
 const host = process.env.HOST;
 const user = process.env.USER;
 const password = process.env.PASSWORD;
@@ -63,8 +88,6 @@ app.get("/otrovne", (req, res) => {
 /* REGISTRACIJA KORISNIKA U SUSTAV */
 app.post("/api/registracija", async (req, res) => {
   const podaci = req.body;
-  console.log("podaci");
-  console.log("Primljeni podaci s frontenda:", podaci);
 
   /* Verficiramo jesu li sva polja unesena */
   if (!podaci["1"] || !podaci["2"] || !podaci["3"] || !podaci["4"]) {
@@ -137,7 +160,6 @@ app.post("/api/prijava", async (req, res) => {
   const podaci = req.body;
 
   const honeypot = podaci["ime"];
-  console.log(podaci);
 
   if (honeypot) {
     console.log("Bot detektiran! [Honeypot polje je popunjeno]");
@@ -178,6 +200,7 @@ app.post("/api/prijava", async (req, res) => {
 
     const token = jwt.sign(
       {
+        korisnik_id: korisnik.ID,
         korisnicko_ime: korisnik.korisnicko_ime,
         email: korisnik.email,
         datum_kreiranja: korisnik.datum_kreiranja,
@@ -227,6 +250,247 @@ app.put("/api/korisnik/update", verifyToken, async (req, res) => {
     res.status(500).json({ poruka: "Greška na serveru." });
   }
 });
+
+/* -------------------------Objave ------------------------------------- */
+app.post("/api/objava/tekst", verifyToken, async (req, res) => {
+  const { naslov, sadrzaj } = req.body;
+  const userInfo = req.user;
+  const id = userInfo.korisnik_id;
+
+  if (!sadrzaj || !naslov) {
+    return res.status(400).json({ poruka: "Nedostaju obavezna polja." });
+  }
+  const hash = generateHash();
+
+  const sql = `
+    INSERT INTO objava (naslov, sadrzaj, korisnik_id, hash, status)
+    VALUES (?, ?, ?, ?, 'pending')
+  `;
+
+  try {
+    const rezultat = await new Promise((resolve, reject) => {
+      db.query(sql, [naslov, sadrzaj, id, hash], (err, result) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(result);
+        }
+      });
+    });
+
+    console.log("Objava dodana, ID:", rezultat.insertId);
+    return res
+      .status(201)
+      .json({ poruka: "Objava uspješno dodana.", hash: hash });
+  } catch (err) {
+    console.error("Greška pri dodavanju objave:", err);
+    return res.status(500).json({ poruka: "Greška na serveru." });
+  }
+});
+
+app.post(
+  "/api/objava/javno",
+  verifyToken,
+  upload.single("slika"),
+  async (req, res) => {
+    const {
+      riba,
+      tezina,
+      stap_brend,
+      stap_model,
+      rola_brend,
+      rola_model,
+      mamac,
+      opis,
+      mjesto,
+    } = req.body;
+    const userInfo = req.user;
+    const id = userInfo.korisnik_id;
+    console.log(
+      riba,
+      tezina,
+      stap_brend,
+      stap_model,
+      rola_brend,
+      rola_model,
+      mamac,
+      opis,
+      mjesto
+    );
+
+    if (
+      !riba ||
+      !tezina ||
+      !stap_brend ||
+      !stap_model ||
+      !rola_brend ||
+      !rola_model ||
+      !mamac ||
+      !mjesto
+    ) {
+      return res.status(400).json({ poruka: "Nisu sva polja popunjena." });
+    }
+    const hash = generateHash();
+
+    let slika = null;
+    if (req.file) {
+      slika = `/uploads_javno/${req.file.filename}`;
+    }
+
+    let stapBrendId, rolaBrendId;
+
+    try {
+      // Check if stap_brend exists
+      const stapBrendResult = await new Promise((resolve, reject) => {
+        db.query(
+          "SELECT ID FROM brend WHERE naziv = ?",
+          [stap_brend],
+          (err, result) => {
+            if (err) reject(err);
+            resolve(result);
+            console.log("uspijesno provjeren brend");
+          }
+        );
+      });
+      console.log("2");
+
+      if (stapBrendResult.length === 0) {
+        // Insert new brand for stap_brend
+        const insertStapBrend = await new Promise((resolve, reject) => {
+          db.query(
+            "INSERT INTO brend (naziv) VALUES (?)",
+            [stap_brend],
+            (err, result) => {
+              if (err) reject(err);
+              resolve(result);
+            }
+          );
+        });
+        stapBrendId = insertStapBrend.insertId;
+      } else {
+        stapBrendId = stapBrendResult[0].ID;
+      }
+
+      // Check if rola_brend exists
+      if (stap_brend !== rola_brend) {
+        const rolaBrendResult = await new Promise((resolve, reject) => {
+          db.query(
+            "SELECT ID FROM brend WHERE naziv = ?",
+            [rola_brend],
+            (err, result) => {
+              if (err) reject(err);
+              resolve(result);
+            }
+          );
+        });
+
+        if (rolaBrendResult.length === 0) {
+          // Insert new brand for rola_brend
+          const insertRolaBrend = await new Promise((resolve, reject) => {
+            db.query(
+              "INSERT INTO brend (naziv) VALUES (?)",
+              [rola_brend],
+              (err, result) => {
+                if (err) reject(err);
+                resolve(result);
+              }
+            );
+          });
+          rolaBrendId = insertRolaBrend.insertId;
+        } else {
+          rolaBrendId = rolaBrendResult[0].ID;
+        }
+      } else {
+        // If stap_brend and rola_brend are the same, use the same ID
+        rolaBrendId = stapBrendId;
+      }
+
+      // Check if the stap_model already exists in the model_opreme table for this brand
+      let stapModelId = null;
+      const stapModelResult = await new Promise((resolve, reject) => {
+        db.query(
+          "SELECT ID FROM model_opreme WHERE naziv = ? AND brend = ?",
+          [stap_model, stapBrendId],
+          (err, result) => {
+            if (err) reject(err);
+            resolve(result);
+          }
+        );
+      });
+
+      if (stapModelResult.length === 0) {
+        // Insert stap_model if it doesn't exist
+        const insertStapModel = await new Promise((resolve, reject) => {
+          db.query(
+            "INSERT INTO model_opreme (tip_id, naziv, brend) VALUES (?, ?, ?)",
+            [1, stap_model, stapBrendId],
+            (err, result) => {
+              if (err) reject(err);
+              resolve(result);
+            }
+          );
+        });
+        stapModelId = insertStapModel.insertId;
+      } else {
+        stapModelId = stapModelResult[0].ID;
+      }
+
+      // Check if the rola_model already exists in the model_opreme table for this brand
+      let rolaModelId = null;
+      const rolaModelResult = await new Promise((resolve, reject) => {
+        db.query(
+          "SELECT ID FROM model_opreme WHERE naziv = ? AND brend = ?",
+          [rola_model, rolaBrendId],
+          (err, result) => {
+            if (err) reject(err);
+            resolve(result);
+          }
+        );
+      });
+
+      if (rolaModelResult.length === 0) {
+        // Insert rola_model if it doesn't exist
+        const insertRolaModel = await new Promise((resolve, reject) => {
+          db.query(
+            "INSERT INTO model_opreme (tip_id, naziv, brend) VALUES (?, ?, ?)",
+            [2, rola_model, rolaBrendId],
+            (err, result) => {
+              if (err) reject(err);
+              resolve(result);
+            }
+          );
+        });
+        rolaModelId = insertRolaModel.insertId;
+      } else {
+        rolaModelId = rolaModelResult[0].ID;
+      }
+
+      // If everything is inserted correctly, insert into objava
+      /*  const sql = `
+      INSERT INTO objava (naslov, sadrzaj, korisnik_id, hash, status, slika)
+      VALUES (?, ?, ?, ?, 'pending', ?)
+    `;
+
+      const rezultat = await new Promise((resolve, reject) => {
+        db.query(sql, [naslov, sadrzaj, id, hash, slika], (err, result) => {
+          if (err) {
+            reject(err);
+          } else {
+            resolve(result);
+          }
+        });
+      }); */
+
+      /* console.log("Objava dodana, ID:", rezultat.insertId); */
+      return res
+        .status(201)
+        .json({ poruka: "Objava uspješno dodana.", hash: hash });
+    } catch (err) {
+      console.error("Greška pri dodavanju objave:", err);
+      return res.status(500).json({ poruka: "Greška na serveru." });
+    }
+  }
+);
 
 app.listen(5000, () => {
   console.log("server je pokrenut na portu 5000");

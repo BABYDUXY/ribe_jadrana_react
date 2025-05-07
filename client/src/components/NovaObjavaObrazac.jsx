@@ -1,11 +1,16 @@
-import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import React, { useState, useEffect, useContext } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import ObrazacTekst from "./ObrazacTekst";
 import ObrazacUlov from "./ObrazacUlov";
+import { EndpointUrlContext } from "../kontekst/EndpointUrlContext";
 
 function NovaObjavaObrazac() {
   const [odabranaPrivatnost, setOdabranaPrivatnost] = useState("");
   const [odabranTipObjave, setOdabranTipObjave] = useState("prazno");
+  const { endpointUrl } = useContext(EndpointUrlContext);
+  const [ribaId, setRibaId] = useState(null);
+  console.log(ribaId);
+  const navigate = useNavigate();
   const handleChangePrivatnost = (e) => {
     setOdabranaPrivatnost(e.target.value);
   };
@@ -18,11 +23,83 @@ function NovaObjavaObrazac() {
       setOdabranTipObjave("prazno");
     }
   }, [odabranaPrivatnost]);
+
+  const handleSubmitText = async (e) => {
+    e.preventDefault();
+
+    const form = e.target;
+    const formData = new FormData(form);
+    const data = {};
+
+    for (let [key, value] of formData.entries()) {
+      data[key] = value;
+    }
+
+    try {
+      const response = await fetch(`${endpointUrl}/api/objava/tekst`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Token ${sessionStorage.getItem("token")}`,
+        },
+        body: JSON.stringify(data),
+      });
+
+      const result = await response.json();
+      if (response.ok) {
+        console.log("Success:", result);
+        alert("Objava poslana na odobravanje");
+        navigate("/");
+      } else {
+        console.error("Server error:", result.poruka);
+      }
+    } catch (err) {
+      console.error("Network error:", err);
+    }
+  };
+
+  const handleSubmitUlov = async (e) => {
+    e.preventDefault();
+
+    const form = e.target;
+    const formData = new FormData(form);
+
+    if (ribaId) {
+      formData.append("riba", ribaId);
+    }
+
+    try {
+      const response = await fetch(`${endpointUrl}/api/objava/javno`, {
+        method: "POST",
+        headers: {
+          Authorization: `Token ${sessionStorage.getItem("token")}`,
+        },
+        body: formData,
+      });
+
+      const result = await response.json();
+      if (response.ok) {
+        console.log("Success:", result);
+        alert("Objava poslana na odobravanje");
+        navigate("/");
+      } else {
+        console.error("Server error:", result.poruka);
+      }
+    } catch (err) {
+      console.error("Network error:", err);
+    }
+  };
   return (
     <div className="flex flex-col items-center justify-center m-10 ">
       <h1 className="text-white glavno-naslov text-[2rem]">Nova Objava</h1>
       <div>
-        <form action="">
+        <form
+          onSubmit={
+            odabranTipObjave == "tekst" && odabranaPrivatnost == "javno"
+              ? handleSubmitText
+              : handleSubmitUlov
+          }
+        >
           <div className="flex flex-col items-center justify-center gap-2">
             <label className="text-white glavno-nav" for="privatnost"></label>
             {odabranaPrivatnost === "javno" ? (
@@ -49,7 +126,7 @@ function NovaObjavaObrazac() {
             )}
             <div className="flex items-center justify-center gap-4">
               <select
-                className=" hover:p-[0.5rem_1.3rem] form-btn-hover hover:cursor-pointer duration-100 text-white font-glavno bg-moja_plava p-[0.5rem_1rem] rounded-[11px] outline outline-2 outline-white w-max"
+                className=" lg:hover:p-[0.5rem_1.3rem]  form-btn-hover hover:cursor-pointer duration-100 text-white font-glavno bg-moja_plava p-[0.5rem_1rem] rounded-[11px] outline outline-2 outline-white w-max"
                 id="privatnost"
                 name="privatnost"
                 onChange={handleChangePrivatnost}
@@ -60,7 +137,7 @@ function NovaObjavaObrazac() {
               </select>
               {odabranaPrivatnost == "javno" && (
                 <select
-                  className="hover:p-[0.5rem_1.3rem] form-btn-hover hover:cursor-pointer duration-100 text-white font-glavno bg-moja_plava p-[0.5rem_1rem] rounded-[11px] outline outline-2 outline-white w-max"
+                  className="lg:hover:p-[0.5rem_1.3rem] form-btn-hover hover:cursor-pointer duration-100 text-white font-glavno bg-moja_plava p-[0.5rem_1rem] rounded-[11px] outline outline-2 outline-white w-max"
                   id="privatnost"
                   name="privatnost"
                   onChange={handleChangeTipObjave}
@@ -76,11 +153,16 @@ function NovaObjavaObrazac() {
           {odabranTipObjave == "tekst" && odabranaPrivatnost == "javno" ? (
             <ObrazacTekst />
           ) : odabranTipObjave == "ulov" && odabranaPrivatnost == "javno" ? (
-            <ObrazacUlov />
+            <ObrazacUlov privatnost={"javno"} setRibaId={setRibaId} />
           ) : odabranTipObjave == "prazno" && odabranaPrivatnost == "javno" ? (
             <p className="m-16 text-center text-white glavno-nav">
               Odaberite tip javne objave
             </p>
+          ) : (
+            ""
+          )}
+          {odabranaPrivatnost == "privatno" ? (
+            <ObrazacUlov privatnost={"privatno"} setRibaId={setRibaId} />
           ) : (
             ""
           )}

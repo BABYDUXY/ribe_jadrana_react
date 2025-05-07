@@ -1,24 +1,35 @@
 import React, { useState } from "react";
 import OdabirRibe from "./OdabirRibe";
-function ObrazacUlov() {
-  const [ribaId, setRibaId] = useState(null);
+import ComboBox from "./ComboBox";
+
+function ObrazacUlov({ privatnost, setRibaId }) {
   const [slika, setSlika] = useState(null);
+
+  const lista = [
+    "Apple",
+    "Banana",
+    "Orange",
+    "Grapes",
+    "slope",
+    "sisters",
+    "Watermelon",
+  ];
 
   const handleSlikaChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      setSlika(URL.createObjectURL(file)); // Pretvori u lokalni URL za preview
+      setSlika(URL.createObjectURL(file));
     }
   };
 
   return (
-    <div className="flex flex-col items-center w-full gap-6 my-10 font-glavno">
+    <div className="flex flex-col items-center w-[45rem] gap-6 my-10 font-glavno">
       <div className="w-[50%] flex  items-center justify-between ">
         <div className="flex flex-col gap-1">
           <label className="text-white glavno-nav" htmlFor="riba">
             Ulovljena riba:
           </label>
-          <OdabirRibe onSelect={(id) => setRibaId(id)} />
+          <OdabirRibe onSelect={setRibaId} />
         </div>
 
         <div className="flex flex-col gap-1 w-[30%]">
@@ -35,54 +46,75 @@ function ObrazacUlov() {
           />
         </div>
       </div>
-      <div className="flex flex-col w-[50%] gap-1">
-        <label className="text-white glavno-nav" htmlFor="tezina">
-          Štap:
+      <div className="flex flex-col w-[50%] gap-1 ">
+        <label
+          className="text-white glavno-nav text-[1.4rem] border-b-2 border-white"
+          htmlFor="stap"
+        >
+          Štap
         </label>
-        <input
-          className="h-10 w-full rounded-[7px] p-3 text-moja_plava font-semibold "
-          type="text"
-          placeholder="npr. Rijeka..."
-          name="mjesto"
-        />
+        <div className="flex gap-3">
+          <div className="flex flex-col gap-1 w-[40%]">
+            <label className="text-white glavno-nav " htmlFor="stap_brend">
+              Brend:
+            </label>
+            <ComboBox lista={lista} name={"stap_brend"} />
+          </div>
+          <div className="flex flex-col gap-1 w-[60%]">
+            <label className="text-white glavno-nav" htmlFor="stap_model">
+              Model:
+            </label>
+            <ComboBox lista={lista} name={"stap_model"} />
+          </div>
+        </div>
+      </div>
+      <div className="flex flex-col w-[50%] gap-1 ">
+        <label
+          className="text-white glavno-nav text-[1.4rem] border-b-2 border-white"
+          htmlFor="rola"
+        >
+          Rola
+        </label>
+        <div className="flex gap-3">
+          <div className="flex flex-col gap-1 w-[40%]">
+            <label className="text-white glavno-nav " htmlFor="rola_brend">
+              Brend:
+            </label>
+            <ComboBox lista={lista} name={"rola_brend"} />
+          </div>
+          <div className="flex flex-col gap-1 w-[60%]">
+            <label className="text-white glavno-nav" htmlFor="rola_model">
+              Model:
+            </label>
+            <ComboBox lista={lista} name={"rola_model"} />
+          </div>
+        </div>
       </div>
       <div className="flex flex-col w-[50%] gap-1">
-        <label className="text-white glavno-nav" htmlFor="tezina">
-          Rola:
-        </label>
-        <input
-          className="h-10 w-full rounded-[7px] p-3 text-moja_plava font-semibold "
-          type="text"
-          placeholder="npr. okuma primeZ 3000"
-          name="mjesto"
-        />
-      </div>
-      <div className="flex flex-col w-[50%] gap-1">
-        <label className="text-white glavno-nav" htmlFor="tezina">
+        <label className="text-white glavno-nav" htmlFor="mamac">
           Mamac / varalica:
         </label>
         <input
           className="h-10 w-full rounded-[7px] p-3 text-moja_plava font-semibold "
           type="text"
           placeholder="npr. crv"
-          name="mjesto"
+          name="mamac"
         />
       </div>
       <div className="flex flex-col w-[50%] gap-1">
-        <label className="text-white glavno-nav" htmlFor="tezina">
-          Opis:
+        <label className="text-white glavno-nav" htmlFor="opis">
+          Opis: - neobavezno
         </label>
         <textarea
           className="h-20 w-full rounded-[7px] p-3 text-moja_plava font-semibold overflow-x-auto resize-none  text-ellipsis"
-          name="sadrzaj"
+          name="opis"
           type="text"
           placeholder="Upiši ovdje..."
-          required
         />
       </div>
       <div className="w-[50%] flex  items-center justify-between">
         <div className="flex flex-col w-[50%] gap-1">
-          <label className="text-white glavno-nav" htmlFor="tezina">
+          <label className="text-white glavno-nav" htmlFor="mjesto">
             Mjesto Ulova:
           </label>
           <input
@@ -93,7 +125,7 @@ function ObrazacUlov() {
           />
         </div>
         <div className="flex flex-col w-[30%] gap-1">
-          <label className="text-white glavno-nav" htmlFor="tezina">
+          <label className="text-white glavno-nav" htmlFor="slika">
             Slika:
           </label>
           <input
@@ -102,6 +134,7 @@ function ObrazacUlov() {
             accept="image/*"
             onChange={handleSlikaChange}
             className="hidden text-sm"
+            name="slika"
           />
           <label
             htmlFor="uploadSlike"
@@ -120,6 +153,20 @@ function ObrazacUlov() {
           />
         </div>
       )}
+      {privatnost === "privatno" && (
+        <div className="flex flex-col w-[50%] gap-1">
+          <label className="text-white glavno-nav" htmlFor="datum">
+            Datum Ulova
+          </label>
+          <input
+            className="h-10 w-full rounded-[7px] p-3 text-moja_plava font-semibold "
+            type="date"
+            placeholder=""
+            name="datum"
+          />
+        </div>
+      )}
+
       <div className="flex gap-4 w-[40%] ">
         <input required type="checkbox" className="w-4 " />
         <label className="text-white glavno-nav " htmlFor="prihvati-prava">

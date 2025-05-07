@@ -13,7 +13,7 @@ const OdabirRibe = ({ onSelect }) => {
       });
   }, []);
   const ribe = backendData.map((riba) => ({
-    value: riba.id,
+    value: riba.ID,
     label: riba.ime,
   }));
 

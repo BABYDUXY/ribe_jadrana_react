@@ -9,12 +9,14 @@ export function LoginProvider({ children }) {
   const [isLoading, setIsLoading] = useState(true);
 
   const login = (user) => {
-    sessionStorage.setItem("korisnik", JSON.stringify(user));
-    setUser(user);
+    const { korisnik_id, exp, iat, ...withoutId } = user;
+    sessionStorage.setItem("korisnik", JSON.stringify(withoutId));
+    setUser(withoutId);
   };
 
   const logout = () => {
     sessionStorage.removeItem("korisnik");
+    sessionStorage.removeItem("token");
     setUser(null);
   };
 
