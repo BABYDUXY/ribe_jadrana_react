@@ -12,9 +12,18 @@ const fs = require("fs");
 
 dotenv.config();
 
-const uploadDir = "uploads_javno";
+const uploadMainDir = "uploads";
+if (!fs.existsSync(uploadMainDir)) {
+  fs.mkdirSync(uploadMainDir);
+}
+
+const uploadDir = "uploads/javno";
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir);
+}
+const uploadDir2 = "uploads/privatno";
+if (!fs.existsSync(uploadDir2)) {
+  fs.mkdirSync(uploadDir2);
 }
 
 function generateHash() {
@@ -24,18 +33,30 @@ function generateHash() {
 const app = express();
 app.use(cors());
 app.use(express.json());
-app.use("/uploads_javno", express.static("uploads_javno"));
+app.use("/uploads/javno", express.static("uploads/javno"));
+app.use("/uploads/privatno", express.static("uploads/privatno"));
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, "uploads_javno/");
+    cb(null, "uploads/javno/");
   },
   filename: function (req, file, cb) {
     const uniqueName = Date.now() + path.extname(file.originalname);
     cb(null, uniqueName);
   },
 });
+
+const storagePrivatno = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, "uploads/privatno/");
+  },
+  filename: function (req, file, cb) {
+    const unikatnoIme = Date.now() + path.extname(file.originalname);
+    cb(null, unikatnoIme);
+  },
+});
 const upload = multer({ storage });
+const uploadPrivatno = multer({ storage: storagePrivatno });
 
 const host = process.env.HOST;
 const user = process.env.USER;
@@ -287,7 +308,7 @@ app.post("/api/objava/tekst", verifyToken, async (req, res) => {
     return res.status(500).json({ poruka: "Greška na serveru." });
   }
 });
-
+/* Javne objave */
 app.post(
   "/api/objava/javno",
   verifyToken,
@@ -334,13 +355,13 @@ app.post(
 
     let slika = null;
     if (req.file) {
-      slika = `/uploads_javno/${req.file.filename}`;
+      slika = `/uploads/javno/${req.file.filename}`;
     }
 
     let stapBrendId, rolaBrendId;
 
     try {
-      // Check if stap_brend exists
+      /* brend za štap */
       const stapBrendResult = await new Promise((resolve, reject) => {
         db.query(
           "SELECT ID FROM brend WHERE naziv = ?",
@@ -348,11 +369,9 @@ app.post(
           (err, result) => {
             if (err) reject(err);
             resolve(result);
-            console.log("uspijesno provjeren brend");
           }
         );
       });
-      console.log("2");
 
       if (stapBrendResult.length === 0) {
         // Insert new brand for stap_brend
@@ -371,7 +390,7 @@ app.post(
         stapBrendId = stapBrendResult[0].ID;
       }
 
-      // Check if rola_brend exists
+      /* brend za rolu */
       if (stap_brend !== rola_brend) {
         const rolaBrendResult = await new Promise((resolve, reject) => {
           db.query(
@@ -385,7 +404,6 @@ app.post(
         });
 
         if (rolaBrendResult.length === 0) {
-          // Insert new brand for rola_brend
           const insertRolaBrend = await new Promise((resolve, reject) => {
             db.query(
               "INSERT INTO brend (naziv) VALUES (?)",
@@ -401,11 +419,11 @@ app.post(
           rolaBrendId = rolaBrendResult[0].ID;
         }
       } else {
-        // If stap_brend and rola_brend are the same, use the same ID
+        /* ako su isti onda isti id */
         rolaBrendId = stapBrendId;
       }
 
-      // Check if the stap_model already exists in the model_opreme table for this brand
+      /* MODEL stap */
       let stapModelId = null;
       const stapModelResult = await new Promise((resolve, reject) => {
         db.query(
@@ -419,7 +437,6 @@ app.post(
       });
 
       if (stapModelResult.length === 0) {
-        // Insert stap_model if it doesn't exist
         const insertStapModel = await new Promise((resolve, reject) => {
           db.query(
             "INSERT INTO model_opreme (tip_id, naziv, brend) VALUES (?, ?, ?)",
@@ -434,8 +451,8 @@ app.post(
       } else {
         stapModelId = stapModelResult[0].ID;
       }
+      /* MODEL ROLA */
 
-      // Check if the rola_model already exists in the model_opreme table for this brand
       let rolaModelId = null;
       const rolaModelResult = await new Promise((resolve, reject) => {
         db.query(
@@ -449,7 +466,6 @@ app.post(
       });
 
       if (rolaModelResult.length === 0) {
-        // Insert rola_model if it doesn't exist
         const insertRolaModel = await new Promise((resolve, reject) => {
           db.query(
             "INSERT INTO model_opreme (tip_id, naziv, brend) VALUES (?, ?, ?)",
@@ -465,23 +481,467 @@ app.post(
         rolaModelId = rolaModelResult[0].ID;
       }
 
-      // If everything is inserted correctly, insert into objava
-      /*  const sql = `
-      INSERT INTO objava (naslov, sadrzaj, korisnik_id, hash, status, slika)
-      VALUES (?, ?, ?, ?, 'pending', ?)
-    `;
-
-      const rezultat = await new Promise((resolve, reject) => {
-        db.query(sql, [naslov, sadrzaj, id, hash, slika], (err, result) => {
-          if (err) {
-            reject(err);
-          } else {
+      /* MODEL mamac */
+      let mamacModelId = null;
+      const mamacModelResult = await new Promise((resolve, reject) => {
+        db.query(
+          "SELECT ID FROM model_opreme WHERE naziv = ?",
+          [mamac],
+          (err, result) => {
+            if (err) reject(err);
             resolve(result);
           }
-        });
-      }); */
+        );
+      });
 
-      /* console.log("Objava dodana, ID:", rezultat.insertId); */
+      if (mamacModelResult.length === 0) {
+        const insertMamacModel = await new Promise((resolve, reject) => {
+          db.query(
+            "INSERT INTO model_opreme (tip_id, naziv, brend) VALUES (?, ?, ?)",
+            [3, mamac, null],
+            (err, result) => {
+              if (err) reject(err);
+              resolve(result);
+            }
+          );
+        });
+        mamacModelId = insertMamacModel.insertId;
+      } else {
+        mamacModelId = stapModelResult[0].ID;
+      }
+
+      /* LINK za štap */
+      let stapLinkId = null;
+      const linkOpremeResult = await new Promise((resolve, reject) => {
+        db.query(
+          "SELECT ID FROM link_opreme WHERE model_id = ?",
+          [stapModelId],
+          (err, result) => {
+            if (err) reject(err);
+            resolve(result);
+          }
+        );
+      });
+
+      if (linkOpremeResult.length === 0) {
+        const insertStapLink = await new Promise((resolve, reject) => {
+          db.query(
+            "INSERT INTO link_opreme (model_id, link) VALUES (?, ?)",
+            [stapModelId, "#"],
+            (err, result) => {
+              if (err) reject(err);
+              resolve(result);
+            }
+          );
+        });
+        stapLinkId = insertStapLink.insertId;
+      } else {
+        stapLinkId = linkOpremeResult.map((row) => row.ID);
+        console.log("Linkovi za štap su:" + stapLinkId);
+      }
+      /* LINK za rolu */
+      let rolaLinkId = null;
+      const linkOpremeResultRola = await new Promise((resolve, reject) => {
+        db.query(
+          "SELECT ID FROM link_opreme WHERE model_id = ?",
+          [rolaModelId],
+          (err, result) => {
+            if (err) reject(err);
+            resolve(result);
+          }
+        );
+      });
+
+      if (linkOpremeResultRola.length === 0) {
+        const insertRolaLink = await new Promise((resolve, reject) => {
+          db.query(
+            "INSERT INTO link_opreme (model_id, link) VALUES (?, ?)",
+            [rolaModelId, "#"],
+            (err, result) => {
+              if (err) reject(err);
+              resolve(result);
+            }
+          );
+        });
+        rolaLinkId = insertRolaLink.insertId;
+      } else {
+        rolaLinkId = linkOpremeResultRola.map((row) => row.ID);
+        console.log("Linkovi za Rolu su:" + rolaLinkId);
+      }
+
+      /* LINK za mamac */
+      let mamacLinkId = null;
+      const linkOpremeResultMamac = await new Promise((resolve, reject) => {
+        db.query(
+          "SELECT ID FROM link_opreme WHERE model_id = ?",
+          [mamacModelId],
+          (err, result) => {
+            if (err) reject(err);
+            resolve(result);
+          }
+        );
+      });
+
+      if (linkOpremeResultMamac.length === 0) {
+        const insertMamaclink = await new Promise((resolve, reject) => {
+          db.query(
+            "INSERT INTO link_opreme (model_id, link) VALUES (?, ?)",
+            [mamacModelId, "#"],
+            (err, result) => {
+              if (err) reject(err);
+              resolve(result);
+            }
+          );
+        });
+        mamacLinkId = insertMamaclink.insertId;
+      } else {
+        mamacLinkId = linkOpremeResultMamac.map((row) => row.ID);
+        console.log("Linkovi za Mamac su:" + mamacLinkId);
+      }
+
+      /* Unos ulova */
+      let ulovId = null;
+      const insertUlov = await new Promise((resolve, reject) => {
+        const now = new Date();
+        db.query(
+          "INSERT INTO ulov (korisnik_id, riba_id, tezina, slika_direktorij, datum_ulova, mjesto, hash) VALUES (?, ?, ?, ?, ?, ?, ?)",
+          [id, riba, tezina, slika, now, mjesto, hash],
+          (err, result) => {
+            if (err) reject(err);
+            resolve(result);
+          }
+        );
+      });
+      ulovId = insertUlov.insertId;
+      console.log("ULOV ID: " + ulovId);
+
+      /* unos Objave */
+
+      const insertObjava = await new Promise((resolve, reject) => {
+        db.query(
+          "INSERT INTO objava (ulov_id, sadrzaj, korisnik_id, hash, status) VALUES (?, ?, ?, ?, ?)",
+          [ulovId, opis, id, hash, "pending"],
+          (err, result) => {
+            if (err) reject(err);
+            resolve(result);
+          }
+        );
+      });
+      return res
+        .status(201)
+        .json({ poruka: "Objava uspješno dodana.", hash: hash });
+    } catch (err) {
+      console.error("Greška pri dodavanju objave:", err);
+      return res.status(500).json({ poruka: "Greška na serveru." });
+    }
+  }
+);
+
+/* Privatne objave */
+app.post(
+  "/api/objava/privatno",
+  verifyToken,
+  uploadPrivatno.single("slika"),
+  async (req, res) => {
+    const {
+      riba,
+      tezina,
+      stap_brend,
+      stap_model,
+      rola_brend,
+      rola_model,
+      mamac,
+      opis,
+      mjesto,
+      datum,
+    } = req.body;
+    const userInfo = req.user;
+    const id = userInfo.korisnik_id;
+    console.log(
+      riba,
+      tezina,
+      stap_brend,
+      stap_model,
+      rola_brend,
+      rola_model,
+      mamac,
+      opis,
+      mjesto,
+      datum
+    );
+
+    if (
+      !riba ||
+      !tezina ||
+      !stap_brend ||
+      !stap_model ||
+      !rola_brend ||
+      !rola_model ||
+      !mamac ||
+      !mjesto
+    ) {
+      return res.status(400).json({ poruka: "Nisu sva polja popunjena." });
+    }
+    const hash = generateHash();
+
+    let slika = null;
+    if (req.file) {
+      slika = `/uploads/privatno/${req.file.filename}`;
+    }
+
+    let stapBrendId, rolaBrendId;
+
+    try {
+      /* brend za štap */
+      const stapBrendResult = await new Promise((resolve, reject) => {
+        db.query(
+          "SELECT ID FROM brend WHERE naziv = ?",
+          [stap_brend],
+          (err, result) => {
+            if (err) reject(err);
+            resolve(result);
+          }
+        );
+      });
+
+      if (stapBrendResult.length === 0) {
+        // Insert new brand for stap_brend
+        const insertStapBrend = await new Promise((resolve, reject) => {
+          db.query(
+            "INSERT INTO brend (naziv) VALUES (?)",
+            [stap_brend],
+            (err, result) => {
+              if (err) reject(err);
+              resolve(result);
+            }
+          );
+        });
+        stapBrendId = insertStapBrend.insertId;
+      } else {
+        stapBrendId = stapBrendResult[0].ID;
+      }
+
+      /* brend za rolu */
+      if (stap_brend !== rola_brend) {
+        const rolaBrendResult = await new Promise((resolve, reject) => {
+          db.query(
+            "SELECT ID FROM brend WHERE naziv = ?",
+            [rola_brend],
+            (err, result) => {
+              if (err) reject(err);
+              resolve(result);
+            }
+          );
+        });
+
+        if (rolaBrendResult.length === 0) {
+          const insertRolaBrend = await new Promise((resolve, reject) => {
+            db.query(
+              "INSERT INTO brend (naziv) VALUES (?)",
+              [rola_brend],
+              (err, result) => {
+                if (err) reject(err);
+                resolve(result);
+              }
+            );
+          });
+          rolaBrendId = insertRolaBrend.insertId;
+        } else {
+          rolaBrendId = rolaBrendResult[0].ID;
+        }
+      } else {
+        /* ako su isti onda isti id */
+        rolaBrendId = stapBrendId;
+      }
+
+      /* MODEL stap */
+      let stapModelId = null;
+      const stapModelResult = await new Promise((resolve, reject) => {
+        db.query(
+          "SELECT ID FROM model_opreme WHERE naziv = ? AND brend = ?",
+          [stap_model, stapBrendId],
+          (err, result) => {
+            if (err) reject(err);
+            resolve(result);
+          }
+        );
+      });
+
+      if (stapModelResult.length === 0) {
+        const insertStapModel = await new Promise((resolve, reject) => {
+          db.query(
+            "INSERT INTO model_opreme (tip_id, naziv, brend) VALUES (?, ?, ?)",
+            [1, stap_model, stapBrendId],
+            (err, result) => {
+              if (err) reject(err);
+              resolve(result);
+            }
+          );
+        });
+        stapModelId = insertStapModel.insertId;
+      } else {
+        stapModelId = stapModelResult[0].ID;
+      }
+      /* MODEL ROLA */
+
+      let rolaModelId = null;
+      const rolaModelResult = await new Promise((resolve, reject) => {
+        db.query(
+          "SELECT ID FROM model_opreme WHERE naziv = ? AND brend = ?",
+          [rola_model, rolaBrendId],
+          (err, result) => {
+            if (err) reject(err);
+            resolve(result);
+          }
+        );
+      });
+
+      if (rolaModelResult.length === 0) {
+        const insertRolaModel = await new Promise((resolve, reject) => {
+          db.query(
+            "INSERT INTO model_opreme (tip_id, naziv, brend) VALUES (?, ?, ?)",
+            [2, rola_model, rolaBrendId],
+            (err, result) => {
+              if (err) reject(err);
+              resolve(result);
+            }
+          );
+        });
+        rolaModelId = insertRolaModel.insertId;
+      } else {
+        rolaModelId = rolaModelResult[0].ID;
+      }
+
+      /* MODEL mamac */
+      let mamacModelId = null;
+      const mamacModelResult = await new Promise((resolve, reject) => {
+        db.query(
+          "SELECT ID FROM model_opreme WHERE naziv = ?",
+          [mamac],
+          (err, result) => {
+            if (err) reject(err);
+            resolve(result);
+          }
+        );
+      });
+
+      if (mamacModelResult.length === 0) {
+        const insertMamacModel = await new Promise((resolve, reject) => {
+          db.query(
+            "INSERT INTO model_opreme (tip_id, naziv, brend) VALUES (?, ?, ?)",
+            [3, mamac, null],
+            (err, result) => {
+              if (err) reject(err);
+              resolve(result);
+            }
+          );
+        });
+        mamacModelId = insertMamacModel.insertId;
+      } else {
+        mamacModelId = stapModelResult[0].ID;
+      }
+
+      /* LINK za štap */
+      let stapLinkId = null;
+      const linkOpremeResult = await new Promise((resolve, reject) => {
+        db.query(
+          "SELECT ID FROM link_opreme WHERE model_id = ?",
+          [stapModelId],
+          (err, result) => {
+            if (err) reject(err);
+            resolve(result);
+          }
+        );
+      });
+
+      if (linkOpremeResult.length === 0) {
+        const insertStapLink = await new Promise((resolve, reject) => {
+          db.query(
+            "INSERT INTO link_opreme (model_id, link) VALUES (?, ?)",
+            [stapModelId, "#"],
+            (err, result) => {
+              if (err) reject(err);
+              resolve(result);
+            }
+          );
+        });
+        stapLinkId = insertStapLink.insertId;
+      } else {
+        stapLinkId = linkOpremeResult.map((row) => row.ID);
+        console.log("Linkovi za štap su:" + stapLinkId);
+      }
+      /* LINK za rolu */
+      let rolaLinkId = null;
+      const linkOpremeResultRola = await new Promise((resolve, reject) => {
+        db.query(
+          "SELECT ID FROM link_opreme WHERE model_id = ?",
+          [rolaModelId],
+          (err, result) => {
+            if (err) reject(err);
+            resolve(result);
+          }
+        );
+      });
+
+      if (linkOpremeResultRola.length === 0) {
+        const insertRolaLink = await new Promise((resolve, reject) => {
+          db.query(
+            "INSERT INTO link_opreme (model_id, link) VALUES (?, ?)",
+            [rolaModelId, "#"],
+            (err, result) => {
+              if (err) reject(err);
+              resolve(result);
+            }
+          );
+        });
+        rolaLinkId = insertRolaLink.insertId;
+      } else {
+        rolaLinkId = linkOpremeResultRola.map((row) => row.ID);
+        console.log("Linkovi za Rolu su:" + rolaLinkId);
+      }
+
+      /* LINK za mamac */
+      let mamacLinkId = null;
+      const linkOpremeResultMamac = await new Promise((resolve, reject) => {
+        db.query(
+          "SELECT ID FROM link_opreme WHERE model_id = ?",
+          [mamacModelId],
+          (err, result) => {
+            if (err) reject(err);
+            resolve(result);
+          }
+        );
+      });
+
+      if (linkOpremeResultMamac.length === 0) {
+        const insertMamaclink = await new Promise((resolve, reject) => {
+          db.query(
+            "INSERT INTO link_opreme (model_id, link) VALUES (?, ?)",
+            [mamacModelId, "#"],
+            (err, result) => {
+              if (err) reject(err);
+              resolve(result);
+            }
+          );
+        });
+        mamacLinkId = insertMamaclink.insertId;
+      } else {
+        mamacLinkId = linkOpremeResultMamac.map((row) => row.ID);
+        console.log("Linkovi za Mamac su:" + mamacLinkId);
+      }
+
+      /* Unos ulova */
+      const insertUlov = await new Promise((resolve, reject) => {
+        db.query(
+          "INSERT INTO ulov (korisnik_id, riba_id, tezina, opis, slika_direktorij, datum_ulova, mjesto, hash) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+          [id, riba, tezina, opis, slika, datum, mjesto, hash],
+          (err, result) => {
+            if (err) reject(err);
+            resolve(result);
+          }
+        );
+      });
+
       return res
         .status(201)
         .json({ poruka: "Objava uspješno dodana.", hash: hash });

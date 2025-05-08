@@ -1,5 +1,4 @@
 node_modules/
 .env
 todo.txt
-uploads_javno
-uploads_privatno
+uploads

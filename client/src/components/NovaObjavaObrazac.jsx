@@ -58,7 +58,7 @@ function NovaObjavaObrazac() {
     }
   };
 
-  const handleSubmitUlov = async (e) => {
+  const handleSubmitUlov = async (e, type) => {
     e.preventDefault();
 
     const form = e.target;
@@ -69,7 +69,7 @@ function NovaObjavaObrazac() {
     }
 
     try {
-      const response = await fetch(`${endpointUrl}/api/objava/javno`, {
+      const response = await fetch(`${endpointUrl}/api/objava/${type}`, {
         method: "POST",
         headers: {
           Authorization: `Token ${sessionStorage.getItem("token")}`,
@@ -97,7 +97,11 @@ function NovaObjavaObrazac() {
           onSubmit={
             odabranTipObjave == "tekst" && odabranaPrivatnost == "javno"
               ? handleSubmitText
-              : handleSubmitUlov
+              : odabranTipObjave == "ulov" && odabranaPrivatnost == "javno"
+              ? (e) => handleSubmitUlov(e, "javno")
+              : odabranaPrivatnost == "privatno"
+              ? (e) => handleSubmitUlov(e, "privatno")
+              : ""
           }
         >
           <div className="flex flex-col items-center justify-center gap-2">
