@@ -52,6 +52,7 @@ function ObrazacUlov({ privatnost, setRibaId, setCompressedImage }) {
             className="h-10 w-[100%] rounded-[7px] p-5 text-moja_plava font-semibold "
             type="number"
             name="tezina"
+            id="tezina"
             step="0.1"
             min="0"
             placeholder="0.7 kg"
@@ -62,7 +63,7 @@ function ObrazacUlov({ privatnost, setRibaId, setCompressedImage }) {
       <div className="flex flex-col w-[50%] gap-1 ">
         <label
           className="text-white glavno-nav text-[1.4rem] border-b-2 border-white"
-          htmlFor="stap"
+          htmlFor="stap_brend"
         >
           Štap
         </label>
@@ -84,7 +85,7 @@ function ObrazacUlov({ privatnost, setRibaId, setCompressedImage }) {
       <div className="flex flex-col w-[50%] gap-1 ">
         <label
           className="text-white glavno-nav text-[1.4rem] border-b-2 border-white"
-          htmlFor="rola"
+          htmlFor="rola_brend"
         >
           Rola
         </label>
@@ -112,6 +113,8 @@ function ObrazacUlov({ privatnost, setRibaId, setCompressedImage }) {
           type="text"
           placeholder="npr. crv"
           name="mamac"
+          id="mamac"
+          required
         />
       </div>
       <div className="flex flex-col w-[50%] gap-1">
@@ -120,6 +123,7 @@ function ObrazacUlov({ privatnost, setRibaId, setCompressedImage }) {
         </label>
         <textarea
           className="h-20 w-full rounded-[7px] p-3 text-moja_plava font-semibold overflow-x-auto resize-none  text-ellipsis"
+          id="opis"
           name="opis"
           type="text"
           placeholder="Upiši ovdje..."
@@ -135,10 +139,12 @@ function ObrazacUlov({ privatnost, setRibaId, setCompressedImage }) {
             type="text"
             placeholder="npr. Rijeka..."
             name="mjesto"
+            id="mjesto"
+            required
           />
         </div>
         <div className="flex flex-col w-[30%] gap-1">
-          <label className="text-white glavno-nav" htmlFor="slika">
+          <label className="text-white glavno-nav" htmlFor="uploadSlike">
             Slika:
           </label>
           <input
@@ -147,6 +153,7 @@ function ObrazacUlov({ privatnost, setRibaId, setCompressedImage }) {
             accept="image/*"
             onChange={handleSlikaChange}
             className="hidden text-sm"
+            required
           />
           <label
             htmlFor="uploadSlike"
@@ -175,12 +182,14 @@ function ObrazacUlov({ privatnost, setRibaId, setCompressedImage }) {
             type="date"
             placeholder=""
             name="datum"
+            id="datum"
+            required
           />
         </div>
       )}
 
       <div className="flex gap-4 w-[40%] ">
-        <input required type="checkbox" className="w-4 " />
+        <input required type="checkbox" id="prihvati-prava" className="w-4 " />
         <label className="text-white glavno-nav " htmlFor="prihvati-prava">
           Prihvaćam uvjete korištenja.
         </label>

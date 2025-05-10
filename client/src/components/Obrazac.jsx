@@ -31,7 +31,7 @@ function Obrazac({ naslov, polja, onSubmit, errors }) {
       >
         {Object.entries(polja).map(([key, polje]) => (
           <div key={key} className="flex flex-col gap-1 ">
-            <label className="glavno-nav" htmlFor={key}>
+            <label className="glavno-nav" htmlFor={`polje${key}`}>
               {polje.naziv}
             </label>
             <div className="relative flex items-center w-full">

@@ -164,8 +164,8 @@ function NovaObjavaObrazac() {
               {odabranaPrivatnost == "javno" && (
                 <select
                   className="lg:hover:p-[0.5rem_1.3rem] form-btn-hover hover:cursor-pointer duration-100 text-white font-glavno bg-moja_plava p-[0.5rem_1rem] rounded-[11px] outline outline-2 outline-white w-max"
-                  id="privatnost"
-                  name="privatnost"
+                  id="tip"
+                  name="tip"
                   onChange={handleChangeTipObjave}
                 >
                   <option value="prazno">-</option>

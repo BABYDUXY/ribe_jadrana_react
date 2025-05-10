@@ -35,6 +35,7 @@ app.use(cors());
 app.use(express.json());
 app.use("/uploads/javno", express.static("uploads/javno"));
 app.use("/uploads/privatno", express.static("uploads/privatno"));
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -1021,6 +1022,69 @@ app.post(
     }
   }
 );
+
+app.get("/objave/ulovi", (req, res) => {
+  const sql = `
+  SELECT 
+  riba.ID AS id_ribe,
+  riba.ime AS ime_ribe,
+  korisnik.korisnicko_ime AS autor,
+  ulov.tezina,
+  ulov.slika_direktorij,
+  ulov.mjesto,
+  ulov.opis,
+  GROUP_CONCAT(DISTINCT brend.naziv) AS brend,
+  GROUP_CONCAT(DISTINCT tip_opreme.naziv) AS tip,
+  GROUP_CONCAT(DISTINCT model_opreme.naziv) AS model,
+  GROUP_CONCAT(DISTINCT link_opreme.link) AS link,
+  objava.sadrzaj AS opis,
+  objava.hash,
+  objava.status,
+  objava.datum_kreiranja,
+   (SELECT COUNT(*) FROM ocjena_objave WHERE ocjena_objave.objava_id = objava.ID AND ocjena_objave.pozitivno = 1) AS broj_lajkova,
+(SELECT COUNT(*) FROM ocjena_objave WHERE ocjena_objave.objava_id = objava.ID AND ocjena_objave.pozitivno = 0) AS broj_dislajkova,
+GROUP_CONCAT(DISTINCT CONCAT(komentator.korisnicko_ime, ': ', komentar_u_objavi.tekst)) AS komentari
+
+
+FROM oprema_u_ulovu
+JOIN ulov ON oprema_u_ulovu.ulov_id = ulov.ID
+JOIN objava ON objava.ulov_id = ulov.ID
+JOIN korisnik ON ulov.korisnik_id = korisnik.ID
+JOIN riba ON ulov.riba_id = riba.ID
+JOIN link_opreme ON oprema_u_ulovu.oprema_id = link_opreme.ID
+JOIN model_opreme ON link_opreme.model_id = model_opreme.ID
+JOIN tip_opreme ON model_opreme.tip_id = tip_opreme.ID
+JOIN brend ON model_opreme.brend = brend.ID
+
+LEFT JOIN ocjena_objave ON ocjena_objave.objava_id = objava.ID
+LEFT JOIN komentar_u_objavi ON komentar_u_objavi.objava_id = objava.ID
+LEFT JOIN korisnik AS komentator ON komentar_u_objavi.korisnik_id = komentator.ID
+
+GROUP BY ulov.ID;`;
+
+  db.query(sql, (err, data) => {
+    if (err) return res.json(err);
+
+    const structuredData = data.map((row) => ({
+      ...row,
+      brend: row.brend ? row.brend.split(",") : [],
+      tip: row.tip ? row.tip.split(",") : [],
+      model: row.model ? row.model.split(",") : [],
+      link: row.link ? row.link.split(",") : [],
+      komentari: row.komentari
+        ? row.komentari.split(",").map((k) => {
+            const [korisnicko_ime, ...tekst] = k.split(": ");
+            return {
+              korisnicko_ime: korisnicko_ime?.trim(),
+              tekst: tekst.join(": ").trim(),
+            };
+          })
+        : [],
+    }));
+
+    return res.json(structuredData);
+  });
+});
 
 app.listen(5000, () => {
   console.log("server je pokrenut na portu 5000");

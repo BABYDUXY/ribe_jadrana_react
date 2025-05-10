@@ -4,7 +4,7 @@ import { EndpointUrlContext } from "../kontekst/EndpointUrlContext";
 function MoreOptionsDropdown({ dropdownItem }) {
   const { endpointUrl } = useContext(EndpointUrlContext);
   return (
-    <div className="w-full ">
+    <div className="w-full bg-moja_plava">
       <ul className=" w-full  text-center text-white  glavno-nav  text-[1.1rem] ">
         {Object.entries(dropdownItem).map(([key, item], index, array) => {
           return (
@@ -18,7 +18,7 @@ function MoreOptionsDropdown({ dropdownItem }) {
                   block w-3/4 pt-2 pb-2 border-b-2 
                   group-hover:w-4/5  form-btn-hover 
                   mx-auto transition-all border-white
-                  ${index === array.length - 1 ? "border-b-0" : ""}
+                  ${index === array.length - 1 ? "!border-b-0" : ""}
                 `}
                 >
                   {item.name}

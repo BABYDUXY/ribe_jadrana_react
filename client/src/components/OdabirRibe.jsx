@@ -55,11 +55,13 @@ const OdabirRibe = ({ onSelect }) => {
 
   return (
     <Select
+      inputId="riba"
       options={ribe}
       placeholder="Odaberi ribu..."
       onChange={(selected) => onSelect(selected.value)}
       isSearchable={true}
       styles={customStyles}
+      name="riba_autofill"
       required
     />
   );
