@@ -1,8 +1,9 @@
 import React, { useState } from "react";
 import OdabirRibe from "./OdabirRibe";
 import ComboBox from "./ComboBox";
+import imageCompression from "browser-image-compression";
 
-function ObrazacUlov({ privatnost, setRibaId }) {
+function ObrazacUlov({ privatnost, setRibaId, setCompressedImage }) {
   const [slika, setSlika] = useState(null);
 
   const lista = [
@@ -15,10 +16,21 @@ function ObrazacUlov({ privatnost, setRibaId }) {
     "Watermelon",
   ];
 
-  const handleSlikaChange = (e) => {
+  const handleSlikaChange = async (e) => {
     const file = e.target.files[0];
-    if (file) {
-      setSlika(URL.createObjectURL(file));
+    if (!file) return;
+    try {
+      const options = {
+        maxSizeMB: 0.5,
+        maxWidthOrHeight: 1024,
+        useWebWorker: true,
+      };
+      const compressed = await imageCompression(file, options);
+
+      setSlika(URL.createObjectURL(compressed));
+      setCompressedImage(compressed);
+    } catch (err) {
+      console.error("Greška pri kompresiji slike:", err);
     }
   };
 
@@ -40,9 +52,10 @@ function ObrazacUlov({ privatnost, setRibaId }) {
             className="h-10 w-[100%] rounded-[7px] p-5 text-moja_plava font-semibold "
             type="number"
             name="tezina"
-            step="0.2"
+            step="0.1"
             min="0"
             placeholder="0.7 kg"
+            required
           />
         </div>
       </div>
@@ -134,7 +147,6 @@ function ObrazacUlov({ privatnost, setRibaId }) {
             accept="image/*"
             onChange={handleSlikaChange}
             className="hidden text-sm"
-            name="slika"
           />
           <label
             htmlFor="uploadSlike"

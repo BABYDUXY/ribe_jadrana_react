@@ -5,7 +5,6 @@ function NavButton({ naziv, url, pad }) {
 
   const paddingX = parseFloat(leftRight);
   const newpaddingX = `${paddingX + 0.3}rem`;
-  console.log(newpaddingX);
 
   return (
     <a

@@ -12,6 +12,7 @@
     "dev:css": "npx tailwindcss -i ./src/css/App.css -o ./src/css/output.css --watch"
   },
   "dependencies": {
+    "browser-image-compression": "^2.0.2",
     "dotenv": "^16.4.5",
     "jwt-decode": "^4.0.0",
     "react": "^18.2.0",

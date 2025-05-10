@@ -60,6 +60,7 @@ const OdabirRibe = ({ onSelect }) => {
       onChange={(selected) => onSelect(selected.value)}
       isSearchable={true}
       styles={customStyles}
+      required
     />
   );
 };

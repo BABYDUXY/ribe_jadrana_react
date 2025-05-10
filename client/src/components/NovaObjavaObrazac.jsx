@@ -9,7 +9,7 @@ function NovaObjavaObrazac() {
   const [odabranTipObjave, setOdabranTipObjave] = useState("prazno");
   const { endpointUrl } = useContext(EndpointUrlContext);
   const [ribaId, setRibaId] = useState(null);
-  console.log(ribaId);
+  const [compressedImage, setCompressedImage] = useState(null);
   const navigate = useNavigate();
   const handleChangePrivatnost = (e) => {
     setOdabranaPrivatnost(e.target.value);
@@ -52,11 +52,22 @@ function NovaObjavaObrazac() {
         navigate("/");
       } else {
         console.error("Server error:", result.poruka);
+        alert("Greška:" + result.poruka);
       }
     } catch (err) {
       console.error("Network error:", err);
     }
   };
+
+  function getFileExtension(mimeType) {
+    const map = {
+      "image/jpeg": ".jpg",
+      "image/png": ".png",
+      "image/gif": ".gif",
+      "image/webp": ".webp",
+    };
+    return map[mimeType] || ".jpg";
+  }
 
   const handleSubmitUlov = async (e, type) => {
     e.preventDefault();
@@ -66,6 +77,16 @@ function NovaObjavaObrazac() {
 
     if (ribaId) {
       formData.append("riba", ribaId);
+    }
+    if (compressedImage) {
+      const extension = getFileExtension(compressedImage.type);
+      const fileWithExtension = new File(
+        [compressedImage],
+        `image_${Date.now()}${extension}`,
+        { type: compressedImage.type }
+      );
+
+      formData.append("slika", fileWithExtension);
     }
 
     try {
@@ -84,6 +105,7 @@ function NovaObjavaObrazac() {
         navigate("/");
       } else {
         console.error("Server error:", result.poruka);
+        alert("Greška:" + result.poruka);
       }
     } catch (err) {
       console.error("Network error:", err);
@@ -157,7 +179,11 @@ function NovaObjavaObrazac() {
           {odabranTipObjave == "tekst" && odabranaPrivatnost == "javno" ? (
             <ObrazacTekst />
           ) : odabranTipObjave == "ulov" && odabranaPrivatnost == "javno" ? (
-            <ObrazacUlov privatnost={"javno"} setRibaId={setRibaId} />
+            <ObrazacUlov
+              privatnost={"javno"}
+              setRibaId={setRibaId}
+              setCompressedImage={setCompressedImage}
+            />
           ) : odabranTipObjave == "prazno" && odabranaPrivatnost == "javno" ? (
             <p className="m-16 text-center text-white glavno-nav">
               Odaberite tip javne objave
@@ -166,7 +192,11 @@ function NovaObjavaObrazac() {
             ""
           )}
           {odabranaPrivatnost == "privatno" ? (
-            <ObrazacUlov privatnost={"privatno"} setRibaId={setRibaId} />
+            <ObrazacUlov
+              privatnost={"privatno"}
+              setRibaId={setRibaId}
+              setCompressedImage={setCompressedImage}
+            />
           ) : (
             ""
           )}

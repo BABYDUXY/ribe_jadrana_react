@@ -322,7 +322,7 @@ app.post(
       rola_brend,
       rola_model,
       mamac,
-      opis,
+      opis = "nema",
       mjesto,
     } = req.body;
     const userInfo = req.user;
@@ -338,6 +338,8 @@ app.post(
       opis,
       mjesto
     );
+
+    const cleanOpis = opis.trim() === "" ? "nema" : opis;
 
     if (
       !riba ||
@@ -386,8 +388,10 @@ app.post(
           );
         });
         stapBrendId = insertStapBrend.insertId;
+        console.log("unesen novi brend stapa id: " + stapBrendId);
       } else {
         stapBrendId = stapBrendResult[0].ID;
+        console.log("brend stapa vec postoji id: " + stapBrendId);
       }
 
       /* brend za rolu */
@@ -415,12 +419,15 @@ app.post(
             );
           });
           rolaBrendId = insertRolaBrend.insertId;
+          console.log("unesen novi brend role id: " + rolaBrendId);
         } else {
           rolaBrendId = rolaBrendResult[0].ID;
+          console.log("brend role vec postoji id: " + rolaBrendId);
         }
       } else {
         /* ako su isti onda isti id */
         rolaBrendId = stapBrendId;
+        console.log("rola i stap imaju isti brend");
       }
 
       /* MODEL stap */
@@ -448,8 +455,10 @@ app.post(
           );
         });
         stapModelId = insertStapModel.insertId;
+        console.log("model stapa je unesen id: " + stapModelId);
       } else {
         stapModelId = stapModelResult[0].ID;
+        console.log("model stapa vec postoji id: " + stapModelId);
       }
       /* MODEL ROLA */
 
@@ -477,8 +486,10 @@ app.post(
           );
         });
         rolaModelId = insertRolaModel.insertId;
+        console.log("model role je unesen id: " + rolaModelId);
       } else {
         rolaModelId = rolaModelResult[0].ID;
+        console.log("model role vec postoji id: " + rolaModelId);
       }
 
       /* MODEL mamac */
@@ -506,8 +517,10 @@ app.post(
           );
         });
         mamacModelId = insertMamacModel.insertId;
+        console.log("mamac je unesen id: " + mamacModelId);
       } else {
-        mamacModelId = stapModelResult[0].ID;
+        mamacModelId = mamacModelResult[0].ID;
+        console.log("mamac vec postoji id: " + mamacModelId);
       }
 
       /* LINK za štap */
@@ -535,9 +548,10 @@ app.post(
           );
         });
         stapLinkId = insertStapLink.insertId;
+        console.log("link za stap je unesen id: " + stapLinkId);
       } else {
         stapLinkId = linkOpremeResult.map((row) => row.ID);
-        console.log("Linkovi za štap su:" + stapLinkId);
+        console.log("Postojeci Linkovi za štap su:" + stapLinkId);
       }
       /* LINK za rolu */
       let rolaLinkId = null;
@@ -564,9 +578,10 @@ app.post(
           );
         });
         rolaLinkId = insertRolaLink.insertId;
+        console.log("link za rolu je unesen id: " + rolaLinkId);
       } else {
         rolaLinkId = linkOpremeResultRola.map((row) => row.ID);
-        console.log("Linkovi za Rolu su:" + rolaLinkId);
+        console.log("Postojeci Linkovi za Rolu su:" + rolaLinkId);
       }
 
       /* LINK za mamac */
@@ -594,9 +609,10 @@ app.post(
           );
         });
         mamacLinkId = insertMamaclink.insertId;
+        console.log("Link za mamac je unesen id:" + mamacLinkId);
       } else {
         mamacLinkId = linkOpremeResultMamac.map((row) => row.ID);
-        console.log("Linkovi za Mamac su:" + mamacLinkId);
+        console.log("Postojeci Linkovi za Mamac su:" + mamacLinkId);
       }
 
       /* Unos ulova */
@@ -613,20 +629,37 @@ app.post(
         );
       });
       ulovId = insertUlov.insertId;
-      console.log("ULOV ID: " + ulovId);
+      console.log("ULOV uspiješno unesen ID: " + ulovId);
 
       /* unos Objave */
 
       const insertObjava = await new Promise((resolve, reject) => {
         db.query(
           "INSERT INTO objava (ulov_id, sadrzaj, korisnik_id, hash, status) VALUES (?, ?, ?, ?, ?)",
-          [ulovId, opis, id, hash, "pending"],
+          [ulovId, cleanOpis, id, hash, "pending"],
           (err, result) => {
             if (err) reject(err);
             resolve(result);
           }
         );
       });
+
+      const opremaLinkIds = [stapLinkId, rolaLinkId, mamacLinkId];
+      const insertOpremauUlovu = await Promise.all(
+        opremaLinkIds.map((opremaId) => {
+          return new Promise((resolve, reject) => {
+            db.query(
+              "INSERT INTO oprema_u_ulovu (oprema_id, ulov_id) VALUES (?, ?)",
+              [opremaId, ulovId],
+              (err, result) => {
+                if (err) return reject(err);
+                resolve(result);
+              }
+            );
+          });
+        })
+      );
+      console.log("Objvava uspješno dodana - javna");
       return res
         .status(201)
         .json({ poruka: "Objava uspješno dodana.", hash: hash });
@@ -651,7 +684,7 @@ app.post(
       rola_brend,
       rola_model,
       mamac,
-      opis,
+      opis = "nema",
       mjesto,
       datum,
     } = req.body;
@@ -669,6 +702,8 @@ app.post(
       mjesto,
       datum
     );
+
+    const cleanOpis = opis.trim() === "" ? "nema" : opis;
 
     if (
       !riba ||
@@ -717,8 +752,10 @@ app.post(
           );
         });
         stapBrendId = insertStapBrend.insertId;
+        console.log("unesen novi brend stapa id: " + stapBrendId);
       } else {
         stapBrendId = stapBrendResult[0].ID;
+        console.log("brend stapa vec postoji id: " + stapBrendId);
       }
 
       /* brend za rolu */
@@ -746,12 +783,15 @@ app.post(
             );
           });
           rolaBrendId = insertRolaBrend.insertId;
+          console.log("unesen novi brend role id: " + rolaBrendId);
         } else {
           rolaBrendId = rolaBrendResult[0].ID;
+          console.log("brend role vec postoji id: " + rolaBrendId);
         }
       } else {
         /* ako su isti onda isti id */
         rolaBrendId = stapBrendId;
+        console.log("rola i stap imaju isti brend");
       }
 
       /* MODEL stap */
@@ -779,8 +819,10 @@ app.post(
           );
         });
         stapModelId = insertStapModel.insertId;
+        console.log("model stapa je unesen id: " + stapModelId);
       } else {
         stapModelId = stapModelResult[0].ID;
+        console.log("model stapa vec postoji id: " + stapModelId);
       }
       /* MODEL ROLA */
 
@@ -808,8 +850,10 @@ app.post(
           );
         });
         rolaModelId = insertRolaModel.insertId;
+        console.log("model role je unesen id: " + rolaModelId);
       } else {
         rolaModelId = rolaModelResult[0].ID;
+        console.log("model role vec postoji id: " + rolaModelId);
       }
 
       /* MODEL mamac */
@@ -837,8 +881,10 @@ app.post(
           );
         });
         mamacModelId = insertMamacModel.insertId;
+        console.log("mamac je unesen id: " + mamacModelId);
       } else {
-        mamacModelId = stapModelResult[0].ID;
+        mamacModelId = mamacModelResult[0].ID;
+        console.log("mamac vec postoji id: " + mamacModelId);
       }
 
       /* LINK za štap */
@@ -866,9 +912,10 @@ app.post(
           );
         });
         stapLinkId = insertStapLink.insertId;
+        console.log("link za stap je unesen id: " + stapLinkId);
       } else {
-        stapLinkId = linkOpremeResult.map((row) => row.ID);
-        console.log("Linkovi za štap su:" + stapLinkId);
+        stapLinkId = linkOpremeResult[0].ID;
+        console.log("Postojeci Linkovi za štap su:" + stapLinkId);
       }
       /* LINK za rolu */
       let rolaLinkId = null;
@@ -895,9 +942,10 @@ app.post(
           );
         });
         rolaLinkId = insertRolaLink.insertId;
+        console.log("link za rolu je unesen id: " + rolaLinkId);
       } else {
-        rolaLinkId = linkOpremeResultRola.map((row) => row.ID);
-        console.log("Linkovi za Rolu su:" + rolaLinkId);
+        rolaLinkId = linkOpremeResultRola[0].ID;
+        console.log("Postojeci Linkovi za Rolu su:" + rolaLinkId);
       }
 
       /* LINK za mamac */
@@ -925,22 +973,44 @@ app.post(
           );
         });
         mamacLinkId = insertMamaclink.insertId;
+        console.log("Link za mamac je unesen id:" + mamacLinkId);
       } else {
-        mamacLinkId = linkOpremeResultMamac.map((row) => row.ID);
-        console.log("Linkovi za Mamac su:" + mamacLinkId);
+        mamacLinkId = linkOpremeResultMamac[0].ID;
+        console.log("Postojeci Linkovi za Mamac su:" + mamacLinkId);
       }
 
       /* Unos ulova */
+      let ulovId = null;
       const insertUlov = await new Promise((resolve, reject) => {
         db.query(
           "INSERT INTO ulov (korisnik_id, riba_id, tezina, opis, slika_direktorij, datum_ulova, mjesto, hash) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-          [id, riba, tezina, opis, slika, datum, mjesto, hash],
+          [id, riba, tezina, cleanOpis, slika, datum, mjesto, hash],
           (err, result) => {
             if (err) reject(err);
             resolve(result);
           }
         );
       });
+      ulovId = insertUlov.insertId;
+      console.log("ulov unesen. id: " + ulovId);
+
+      const opremaLinkIds = [stapLinkId, rolaLinkId, mamacLinkId];
+      const insertOpremauUlovu = await Promise.all(
+        opremaLinkIds.map((opremaId) => {
+          return new Promise((resolve, reject) => {
+            db.query(
+              "INSERT INTO oprema_u_ulovu (oprema_id, ulov_id) VALUES (?, ?)",
+              [opremaId, ulovId],
+              (err, result) => {
+                if (err) return reject(err);
+                resolve(result);
+              }
+            );
+          });
+        })
+      );
+
+      console.log("Sve je uspješno uneseno - privatna objava ");
 
       return res
         .status(201)
