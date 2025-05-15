@@ -1029,6 +1029,7 @@ app.get("/objave/ulovi", (req, res) => {
   riba.ID AS id_ribe,
   riba.ime AS ime_ribe,
   korisnik.korisnicko_ime AS autor,
+  
   ulov.tezina,
   ulov.slika_direktorij,
   ulov.mjesto,
@@ -1038,12 +1039,18 @@ app.get("/objave/ulovi", (req, res) => {
   GROUP_CONCAT(DISTINCT model_opreme.naziv) AS model,
   GROUP_CONCAT(DISTINCT link_opreme.link) AS link,
   objava.sadrzaj AS opis,
+  objava.ID,
   objava.hash,
   objava.status,
   objava.datum_kreiranja,
    (SELECT COUNT(*) FROM ocjena_objave WHERE ocjena_objave.objava_id = objava.ID AND ocjena_objave.pozitivno = 1) AS broj_lajkova,
 (SELECT COUNT(*) FROM ocjena_objave WHERE ocjena_objave.objava_id = objava.ID AND ocjena_objave.pozitivno = 0) AS broj_dislajkova,
-GROUP_CONCAT(DISTINCT CONCAT(komentator.korisnicko_ime, ': ', komentar_u_objavi.tekst)) AS komentari
+GROUP_CONCAT(DISTINCT CONCAT(komentator.korisnicko_ime, ': ', komentar_u_objavi.tekst)) AS komentari,
+GROUP_CONCAT(DISTINCT CONCAT(brend.naziv, ' ', model_opreme.naziv)) AS kombinirani_model,
+
+GROUP_CONCAT(DISTINCT CASE 
+    WHEN model_opreme.tip_id = 3 AND model_opreme.brend IS NULL THEN model_opreme.naziv 
+  END) AS mamac
 
 
 FROM oprema_u_ulovu
@@ -1054,7 +1061,8 @@ JOIN riba ON ulov.riba_id = riba.ID
 JOIN link_opreme ON oprema_u_ulovu.oprema_id = link_opreme.ID
 JOIN model_opreme ON link_opreme.model_id = model_opreme.ID
 JOIN tip_opreme ON model_opreme.tip_id = tip_opreme.ID
-JOIN brend ON model_opreme.brend = brend.ID
+LEFT JOIN brend ON model_opreme.brend = brend.ID
+
 
 LEFT JOIN ocjena_objave ON ocjena_objave.objava_id = objava.ID
 LEFT JOIN komentar_u_objavi ON komentar_u_objavi.objava_id = objava.ID
@@ -1080,9 +1088,119 @@ GROUP BY ulov.ID;`;
             };
           })
         : [],
+      kombinirani_model: row.kombinirani_model
+        ? row.kombinirani_model.split(",")
+        : [],
     }));
 
     return res.json(structuredData);
+  });
+});
+/* --------- ocjenjivanje objave --------------- */
+app.post("/api/ocjene", verifyToken, async (req, res) => {
+  const { objava_id, pozitivno } = req.body;
+  const userInfo = req.user;
+  const id = userInfo.korisnik_id;
+  console.log(objava_id, pozitivno);
+
+  db.query(
+    "SELECT pozitivno FROM ocjena_objave WHERE objava_id = ? AND korisnik_id = ?",
+    [objava_id, id],
+    (err, rows) => {
+      if (err) {
+        console.error(err);
+        return res.status(500).json({ poruka: "Greška u bazi." });
+      }
+
+      if (rows.length === 0) {
+        db.query(
+          "INSERT INTO ocjena_objave (objava_id, korisnik_id, pozitivno) VALUES (?, ?, ?)",
+          [objava_id, id, pozitivno],
+          (err2) => {
+            if (err2) {
+              console.error(err2);
+              return res
+                .status(500)
+                .json({ poruka: "Neuspješno dodana reakcija." });
+            }
+
+            res.status(201).json({ poruka: "Ocjena dodana." });
+            console.log("ocjena dodana");
+          }
+        );
+      } else {
+        console.log("ocjena već postoji");
+        res.status(409).json({ poruka: "Ocjena već postoji." });
+      }
+    }
+  );
+});
+
+app.put("/api/ocjene", verifyToken, async (req, res) => {
+  const { objava_id, pozitivno } = req.body;
+  const userInfo = req.user;
+  const id = userInfo.korisnik_id;
+
+  try {
+    const result = await db.query(
+      "UPDATE ocjena_objave SET pozitivno = ? WHERE korisnik_id = ? AND objava_id = ?",
+      [pozitivno, id, objava_id]
+    );
+
+    if (result.affectedRows === 0) {
+      return res
+        .status(404)
+        .json({ poruka: "greška, reakcija nije pronađena" });
+    }
+
+    res.json({ poruka: "Ocjena updateana." });
+    console.log("ocjena promijenjena");
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ poruka: "Neuspješan fetch." });
+  }
+});
+
+app.delete("/api/ocjene", verifyToken, async (req, res) => {
+  const { objava_id } = req.body;
+  const userInfo = req.user;
+  const id = userInfo.korisnik_id;
+
+  try {
+    const result = await db.query(
+      "DELETE FROM ocjena_objave WHERE korisnik_id = ? AND objava_id = ?",
+      [id, objava_id]
+    );
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ poruka: "nije pronađena reakcija" });
+    }
+
+    res.json({ poruka: "ocjena maknuta." });
+    console.log("ocjena obrisana");
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ poruka: "Neuspješno brisanje" });
+  }
+});
+
+app.get("/api/ocjene/:objava_id", verifyToken, async (req, res) => {
+  const { objava_id } = req.params;
+  const userInfo = req.user;
+  const id = userInfo.korisnik_id;
+
+  const sql =
+    "SELECT pozitivno FROM ocjena_objave WHERE objava_id = ? AND korisnik_id = ? ";
+  db.query(sql, [objava_id, id], (err, data) => {
+    if (err) return res.json(err);
+    if (data.length === 0) {
+      return res.json({ reaction: null });
+    }
+
+    const pozitivno = data[0].pozitivno;
+    if (pozitivno === 1) return res.json({ reaction: true });
+    if (pozitivno === 0) return res.json({ reaction: false });
+    return res.json({ reaction: null });
   });
 });
 
