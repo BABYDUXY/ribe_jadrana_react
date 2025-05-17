@@ -77,8 +77,8 @@ const opremaFilters = {
 
 const moreOptionsDropdown = {
   1: { name: "Nova Objava", url: "/novaobjava" },
-  2: { name: "Moje Objave", url: "" },
-  3: { name: "Pošalji Upit", url: "" },
+  2: { name: "Moje Objave", url: "/mojeobjave" },
+  3: { name: "Pošalji Upit", url: "/noviupit" },
 };
 
 function ForumFilters({ setSortOptions, setSearchQuery, searchQuery }) {

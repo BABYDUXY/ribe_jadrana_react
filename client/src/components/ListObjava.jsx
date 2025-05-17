@@ -5,7 +5,7 @@ import { EndpointUrlContext } from "../kontekst/EndpointUrlContext";
 import { useState, useRef, useEffect } from "react";
 import { useLogin } from "../kontekst/loginContext";
 
-function ListObjava({ value }) {
+function ListObjava({ value, refreshPosts }) {
   const date = new Date(value.datum_kreiranja);
   const { endpointUrl } = useContext(EndpointUrlContext);
   const contentRef = useRef(null);
@@ -22,6 +22,16 @@ function ListObjava({ value }) {
     likes: value.broj_lajkova,
     dislikes: value.broj_dislajkova,
   });
+  const [komentar, setKomentar] = useState("");
+  const [komentari, setKomentari] = useState(value.komentari);
+  const [loading, setLoading] = useState(false);
+
+  const handleloading = (time) => {
+    setLoading(true);
+    setTimeout(() => {
+      setLoading(false);
+    }, time);
+  };
 
   useEffect(() => {
     const fetchUserReaction = async () => {
@@ -42,9 +52,10 @@ function ListObjava({ value }) {
         console.error("Error fetching reaction:", err);
       }
     };
-
-    fetchUserReaction();
-  }, []);
+    if (user) {
+      fetchUserReaction();
+    }
+  }, [user]);
 
   useEffect(() => {
     if (!contentRef.current) return;
@@ -61,6 +72,40 @@ function ListObjava({ value }) {
       }, 10);
     }
   }, [isExpanded]);
+
+  const handleKomentar = async () => {
+    try {
+      const res = await fetch(`${endpointUrl}/api/komentar`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Token ${sessionStorage.getItem("token")}`,
+        },
+        body: JSON.stringify({
+          objava_id: value.ID,
+          tekst: komentar,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        console.error(
+          "Greška pri slanju komentara:",
+          data.poruka || res.statusText
+        );
+        return;
+      }
+
+      if (data.poruka) {
+        console.log("Server response:", data.poruka);
+      }
+      refreshPosts();
+      setKomentar("");
+    } catch (err) {
+      console.error("Došlo je do greške:", err);
+    }
+  };
 
   const handleReaction = async (newReaction) => {
     const prevReaction = reaction; // Save before state change
@@ -81,7 +126,6 @@ function ListObjava({ value }) {
       updatedReaction = newReaction;
     }
 
-    // Update count based on previous reaction before setting new state
     setReactionCount((prev) => {
       let likes = prev.likes;
       let dislikes = prev.dislikes;
@@ -114,7 +158,176 @@ function ListObjava({ value }) {
       console.error("Failed to send reaction");
     }
   };
-  return (
+  return value.naslov ? (
+    <div
+      ref={contentRef}
+      style={{
+        height: height,
+        overflow: "hidden",
+        transition: `height ${isExpanded ? "0.4s" : "0.3s"} ease-in`,
+      }}
+      className={` outline outline-[5px] outline-white  w-[50rem]  gap-7  grid text-white p-[1.5rem_3rem] font-glavno rounded-[22px] overflow-hidden `}
+    >
+      <div
+        className={`flex flex-col  justify-between row-start-1   ${
+          isExpanded ? "gap-4" : ""
+        }`}
+      >
+        <h2 className=" glavno-nav"> Objavio/la: {value.autor}</h2>
+        <div className={`flex flex-col `}>
+          <div className="flex items-center justify-between">
+            <div
+              className={`bg-moja_plava-tamna w-[80%] grid p-4 ${
+                isExpanded ? "grid-cols-[40%_60%] " : "grid-cols-2"
+              }   rounded-[13px] outline outline-[2px] outline-white`}
+            >
+              <div className="self-start">
+                <p>{formattedDate}</p>
+                <h3 className="glavno-nav text-[1.3rem] font-bold ">
+                  Naslov: {value.naslov}
+                </h3>
+              </div>
+              {isExpanded ? (
+                <h4 className="glavno-nav text-[1.3rem] font-semibold  col-start-1 row-start-2  text-center">
+                  Sadržaj:
+                </h4>
+              ) : (
+                ""
+              )}
+              <div
+                className={`col-start-2 gap-2 overflow-auto ${
+                  isExpanded ? "max-h-[15rem] row-span-2" : "max-h-[4.4rem]"
+                }`}
+              >
+                {isExpanded ? (
+                  ""
+                ) : (
+                  <h4 className="glavno-nav text-[1.3rem] font-semibold  ">
+                    Sadržaj:
+                  </h4>
+                )}{" "}
+                <p className="">{value.opis_objave}</p>
+              </div>
+            </div>
+            <div
+              onClick={() => {
+                setIsExpanded((prev) => !prev);
+                if (isExpanded) {
+                  handleloading(400);
+                }
+              }}
+              className={`w-[60px] h-[60px] hover:cursor-pointer hover:scale-105 transition-all duration-500 col-start-2  ease-in-out ${
+                isExpanded ? "self-end" : ""
+              }`}
+            >
+              <img
+                className={`w-full h-full transition-transform duration-700 delay-200 ease-in-out ${
+                  isExpanded ? "rotate-180" : ""
+                }`}
+                srcSet="logo/expand.svg"
+                alt=""
+              />
+            </div>
+          </div>
+        </div>
+        {isExpanded ? (
+          ""
+        ) : (
+          <div className="flex gap-2 ">
+            <img className="w-[20px]" srcSet="/logo/like.svg" alt="" />
+            <p className="mb-[-0.3rem] ">{reactionCount.likes}</p>
+          </div>
+        )}
+        {isExpanded && (
+          <>
+            <div className="w-[80%] h-max ">
+              <h3 className="glavno-nav text-[1.3rem] mb-2">Komentari:</h3>
+              <div className="bg-moja_plava-tamna outline outline-[2px] p-4 outline-white rounded-[13px]  ">
+                <div className="overflow-auto max-h-28">
+                  {komentari.map((komentar, index) => (
+                    <p key={index} className="leading-relaxed ">
+                      <span className="font-semibold">
+                        {komentar.korisnicko_ime}:
+                      </span>{" "}
+                      {`"${komentar.tekst}"`}
+                    </p>
+                  ))}
+                </div>
+                <div className="relative group">
+                  <input
+                    type="text"
+                    className="w-full mt-1 text-sm text-white transition-all duration-300 ease-in-out bg-transparent border-b-2 opacity-70 placeholder:text-white focus:ring-0 focus:outline-none focus:opacity-100 focus:placeholder:text-gray-300 focus:mt-2 focus:text-base"
+                    placeholder="Napiši komentar..."
+                    onChange={(e) => setKomentar(e.target.value)}
+                    value={komentar}
+                  />
+                  <img
+                    className={`absolute right-0 top-0 cursor-pointer w-0 h-full opacity-0 transition-all duration-300 ease-in-out group-focus-within:w-[40px] group-focus-within:opacity-100 hover:translate-x-1 px-2.5 z-10 `}
+                    alt=""
+                    srcSet="logo/strelica-send.svg"
+                    onClick={() => {
+                      if (!user && komentar) {
+                        alert("Moraš biti prijavljen!");
+                        setKomentar("");
+                      } else if (user && komentar) {
+                        handleKomentar(); // Make sure this is a function you're importing or defining
+                      }
+                      console.log(komentar);
+                    }}
+                  />
+                </div>
+              </div>
+            </div>
+          </>
+        )}
+      </div>
+
+      <div
+        className={`flex    ${
+          isExpanded ? "flex-col gap-4 justify-between" : " hidden"
+        } `}
+      >
+        {isExpanded && (
+          <div className="flex self-center gap-2 text-lg font-glavno">
+            <img
+              className="w-[27px] mt-[-0.7rem] cursor-pointer"
+              srcSet={
+                reaction === "like"
+                  ? "/logo/full-like.svg"
+                  : "/logo/empty-like.svg"
+              }
+              alt="Like"
+              onClick={() => {
+                if (user) {
+                  handleReaction("like");
+                } else {
+                  alert("Moraš biti prijavljen!");
+                }
+              }}
+            />
+            <p className="mb-[-0.5rem] mr-4 ">{reactionCount.likes}</p>
+            <img
+              className="w-[27px] rotate-180 cursor-pointer"
+              srcSet={
+                reaction === "dislike"
+                  ? "/logo/full-like.svg"
+                  : "/logo/empty-like.svg"
+              }
+              alt="Dislike"
+              onClick={() => {
+                if (user) {
+                  handleReaction("dislike");
+                } else {
+                  alert("Moraš biti prijavljen");
+                }
+              }}
+            />
+            <p className="mb-[0.3rem] ">{reactionCount.dislikes}</p>
+          </div>
+        )}
+      </div>
+    </div>
+  ) : (
     <div
       ref={contentRef}
       style={{
@@ -228,7 +441,7 @@ function ListObjava({ value }) {
               <h3 className="glavno-nav text-[1.3rem] mb-2">Komentari:</h3>
               <div className="bg-moja_plava-tamna outline outline-[2px] p-4 outline-white rounded-[13px]  ">
                 <div className="overflow-auto max-h-28">
-                  {value?.komentari.map((komentar, index) => (
+                  {komentari.map((komentar, index) => (
                     <p key={index} className="leading-relaxed ">
                       <span className="font-semibold">
                         {komentar.korisnicko_ime}:
@@ -237,80 +450,132 @@ function ListObjava({ value }) {
                     </p>
                   ))}
                 </div>
-                <input
-                  type="text"
-                  className="w-full mt-1 text-sm text-white transition-all duration-300 ease-in-out bg-transparent border-b-2 opacity-70 placeholder:text-white focus:ring-0 focus:outline-none focus:opacity-100 focus:placeholder:text-gray-300 focus:mt-2 focus:text-base"
-                  placeholder="Napiši komentar..."
-                />
+                <div className="relative group">
+                  <input
+                    type="text"
+                    className="w-full mt-1 text-sm text-white transition-all duration-300 ease-in-out bg-transparent border-b-2 opacity-70 placeholder:text-white focus:ring-0 focus:outline-none focus:opacity-100 focus:placeholder:text-gray-300 focus:mt-2 focus:text-base"
+                    placeholder="Napiši komentar..."
+                    onChange={(e) => setKomentar(e.target.value)}
+                    value={komentar}
+                  />
+                  <img
+                    className={`absolute right-0 top-0 cursor-pointer w-0 h-full opacity-0 transition-all duration-300 ease-in-out group-focus-within:w-[40px] group-focus-within:opacity-100 hover:translate-x-1 px-2.5 z-10 `}
+                    alt=""
+                    srcSet="logo/strelica-send.svg"
+                    onClick={() => {
+                      if (!user && komentar) {
+                        alert("Moraš biti prijavljen!");
+                        setKomentar("");
+                      } else if (user && komentar) {
+                        handleKomentar(); // Make sure this is a function you're importing or defining
+                      }
+                      console.log(komentar);
+                    }}
+                  />
+                </div>
               </div>
             </div>
           </>
         )}
       </div>
       <div
-        className={`flex  row-start-1  max-h-[31rem] ${
-          isExpanded ? "flex-col justify-center gap-5" : "items-center gap-7 "
+        className={`flex  row-start-1    ${
+          isExpanded ? "flex-col  gap-5 justify-between" : "items-center gap-7 "
         } `}
       >
         <div
-          className={`${
-            isExpanded ? "w-full aspect-square mt-2" : "w-[11rem] h-full"
-          }  rounded-[13px] overflow-hidden outline outline-[2px] outline-white`}
+          className={`flex    ${
+            isExpanded ? "flex-col  gap-4 justify-between" : " h-full "
+          } `}
+        >
+          <div
+            className={`rounded-[13px] overflow-hidden outline outline-[2px] outline-white transition-[max-height,margin] delay-100 duration-700 ${
+              isExpanded
+                ? "w-full aspect-square max-h-[22rem] mt-2"
+                : "w-[11rem] h-full"
+            }`}
+            style={
+              isExpanded
+                ? {
+                    transitionProperty: "width",
+                    transitionDuration: "700ms",
+                    transitionDelay: "100ms",
+                  }
+                : {
+                    transitionProperty: "width",
+                    transitionDuration: "400ms",
+                    transitionDelay: "-300ms",
+                  }
+            }
+          >
+            <img
+              className={`object-cover transition-all duration-[500ms] ease-in-out ${
+                !isExpanded && loading
+                  ? "!w-[10rem] !h-[10rem]"
+                  : "w-full h-full "
+              }`}
+              srcSet={`${endpointUrl}${value.slika_direktorij}`}
+              alt=""
+            />
+          </div>
+          {isExpanded && (
+            <div className="flex self-center gap-2 text-lg font-glavno">
+              <img
+                className="w-[27px] mt-[-0.7rem] cursor-pointer"
+                srcSet={
+                  reaction === "like"
+                    ? "/logo/full-like.svg"
+                    : "/logo/empty-like.svg"
+                }
+                alt="Like"
+                onClick={() => {
+                  if (user) {
+                    handleReaction("like");
+                  } else {
+                    alert("Moraš biti prijavljen!");
+                  }
+                }}
+              />
+              <p className="mb-[-0.5rem] mr-4 ">{reactionCount.likes}</p>
+              <img
+                className="w-[27px] rotate-180 cursor-pointer"
+                srcSet={
+                  reaction === "dislike"
+                    ? "/logo/full-like.svg"
+                    : "/logo/empty-like.svg"
+                }
+                alt="Dislike"
+                onClick={() => {
+                  if (user) {
+                    handleReaction("dislike");
+                  } else {
+                    alert("Moraš biti prijavljen");
+                  }
+                }}
+              />
+              <p className="mb-[0.3rem] ">{reactionCount.dislikes}</p>
+            </div>
+          )}
+        </div>
+        <div
+          onClick={() => {
+            setIsExpanded((prev) => !prev);
+            if (isExpanded) {
+              handleloading(400);
+            }
+          }}
+          className={`w-[60px] h-[60px] hover:cursor-pointer hover:scale-105 transition-all duration-500  ease-in-out ${
+            isExpanded ? "self-end" : ""
+          }`}
         >
           <img
-            className="object-cover w-full h-full"
-            srcSet={`${endpointUrl}${value.slika_direktorij}`}
+            className={`w-full h-full transition-transform duration-700 delay-200 ease-in-out ${
+              isExpanded ? "rotate-180" : ""
+            }`}
+            srcSet="logo/expand.svg"
             alt=""
           />
         </div>
-        {isExpanded && (
-          <div className="flex self-center gap-2 text-lg font-glavno">
-            <img
-              className="w-[27px] mt-[-0.7rem] cursor-pointer"
-              srcSet={
-                reaction === "like"
-                  ? "/logo/full-like.svg"
-                  : "/logo/empty-like.svg"
-              }
-              alt="Like"
-              onClick={() => {
-                if (user) {
-                  handleReaction("like");
-                } else {
-                  alert("Moraš biti prijavljen!");
-                }
-              }}
-            />
-            <p className="mb-[-0.5rem] mr-4 ">{reactionCount.likes}</p>
-            <img
-              className="w-[27px] rotate-180 cursor-pointer"
-              srcSet={
-                reaction === "dislike"
-                  ? "/logo/full-like.svg"
-                  : "/logo/empty-like.svg"
-              }
-              alt="Dislike"
-              onClick={() => {
-                if (user) {
-                  handleReaction("dislike");
-                } else {
-                  alert("Moraš biti prijavljen");
-                }
-              }}
-            />
-            <p className="mb-[0.3rem] ">{reactionCount.dislikes}</p>
-          </div>
-        )}
-        <img
-          onClick={() => {
-            setIsExpanded((prev) => !prev);
-          }}
-          className={`w-[60px] h-[60px] hover:cursor-pointer hover:scale-105 duration-200 ease-in-out transition-all ${
-            isExpanded ? "rotate-180 self-end " : ""
-          }`}
-          srcSet="logo/expand.svg"
-          alt=""
-        />
       </div>
     </div>
   );

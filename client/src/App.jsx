@@ -9,6 +9,7 @@ import MojProfil from "./page/MojProfil";
 import { EndpointUrlContext } from "./kontekst/EndpointUrlContext";
 import ForumObjava from "./page/ForumObjava";
 import NovaObjava from "./page/NovaObjava";
+import MojaSviđanja from "./page/MojaSviđanja";
 
 const App = () => {
   const endpointUrl = "http://localhost:5000";
@@ -49,6 +50,10 @@ const App = () => {
     {
       path: "/novaobjava",
       element: <NovaObjava />,
+    },
+    {
+      path: "/mojasvidanja",
+      element: <MojaSviđanja />,
     },
   ]);
 

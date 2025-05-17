@@ -23,10 +23,10 @@ function NavDropdown({ role }) {
           <Link to="/mojprofil">Moj profil</Link>
         </li>
         <li>
-          <Link to="/">Moji ulovi</Link>
+          <Link to="/mojiulovi">Moji ulovi</Link>
         </li>
         <li>
-          <Link to="/">Moja Sviđanja</Link>
+          <Link to="/mojasvidanja">Moja Sviđanja</Link>
         </li>
         <li>
           <Link

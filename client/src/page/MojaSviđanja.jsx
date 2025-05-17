@@ -7,7 +7,7 @@ import { EndpointUrlContext } from "../kontekst/EndpointUrlContext";
 import ListObjava from "../components/ListObjava";
 import Pagination from "../components/Pagination";
 
-function ForumObjava() {
+function MojaSviđanja() {
   const { endpointUrl } = useContext(EndpointUrlContext);
 
   const [sortOptions, setSortOptions] = useState({
@@ -19,7 +19,6 @@ function ForumObjava() {
   const [javniUlovi, setJavniUlovi] = useState([]);
   const [itemsPerPage, setItemsPerPage] = useState(6);
 
-  // Fallback ako PaginationContext nije dostupan
   let paginationContext = useContext(PaginationContext);
   const [localPage, setLocalPage] = useState(1);
   const currentPage = paginationContext?.currentPage || localPage;
@@ -49,10 +48,17 @@ function ForumObjava() {
 
   const fetchPosts = async () => {
     try {
-      const response = await fetch(`${endpointUrl}/objave/ulovi`);
+      const token = sessionStorage.getItem("token");
+
+      const response = await fetch(`${endpointUrl}/objave/mojasvidanja`, {
+        method: "GET",
+        headers: {
+          Authorization: `Token ${token}`,
+        },
+      });
+
       const data = await response.json();
 
-      // Sortiranje po najnovijima
       const sorted = data.sort(
         (a, b) => new Date(b.datum_kreiranja) - new Date(a.datum_kreiranja)
       );
@@ -78,7 +84,10 @@ function ForumObjava() {
           searchQuery={searchQuery}
         />
 
-        <div className="flex flex-col items-center w-full gap-16 mb-24">
+        <div className="flex flex-col items-center w-full gap-16 mb-24 -mt-20">
+          <h1 className="text-white glavno-naslov text-[2rem]">
+            Moja sviđanja
+          </h1>
           {paginatedData.map((objava) => (
             <ListObjava
               key={objava.hash}
@@ -102,4 +111,4 @@ function ForumObjava() {
   );
 }
 
-export default ForumObjava;
+export default MojaSviđanja;

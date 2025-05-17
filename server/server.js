@@ -1022,55 +1022,154 @@ app.post(
     }
   }
 );
-
+/* dohvaćanje javnih objava */
 app.get("/objave/ulovi", (req, res) => {
   const sql = `
   SELECT 
-  riba.ID AS id_ribe,
-  riba.ime AS ime_ribe,
-  korisnik.korisnicko_ime AS autor,
-  
-  ulov.tezina,
-  ulov.slika_direktorij,
-  ulov.mjesto,
-  ulov.opis,
-  GROUP_CONCAT(DISTINCT brend.naziv) AS brend,
-  GROUP_CONCAT(DISTINCT tip_opreme.naziv) AS tip,
-  GROUP_CONCAT(DISTINCT model_opreme.naziv) AS model,
-  GROUP_CONCAT(DISTINCT link_opreme.link) AS link,
-  objava.sadrzaj AS opis,
   objava.ID,
   objava.hash,
   objava.status,
   objava.datum_kreiranja,
-   (SELECT COUNT(*) FROM ocjena_objave WHERE ocjena_objave.objava_id = objava.ID AND ocjena_objave.pozitivno = 1) AS broj_lajkova,
-(SELECT COUNT(*) FROM ocjena_objave WHERE ocjena_objave.objava_id = objava.ID AND ocjena_objave.pozitivno = 0) AS broj_dislajkova,
-GROUP_CONCAT(DISTINCT CONCAT(komentator.korisnicko_ime, ': ', komentar_u_objavi.tekst)) AS komentari,
-GROUP_CONCAT(DISTINCT CONCAT(brend.naziv, ' ', model_opreme.naziv)) AS kombinirani_model,
+  objava.naslov,
+  objava.sadrzaj AS opis_objave,
 
-GROUP_CONCAT(DISTINCT CASE 
-    WHEN model_opreme.tip_id = 3 AND model_opreme.brend IS NULL THEN model_opreme.naziv 
-  END) AS mamac
+  korisnik.korisnicko_ime AS autor,
 
+  ulov.tezina,
+  ulov.slika_direktorij,
+  ulov.mjesto,
+  ulov.opis AS opis_ulova,
 
-FROM oprema_u_ulovu
-JOIN ulov ON oprema_u_ulovu.ulov_id = ulov.ID
-JOIN objava ON objava.ulov_id = ulov.ID
-JOIN korisnik ON ulov.korisnik_id = korisnik.ID
-JOIN riba ON ulov.riba_id = riba.ID
-JOIN link_opreme ON oprema_u_ulovu.oprema_id = link_opreme.ID
-JOIN model_opreme ON link_opreme.model_id = model_opreme.ID
-JOIN tip_opreme ON model_opreme.tip_id = tip_opreme.ID
+  riba.ime AS ime_ribe,
+
+  -- Oprema samo ako postoji ulov
+  GROUP_CONCAT(DISTINCT brend.naziv) AS brend,
+  GROUP_CONCAT(DISTINCT tip_opreme.naziv) AS tip,
+  GROUP_CONCAT(DISTINCT model_opreme.naziv) AS model,
+  GROUP_CONCAT(DISTINCT link_opreme.link) AS link,
+  GROUP_CONCAT(DISTINCT CONCAT(brend.naziv, ' ', model_opreme.naziv)) AS kombinirani_model,
+  GROUP_CONCAT(DISTINCT CASE 
+      WHEN model_opreme.tip_id = 3 AND model_opreme.brend IS NULL THEN model_opreme.naziv 
+  END) AS mamac,
+
+  -- Lajkovi i dislajkovi
+  (SELECT COUNT(*) FROM ocjena_objave WHERE ocjena_objave.objava_id = objava.ID AND ocjena_objave.pozitivno = 1) AS broj_lajkova,
+  (SELECT COUNT(*) FROM ocjena_objave WHERE ocjena_objave.objava_id = objava.ID AND ocjena_objave.pozitivno = 0) AS broj_dislajkova,
+
+  -- Komentari
+  GROUP_CONCAT(DISTINCT CONCAT(komentator.korisnicko_ime, ': ', komentar_u_objavi.tekst)) AS komentari
+
+FROM objava
+
+LEFT JOIN ulov ON objava.ulov_id = ulov.ID
+LEFT JOIN korisnik ON COALESCE(ulov.korisnik_id, objava.korisnik_id) = korisnik.ID
+LEFT JOIN riba ON ulov.riba_id = riba.ID
+
+LEFT JOIN oprema_u_ulovu ON oprema_u_ulovu.ulov_id = ulov.ID
+LEFT JOIN link_opreme ON oprema_u_ulovu.oprema_id = link_opreme.ID
+LEFT JOIN model_opreme ON link_opreme.model_id = model_opreme.ID
+LEFT JOIN tip_opreme ON model_opreme.tip_id = tip_opreme.ID
 LEFT JOIN brend ON model_opreme.brend = brend.ID
 
-
-LEFT JOIN ocjena_objave ON ocjena_objave.objava_id = objava.ID
 LEFT JOIN komentar_u_objavi ON komentar_u_objavi.objava_id = objava.ID
 LEFT JOIN korisnik AS komentator ON komentar_u_objavi.korisnik_id = komentator.ID
 
-GROUP BY ulov.ID;`;
+GROUP BY objava.ID
+ORDER BY objava.datum_kreiranja DESC;`;
 
   db.query(sql, (err, data) => {
+    if (err) return res.json(err);
+
+    const structuredData = data.map((row) => ({
+      ...row,
+      brend: row.brend ? row.brend.split(",") : [],
+      tip: row.tip ? row.tip.split(",") : [],
+      model: row.model ? row.model.split(",") : [],
+      link: row.link ? row.link.split(",") : [],
+      komentari: row.komentari
+        ? row.komentari.split(",").map((k) => {
+            const [korisnicko_ime, ...tekst] = k.split(": ");
+            return {
+              korisnicko_ime: korisnicko_ime?.trim(),
+              tekst: tekst.join(": ").trim(),
+            };
+          })
+        : [],
+      kombinirani_model: row.kombinirani_model
+        ? row.kombinirani_model.split(",")
+        : [],
+    }));
+
+    return res.json(structuredData);
+  });
+});
+
+/* MOJa sviđanja */
+
+app.get("/objave/mojasvidanja", verifyToken, async (req, res) => {
+  const userInfo = req.user;
+  const id = userInfo.korisnik_id;
+  const sql = `
+  SELECT 
+  objava.ID,
+  objava.hash,
+  objava.status,
+  objava.datum_kreiranja,
+  objava.naslov,
+  objava.sadrzaj AS opis_objave,
+
+  korisnik.korisnicko_ime AS autor,
+
+  ulov.tezina,
+  ulov.slika_direktorij,
+  ulov.mjesto,
+  ulov.opis AS opis_ulova,
+
+  riba.ime AS ime_ribe,
+
+  -- Oprema samo ako postoji ulov
+  GROUP_CONCAT(DISTINCT brend.naziv) AS brend,
+  GROUP_CONCAT(DISTINCT tip_opreme.naziv) AS tip,
+  GROUP_CONCAT(DISTINCT model_opreme.naziv) AS model,
+  GROUP_CONCAT(DISTINCT link_opreme.link) AS link,
+  GROUP_CONCAT(DISTINCT CONCAT(brend.naziv, ' ', model_opreme.naziv)) AS kombinirani_model,
+  GROUP_CONCAT(DISTINCT CASE 
+      WHEN model_opreme.tip_id = 3 AND model_opreme.brend IS NULL THEN model_opreme.naziv 
+  END) AS mamac,
+
+  -- Lajkovi i dislajkovi
+  (SELECT COUNT(*) FROM ocjena_objave WHERE ocjena_objave.objava_id = objava.ID AND ocjena_objave.pozitivno = 1) AS broj_lajkova,
+  (SELECT COUNT(*) FROM ocjena_objave WHERE ocjena_objave.objava_id = objava.ID AND ocjena_objave.pozitivno = 0) AS broj_dislajkova,
+
+  -- Komentari
+  GROUP_CONCAT(DISTINCT CONCAT(komentator.korisnicko_ime, ': ', komentar_u_objavi.tekst)) AS komentari
+
+FROM objava
+
+-- JOIN samo one objave koje je korisnik lajkao
+INNER JOIN ocjena_objave ON ocjena_objave.objava_id = objava.ID 
+  AND ocjena_objave.pozitivno = 1 
+  AND ocjena_objave.korisnik_id = ?
+
+LEFT JOIN ulov ON objava.ulov_id = ulov.ID
+LEFT JOIN korisnik ON COALESCE(ulov.korisnik_id, objava.korisnik_id) = korisnik.ID
+LEFT JOIN riba ON ulov.riba_id = riba.ID
+
+LEFT JOIN oprema_u_ulovu ON oprema_u_ulovu.ulov_id = ulov.ID
+LEFT JOIN link_opreme ON oprema_u_ulovu.oprema_id = link_opreme.ID
+LEFT JOIN model_opreme ON link_opreme.model_id = model_opreme.ID
+LEFT JOIN tip_opreme ON model_opreme.tip_id = tip_opreme.ID
+LEFT JOIN brend ON model_opreme.brend = brend.ID
+
+LEFT JOIN komentar_u_objavi ON komentar_u_objavi.objava_id = objava.ID
+LEFT JOIN korisnik AS komentator ON komentar_u_objavi.korisnik_id = komentator.ID
+
+GROUP BY objava.ID
+ORDER BY objava.datum_kreiranja DESC;
+
+`;
+
+  db.query(sql, [id], (err, data) => {
     if (err) return res.json(err);
 
     const structuredData = data.map((row) => ({
@@ -1201,6 +1300,34 @@ app.get("/api/ocjene/:objava_id", verifyToken, async (req, res) => {
     if (pozitivno === 1) return res.json({ reaction: true });
     if (pozitivno === 0) return res.json({ reaction: false });
     return res.json({ reaction: null });
+  });
+});
+
+app.post("/api/komentar", verifyToken, async (req, res) => {
+  const { objava_id, tekst } = req.body;
+  const userInfo = req.user;
+  const id = userInfo.korisnik_id;
+
+  if (!tekst || tekst.trim() === "") {
+    return res.json({ poruka: "Molimo upišite komentar!" });
+  }
+
+  const sql = `
+    INSERT INTO komentar_u_objavi (objava_id, korisnik_id, tekst)
+    VALUES (?, ?, ?)
+  `;
+
+  db.query(sql, [objava_id, id, tekst], (err, result) => {
+    if (err) {
+      console.error("Greška prilikom dodavanja komentara:", err);
+      return res.status(500).json({ poruka: "Greška na serveru." });
+    }
+
+    if (result.affectedRows > 0) {
+      return res.json({ poruka: "Uspješno dodan komentar!" });
+    } else {
+      return res.status(400).json({ poruka: "Komentar nije dodan." });
+    }
   });
 });
 
