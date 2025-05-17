@@ -13,6 +13,7 @@ function AllFishes({ backendData, endpointUrl, setUrl }) {
   });
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
+  const [itemsPerPage, setItemsPerPage] = useState(16);
   /* ZA SORTIRANJE U FRONTENDU */
   useEffect(() => {
     if (!backendData || backendData.length === 0 || !sortOptions.field) {
@@ -56,7 +57,9 @@ function AllFishes({ backendData, endpointUrl, setUrl }) {
   return (
     <div className="flex flex-col min-h-screen">
       <Navigacija />
-      <PaginationContext.Provider value={{ currentPage, setCurrentPage }}>
+      <PaginationContext.Provider
+        value={{ currentPage, setCurrentPage, itemsPerPage, setItemsPerPage }}
+      >
         <FilterButtons
           endpointUrl={endpointUrl}
           setUrl={setUrl}

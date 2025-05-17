@@ -4,8 +4,8 @@ import { PaginationContext } from "../kontekst/PaginationContext";
 import Pagination from "./Pagination";
 
 function SveRibe({ backEndData }) {
-  const [itemsPerPage, setItemsPerPage] = useState(16);
-  const { currentPage, setCurrentPage } = useContext(PaginationContext);
+  const { currentPage, setCurrentPage, itemsPerPage, setItemsPerPage } =
+    useContext(PaginationContext);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
   const paginatedData = backEndData?.slice(startIndex, endIndex);

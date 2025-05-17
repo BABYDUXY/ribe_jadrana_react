@@ -1,6 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import { Link } from "react-router-dom";
 import FilterBtn from "./FilterBtn";
+import SliderTocke from "./SliderTocke";
 
 const vrstaFilters = {
   1: { url: "plave", fullname: "Plave", name: "Plave" },
@@ -63,6 +64,7 @@ function FilterButtons({
   const [sortFilter, setSortFilter] = useState("");
   const [searchInput, setSearchInput] = useState(false);
   const [toggleFilteri, setToggleFilteri] = useState(false);
+  const [toggleViewOptions, setToggleViewOptions] = useState(false);
 
   return (
     <div className="grid grid-cols-[11%_39%_39%_11%] place-items-center mt-10 mb-10 ">
@@ -76,12 +78,61 @@ function FilterButtons({
           setSearchInput(false);
         }}
       />
-      <img
-        className="h-[15px] col-start-1 row-start-1"
-        draggable="false"
-        src="./public/logo/three_dots.svg"
-        alt=""
-      />
+      <div className="relative">
+        <img
+          className={`
+      col-start-1 row-start-1 hover:scale-110 transition-all duration-300 ease-in-out cursor-pointer
+      ${
+        toggleViewOptions
+          ? "w-[35px] opacity-100 translate-x-0"
+          : "w-0 opacity-0 translate-x-20"
+      }
+    `}
+          draggable="false"
+          src="/logo/x.svg"
+          alt="Close"
+          onClick={() => setToggleViewOptions(false)}
+        />
+
+        <div
+          className={`
+      absolute top-0  min-h-20 bg-moja_plava flex items-center justify-center transition-all duration-700 ease-in-out origin-left outline outline-[3px]  outline-white rounded-[11px] overflow-clip 
+      ${
+        toggleViewOptions
+          ? "w-[15rem] opacity-100 right-[-17rem] z-10"
+          : "w-[1rem] opacity-0 right-0"
+      }
+    `}
+        >
+          <div
+            className={`flex transition-all  flex-col ${
+              toggleViewOptions
+                ? "w-34 duration-400 delay-100 opacity-100"
+                : "w-0 opacity-0 h-0"
+            }`}
+          >
+            <h5 className="text-center text-white glavno-nav">
+              Broj riba po stranici
+            </h5>
+            <SliderTocke />
+          </div>
+        </div>
+
+        <img
+          className={`
+      col-start-1 row-start-1 hover:scale-110 transition-all duration-[300ms] ease-in-out cursor-pointer 
+      ${
+        !toggleViewOptions
+          ? "h-[15px] opacity-100 -translate-x-0"
+          : "h-0 opacity-0 -translate-x-10"
+      }
+    `}
+          draggable="false"
+          src="/logo/three_dots.svg"
+          alt="Open"
+          onClick={() => setToggleViewOptions(true)}
+        />
+      </div>
       <ul
         className={`col-start-3 row-start-1 transition-all duration-500 ease-in flex flex-row justify-evenly justify-self-end [&>li]:inline-block px-7 border-white border-[3px] rounded-full  h-min ${
           toggleFilteri
