@@ -25,6 +25,7 @@ function ListObjava({ value, refreshPosts }) {
   const [komentar, setKomentar] = useState("");
   const [komentari, setKomentari] = useState(value.komentari);
   const [loading, setLoading] = useState(false);
+  const [toggleSharePost, setToggleSharePost] = useState(false);
 
   const handleloading = (time) => {
     setLoading(true);
@@ -72,6 +73,17 @@ function ListObjava({ value, refreshPosts }) {
       }, 10);
     }
   }, [isExpanded]);
+
+  const handleMoreOptionsPost = () => {
+    if (!isExpanded) {
+      setIsExpanded(true);
+      setTimeout(() => {
+        setToggleSharePost(true);
+      }, 300);
+    } else {
+      setToggleSharePost((prev) => !prev);
+    }
+  };
 
   const handleKomentar = async () => {
     try {
@@ -158,7 +170,7 @@ function ListObjava({ value, refreshPosts }) {
       console.error("Failed to send reaction");
     }
   };
-  return value.naslov ? (
+  return value.naslov && value?.status === "public" ? (
     <div
       ref={contentRef}
       style={{
@@ -245,7 +257,7 @@ function ListObjava({ value, refreshPosts }) {
               <div className="bg-moja_plava-tamna outline outline-[2px] p-4 outline-white rounded-[13px]  ">
                 <div className="overflow-auto max-h-28">
                   {komentari.map((komentar, index) => (
-                    <p key={index} className="leading-relaxed ">
+                    <p key={komentar.id || index} className="leading-relaxed ">
                       <span className="font-semibold">
                         {komentar.korisnicko_ime}:
                       </span>{" "}
@@ -327,7 +339,7 @@ function ListObjava({ value, refreshPosts }) {
         )}
       </div>
     </div>
-  ) : (
+  ) : !value.naslov && value?.status === "pending" ? (
     <div
       ref={contentRef}
       style={{
@@ -578,6 +590,221 @@ function ListObjava({ value, refreshPosts }) {
         </div>
       </div>
     </div>
+  ) : !value?.status ? (
+    <div
+      ref={contentRef}
+      style={{
+        height: height,
+        overflow: "hidden",
+        transition: `height ${isExpanded ? "0.4s" : "0.3s"} ease-in`,
+      }}
+      className={` outline outline-[5px] outline-white  w-[50rem] grid grid-cols-[58%_41%] gap-7   text-white p-[1.5rem_3rem] font-glavno rounded-[22px] overflow-hidden`}
+    >
+      <div
+        className={`flex flex-col justify-between row-start-1 ${
+          isExpanded ? "gap-4" : ""
+        }`}
+      >
+        <h2 className=" glavno-nav"> Objavio/la: {value.autor}</h2>
+        <div className={`flex justify-between`}>
+          <div className="bg-moja_plava-tamna w-[47%]  flex flex-col  justify-center rounded-[13px] outline outline-[2px] outlinr-white">
+            <div className="py-2 ml-5">
+              <Link
+                to={`/fish/${value.id_ribe}`}
+                className="glavno-nav text-[1.3rem] font-bold underline"
+              >
+                Riba: {value.ime_ribe}
+              </Link>
+              <p className="-mt-1 text-base font-medium">
+                Težina: {value.tezina} kg
+              </p>
+            </div>
+          </div>
+          <div className="bg-moja_plava-tamna w-[47%]   flex flex-col  justify-center rounded-[13px] outline outline-[2px] outline-white">
+            <div className="py-2 ml-5">
+              <p className="text-lg font-medium">Lokacija: {value.mjesto}</p>
+              <p className="-mt-1 text-sm ">{formattedDate}</p>
+            </div>
+          </div>
+        </div>
+        {isExpanded ? (
+          ""
+        ) : (
+          <div className="flex gap-2 ">
+            <img
+              className={`w-[30px] hover:scale-110 transition-all duration-300 cursor-pointer ease-in-out ${
+                toggleSharePost ? "rotate-90" : "rotate-0"
+              }`}
+              srcSet="/logo/three_dots.svg"
+              alt=""
+              onClick={() => {
+                handleMoreOptionsPost();
+              }}
+            />
+          </div>
+        )}
+        {isExpanded && (
+          <>
+            <div className="w-full h-max">
+              <h3 className="glavno-nav text-[1.3rem] mb-2">Oprema:</h3>
+              <div className="bg-moja_plava-tamna outline outline-[2px] outline-white rounded-[13px]">
+                <ul className="flex flex-col gap-2 p-4 glavno-small [&>li]:font-semibold [&>li>a]:ml-1">
+                  <li>
+                    Štap:{" "}
+                    {value.link[0] != "#" ? (
+                      <Link
+                        className="font-normal underline"
+                        to={value.link[0]}
+                      >
+                        {" "}
+                        {value.kombinirani_model[0]}
+                      </Link>
+                    ) : (
+                      <Link to={defaultLink} className="font-normal underline">
+                        {value.kombinirani_model[0]}
+                      </Link>
+                    )}
+                  </li>
+                  <li>
+                    Rola:{" "}
+                    {value.link[1] ? (
+                      <Link
+                        className="font-normal underline"
+                        to={value.link[1]}
+                      >
+                        {" "}
+                        {value.kombinirani_model[1]}
+                      </Link>
+                    ) : (
+                      <Link to={defaultLink} className="font-normal underline">
+                        {value.kombinirani_model[1]}
+                      </Link>
+                    )}
+                  </li>
+                  <li>
+                    Mamac:{" "}
+                    {value.link[2] ? (
+                      <Link
+                        className="font-normal underline"
+                        to={value.link[2]}
+                      >
+                        {" "}
+                        {value.mamac}
+                      </Link>
+                    ) : (
+                      <Link to={defaultLink} className="font-normal underline">
+                        {value.mamac}
+                      </Link>
+                    )}
+                  </li>
+                  {value.opis ? (
+                    <li className="overflow-auto max-h-32">
+                      Opis:{" "}
+                      <span className="ml-1 font-normal">{value.opis}</span>
+                    </li>
+                  ) : (
+                    ""
+                  )}
+                </ul>
+              </div>
+            </div>
+            <div className="flex items-center w-full h-20 gap-10 py-10 ">
+              <img
+                className={`w-[30px] hover:scale-110 transition-all duration-300 cursor-pointer ease-in-out ${
+                  toggleSharePost ? "rotate-90" : "rotate-0"
+                }`}
+                srcSet="/logo/three_dots.svg"
+                alt=""
+                onClick={() => {
+                  handleMoreOptionsPost();
+                }}
+              />
+              <div
+                className={`bg-moja_plava-tamna outline outline-[2px] transition-all duration-700 ease-in-out p-4 px-8 outline-white rounded-[22px]  flex  items-center ${
+                  toggleSharePost
+                    ? "translate-x-0 opacity-100  h-10"
+                    : "translate-x-20 opacity-0  h-0 cursor-default"
+                }`}
+              >
+                <ul
+                  draggable="false"
+                  className="flex gap-4 [&>li:hover]:underline [&>li]:transition-all [&>li]:duration-300 [&>li]:ease-in-out [&>li]:cursor-pointer"
+                >
+                  {" "}
+                  <li draggable="false">Uredi</li> <li>Pošalji</li>
+                  <li draggable="false">Obriši</li>
+                  <li draggable="false">Objavi</li>
+                </ul>
+              </div>
+            </div>
+          </>
+        )}
+      </div>
+      <div
+        className={`flex  row-start-1    ${
+          isExpanded ? "flex-col  gap-5 justify-between" : "items-center gap-7 "
+        } `}
+      >
+        <div
+          className={`flex    ${
+            isExpanded ? "flex-col  gap-4 justify-between" : " h-full "
+          } `}
+        >
+          <div
+            className={`rounded-[13px] overflow-hidden outline outline-[2px] outline-white transition-[max-height,margin] delay-100 duration-700 ${
+              isExpanded
+                ? "w-full aspect-square max-h-[22rem] mt-2"
+                : "w-[11rem] h-full"
+            }`}
+            style={
+              isExpanded
+                ? {
+                    transitionProperty: "width",
+                    transitionDuration: "700ms",
+                    transitionDelay: "100ms",
+                  }
+                : {
+                    transitionProperty: "width",
+                    transitionDuration: "400ms",
+                    transitionDelay: "-300ms",
+                  }
+            }
+          >
+            <img
+              className={`object-cover transition-all duration-[500ms] ease-in-out ${
+                !isExpanded && loading
+                  ? "!w-[10rem] !h-[10rem]"
+                  : "w-full h-full "
+              }`}
+              srcSet={`${endpointUrl}${value.slika_direktorij}`}
+              alt=""
+            />
+          </div>
+        </div>
+        <div
+          onClick={() => {
+            setIsExpanded((prev) => !prev);
+            if (isExpanded) {
+              handleloading(400);
+              setToggleSharePost(false);
+            }
+          }}
+          className={`w-[60px] h-[60px] hover:cursor-pointer hover:scale-105 transition-all duration-500  ease-in-out ${
+            isExpanded ? "self-end" : ""
+          }`}
+        >
+          <img
+            className={`w-full h-full transition-transform duration-700 delay-200 ease-in-out ${
+              isExpanded ? "rotate-180" : ""
+            }`}
+            srcSet="logo/expand.svg"
+            alt=""
+          />
+        </div>
+      </div>
+    </div>
+  ) : (
+    ""
   );
 }
 

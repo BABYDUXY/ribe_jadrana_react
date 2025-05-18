@@ -10,6 +10,7 @@ import { EndpointUrlContext } from "./kontekst/EndpointUrlContext";
 import ForumObjava from "./page/ForumObjava";
 import NovaObjava from "./page/NovaObjava";
 import MojaSviđanja from "./page/MojaSviđanja";
+import MojiUlovi from "./page/MojiUlovi";
 
 const App = () => {
   const endpointUrl = "http://localhost:5000";
@@ -54,6 +55,10 @@ const App = () => {
     {
       path: "/mojasvidanja",
       element: <MojaSviđanja />,
+    },
+    {
+      path: "/mojiulovi",
+      element: <MojiUlovi />,
     },
   ]);
 
