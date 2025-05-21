@@ -35,3 +35,19 @@
 .animated-overflow {
   animation: overflowAnimation 1.2s ease-in-out 0s forwards;
 }
+
+@keyframes slideX {
+  0% {
+    transform: translateX(-40%);
+  }
+  50% {
+    transform: translateX(-3%);
+  }
+  100% {
+    transform: translateX(-40%);
+  }
+}
+
+.animated-element {
+  animation: slideX 7s ease-in-out infinite;
+}

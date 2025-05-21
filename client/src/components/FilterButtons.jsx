@@ -96,22 +96,24 @@ function FilterButtons({
 
         <div
           className={`
-      absolute top-0  min-h-20 bg-moja_plava flex items-center justify-center transition-all duration-700 ease-in-out origin-left outline outline-[3px]  outline-white rounded-[11px] overflow-clip 
+      absolute top-0  min-h-20 bg-moja_plava  flex items-center justify-center transition-all duration-700 ease-in-out origin-left outline outline-[3px]  outline-white rounded-[11px] overflow-clip 
       ${
         toggleViewOptions
-          ? "w-[15rem] opacity-100 right-[-17rem] z-10"
+          ? "w-[15rem] opacity-100 right-[-17rem] z-10 "
           : "w-[1rem] opacity-0 right-0"
       }
     `}
         >
           <div
-            className={`flex transition-all  flex-col ${
+            className={`flex transition-all duration-200  flex-col ${
               toggleViewOptions
-                ? "w-34 duration-400 delay-100 opacity-100"
+                ? "w-34  delay-[400ms] opacity-100"
                 : "w-0 opacity-0 h-0"
             }`}
           >
-            <h5 className="text-center text-white glavno-nav">
+            <h5
+              className={`text-center text-white glavno-nav overflow-hidden text-nowrap `}
+            >
               Broj riba po stranici
             </h5>
             <SliderTocke />

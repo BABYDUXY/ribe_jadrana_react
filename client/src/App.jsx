@@ -11,6 +11,7 @@ import ForumObjava from "./page/ForumObjava";
 import NovaObjava from "./page/NovaObjava";
 import MojaSviđanja from "./page/MojaSviđanja";
 import MojiUlovi from "./page/MojiUlovi";
+import Novosti from "./page/Novosti";
 
 const App = () => {
   const endpointUrl = "http://localhost:5000";
@@ -60,13 +61,26 @@ const App = () => {
       path: "/mojiulovi",
       element: <MojiUlovi />,
     },
+    {
+      path: "/novosti",
+      element: <Novosti />,
+    },
   ]);
 
   useEffect(() => {
     fetch(url)
-      .then((res) => res.json())
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error("Network response was not ok");
+        }
+        return res.json();
+      })
       .then((data) => {
-        setBackendData(data);
+        setBackendData(Array.isArray(data) ? data : []);
+      })
+      .catch((err) => {
+        console.error("Greška kod fetch-a:", err);
+        setBackendData([]);
       });
   }, [url]);
 

@@ -64,6 +64,10 @@ function ForumObjava() {
   };
 
   useEffect(() => {
+    console.log("ULOVI UPDATE:", paginatedData);
+  }, [paginatedData]);
+
+  useEffect(() => {
     fetchPosts();
   }, []);
 
@@ -81,7 +85,7 @@ function ForumObjava() {
         <div className="flex flex-col items-center w-full gap-16 mb-24">
           {paginatedData.map((objava) => (
             <ListObjava
-              key={objava.hash}
+              key={`${objava.hash}-${objava.komentari.length}`}
               value={objava}
               refreshPosts={fetchPosts}
             />

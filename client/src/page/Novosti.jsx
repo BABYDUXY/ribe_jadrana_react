@@ -6,8 +6,9 @@ import { PaginationContext } from "../kontekst/PaginationContext";
 import { EndpointUrlContext } from "../kontekst/EndpointUrlContext";
 import ListObjava from "../components/ListObjava";
 import Pagination from "../components/Pagination";
+import ListNovosti from "../components/listNovosti";
 
-function MojiUlovi() {
+function Novosti() {
   const { endpointUrl } = useContext(EndpointUrlContext);
 
   const [sortOptions, setSortOptions] = useState({
@@ -49,7 +50,7 @@ function MojiUlovi() {
 
   const fetchPosts = async () => {
     try {
-      const response = await fetch(`${endpointUrl}/privatni/ulovi`);
+      const response = await fetch(`${endpointUrl}/objave/ulovi`);
       const data = await response.json();
 
       // Sortiranje po najnovijima
@@ -62,6 +63,10 @@ function MojiUlovi() {
       console.error("Error fetching posts:", error);
     }
   };
+
+  useEffect(() => {
+    console.log("ULOVI UPDATE:", paginatedData);
+  }, [paginatedData]);
 
   useEffect(() => {
     fetchPosts();
@@ -79,11 +84,25 @@ function MojiUlovi() {
         />
 
         <div className="flex flex-col items-center w-full gap-16 mb-24 -mt-20">
-          <h1 className="text-white glavno-naslov text-[2rem]">Moji Ulovi</h1>
-
+          <div
+            draggable="false"
+            className="flex flex-col items-center pointer-events-none select-none"
+          >
+            <div className="relative inline-block px-1 overflow-hidden">
+              <h1 className="text-white glavno-naslov text-center text-[2rem] mb-1">
+                Novosti
+              </h1>
+              <span className="absolute bottom-0  w-[180%] animated-element overflow-hidden rounded-full h-max">
+                <img srcSet="logo/val.svg" className="w-full h-auto " />
+              </span>
+            </div>
+            <h4 className="mt-2 italic text-white font-glavno">
+              Najnovije vnovosti iz morskog svijeta jadrana.
+            </h4>
+          </div>
           {paginatedData.map((objava) => (
-            <ListObjava
-              key={objava.hash}
+            <ListNovosti
+              key={`${objava.hash}-${objava.komentari.length}`}
               value={objava}
               refreshPosts={fetchPosts}
             />
@@ -104,4 +123,4 @@ function MojiUlovi() {
   );
 }
 
-export default MojiUlovi;
+export default Novosti;

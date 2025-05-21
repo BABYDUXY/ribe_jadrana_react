@@ -170,7 +170,7 @@ function ListObjava({ value, refreshPosts }) {
       console.error("Failed to send reaction");
     }
   };
-  return value.naslov && value?.status === "public" ? (
+  return value.naslov && value?.status === "pending" ? (
     <div
       ref={contentRef}
       style={{
@@ -282,9 +282,8 @@ function ListObjava({ value, refreshPosts }) {
                         alert("Moraš biti prijavljen!");
                         setKomentar("");
                       } else if (user && komentar) {
-                        handleKomentar(); // Make sure this is a function you're importing or defining
+                        handleKomentar();
                       }
-                      console.log(komentar);
                     }}
                   />
                 </div>
@@ -345,9 +344,9 @@ function ListObjava({ value, refreshPosts }) {
       style={{
         height: height,
         overflow: "hidden",
-        transition: `height ${isExpanded ? "0.4s" : "0.3s"} ease-in`,
+        transition: `height ${isExpanded ? "0.4s" : "0.3s"} ease-in `,
       }}
-      className={` outline outline-[5px] outline-white  w-[50rem] grid grid-cols-[58%_41%] gap-7   text-white p-[1.5rem_3rem] font-glavno rounded-[22px] overflow-hidden`}
+      className={` outline outline-[5px] outline-white   w-[50rem] grid grid-cols-[58%_41%] gap-7   text-white p-[1.5rem_3rem] font-glavno rounded-[22px] overflow-hidden`}
     >
       <div
         className={`flex flex-col justify-between row-start-1 ${
@@ -491,7 +490,7 @@ function ListObjava({ value, refreshPosts }) {
         )}
       </div>
       <div
-        className={`flex  row-start-1    ${
+        className={`flex  row-start-1   ${
           isExpanded ? "flex-col  gap-5 justify-between" : "items-center gap-7 "
         } `}
       >
@@ -501,31 +500,31 @@ function ListObjava({ value, refreshPosts }) {
           } `}
         >
           <div
-            className={`rounded-[13px] overflow-hidden outline outline-[2px] outline-white transition-[max-height,margin] delay-100 duration-700 ${
+            className={`rounded-[13px] overflow-hidden outline outline-[2px] outline-white transition-[margin] delay-100 duration-700 ${
               isExpanded
                 ? "w-full aspect-square max-h-[22rem] mt-2"
+                : loading
+                ? "w-[11rem] max-h-[10rem]"
                 : "w-[11rem] h-full"
             }`}
             style={
               isExpanded
                 ? {
-                    transitionProperty: "width",
-                    transitionDuration: "700ms",
-                    transitionDelay: "100ms",
+                    transitionProperty: "width, max-height",
+                    transitionDuration: "500ms, 300ms",
+                    transitionTimingFunction: "ease-in-out",
+                    transitionDelay: "100ms, 100ms",
                   }
                 : {
-                    transitionProperty: "width",
-                    transitionDuration: "400ms",
-                    transitionDelay: "-300ms",
+                    transitionProperty: "width, max-height",
+                    transitionDuration: "100ms, 100ms",
+                    transitionTimingFunction: "ease-out",
+                    transitionDelay: "0, 0",
                   }
             }
           >
             <img
-              className={`object-cover transition-all duration-[500ms] ease-in-out ${
-                !isExpanded && loading
-                  ? "!w-[10rem] !h-[10rem]"
-                  : "w-full h-full "
-              }`}
+              className={`object-cover transition-all duration-[250ms] ease-out w-full h-full `}
               srcSet={`${endpointUrl}${value.slika_direktorij}`}
               alt=""
             />
@@ -581,7 +580,7 @@ function ListObjava({ value, refreshPosts }) {
           }`}
         >
           <img
-            className={`w-full h-full transition-transform duration-700 delay-200 ease-in-out ${
+            className={`w-full h-full transition-transform duration-[700ms] delay-200 ease-in-out ${
               isExpanded ? "rotate-180" : ""
             }`}
             srcSet="logo/expand.svg"
@@ -751,31 +750,31 @@ function ListObjava({ value, refreshPosts }) {
           } `}
         >
           <div
-            className={`rounded-[13px] overflow-hidden outline outline-[2px] outline-white transition-[max-height,margin] delay-100 duration-700 ${
+            className={`rounded-[13px] overflow-hidden outline outline-[2px] outline-white transition-[margin] delay-100 duration-700 ${
               isExpanded
                 ? "w-full aspect-square max-h-[22rem] mt-2"
+                : loading
+                ? "w-[11rem] max-h-[10rem]"
                 : "w-[11rem] h-full"
             }`}
             style={
               isExpanded
                 ? {
-                    transitionProperty: "width",
-                    transitionDuration: "700ms",
-                    transitionDelay: "100ms",
+                    transitionProperty: "width, max-height",
+                    transitionDuration: "500ms, 300ms",
+                    transitionTimingFunction: "ease-in-out",
+                    transitionDelay: "100ms, 100ms",
                   }
                 : {
-                    transitionProperty: "width",
-                    transitionDuration: "400ms",
-                    transitionDelay: "-300ms",
+                    transitionProperty: "width, max-height",
+                    transitionDuration: "100ms, 100ms",
+                    transitionTimingFunction: "ease-out",
+                    transitionDelay: "0, 0",
                   }
             }
           >
             <img
-              className={`object-cover transition-all duration-[500ms] ease-in-out ${
-                !isExpanded && loading
-                  ? "!w-[10rem] !h-[10rem]"
-                  : "w-full h-full "
-              }`}
+              className={`object-cover transition-all duration-[250ms] ease-out w-full h-full `}
               srcSet={`${endpointUrl}${value.slika_direktorij}`}
               alt=""
             />
@@ -785,7 +784,7 @@ function ListObjava({ value, refreshPosts }) {
           onClick={() => {
             setIsExpanded((prev) => !prev);
             if (isExpanded) {
-              handleloading(400);
+              handleloading(600);
               setToggleSharePost(false);
             }
           }}

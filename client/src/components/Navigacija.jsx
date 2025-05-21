@@ -6,10 +6,10 @@ import NavDropdown from "./NavDropdown";
 const Navigacija = () => {
   const { user } = useLogin();
   return (
-    <nav className="w-full h-[15vh] bg-moja_plava flex items-center  border-b-[7px] border-white">
-      <div className="flex items-center  w-max ml-[5vw]">
+    <nav className="w-full h-[15vh] bg-moja_plava flex items-center  border-b-[7px] border-white select-none">
+      <div className="flex items-center  w-max ml-[5vw] pointer-events-none">
         <img
-          className="h-[60px] select-none"
+          className="h-[60px] select-none pointer-events-none"
           src="../logo/logo.svg"
           alt=""
           draggable="false"
@@ -21,7 +21,7 @@ const Navigacija = () => {
       <div className="mx-auto">
         <NavButton naziv="Ribe" url="/" pad="0.6rem_2.3rem" />
         <NavButton naziv="Ulovi" url="/ulovi" pad="0.6rem_2.3rem" />
-        <NavButton naziv="Novosti" url="#" pad="0.6rem_1.6rem" />
+        <NavButton naziv="Novosti" url="/novosti" pad="0.6rem_1.6rem" />
       </div>
 
       {user ? (

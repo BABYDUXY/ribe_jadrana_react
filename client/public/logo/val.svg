@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Layer_2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 3690.88 300.27">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: none;
+        stroke: #fff;
+        stroke-linecap: round;
+        stroke-miterlimit: 10;
+        stroke-width: 55px;
+      }
+    </style>
+  </defs>
+  <g id="izbornik_za_profil" transform="translate(0,40)">
+    <path class="cls-1" d="M20.5,103.74s501.9-153.78,903.07-14.01c401.18,139.77,927.9-.29,927.9-.29"/>
+    <path class="cls-1" d="M1839.4,93.2s501.9-153.78,903.07-14.01c401.18,139.77,927.9-.29,927.9-.29"/>
+  </g>
+</svg>
