@@ -12,6 +12,7 @@ import NovaObjava from "./page/NovaObjava";
 import MojaSviđanja from "./page/MojaSviđanja";
 import MojiUlovi from "./page/MojiUlovi";
 import Novosti from "./page/Novosti";
+import AdminPanel from "./page/AdminPanel";
 
 const App = () => {
   const endpointUrl = "http://localhost:5000";
@@ -64,6 +65,10 @@ const App = () => {
     {
       path: "/novosti",
       element: <Novosti />,
+    },
+    {
+      path: "/adminpanel",
+      element: <AdminPanel />,
     },
   ]);
 

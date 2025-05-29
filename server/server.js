@@ -193,7 +193,10 @@ app.post("/api/prijava", async (req, res) => {
   }
 
   try {
-    const sql = "SELECT * FROM korisnik WHERE email = ?";
+    const sql = `SELECT k.*, u.uloga
+FROM korisnik k
+LEFT JOIN uloga u ON k.ID = u.ID_korisnika
+WHERE k.email = ?`;
     const korisnici = await new Promise((resolve, reject) => {
       db.query(sql, podaci["1"], (err, results) => {
         if (err) {
@@ -220,13 +223,19 @@ app.post("/api/prijava", async (req, res) => {
       return res.status(401).json({ poruka: "Neispravni podaci za prijavu." });
     }
 
+    const payload = {
+      korisnik_id: korisnik.ID,
+      korisnicko_ime: korisnik.korisnicko_ime,
+      email: korisnik.email,
+      datum_kreiranja: korisnik.datum_kreiranja,
+    };
+
+    if (korisnik.uloga) {
+      payload.uloga = korisnik.uloga;
+    }
+
     const token = jwt.sign(
-      {
-        korisnik_id: korisnik.ID,
-        korisnicko_ime: korisnik.korisnicko_ime,
-        email: korisnik.email,
-        datum_kreiranja: korisnik.datum_kreiranja,
-      },
+      payload,
       tajni_token, // Tajni ključ za potpis tokena
       { expiresIn: "2h" } // Trajanje tokena
     );
@@ -1398,6 +1407,43 @@ app.post("/api/komentar", verifyToken, async (req, res) => {
     } else {
       return res.status(400).json({ poruka: "Komentar nije dodan." });
     }
+  });
+});
+
+app.post("/api/provjeri-token", verifyToken, async (req, res) => {
+  const userInfo = req.user;
+
+  if (!userInfo?.email) {
+    return res.status(400).json({ poruka: "Nevažeći token." });
+  }
+
+  const email = userInfo.email;
+
+  const sql = `
+    SELECT k.email, k.korisnicko_ime, u.uloga
+    FROM korisnik k
+    LEFT JOIN uloga u ON k.ID = u.ID_korisnika
+    WHERE k.email = ?
+    LIMIT 1
+  `;
+
+  db.query(sql, [email], (err, results) => {
+    if (err) {
+      console.error("Greška pri dohvaćanju uloge:", err);
+      return res.status(500).json({ poruka: "Greška na serveru." });
+    }
+
+    if (results.length === 0) {
+      return res.status(404).json({ poruka: "Korisnik nije pronađen." });
+    }
+
+    const korisnik = results[0];
+
+    return res.status(200).json({
+      email: korisnik.email,
+      korisnicko_ime: korisnik.korisnicko_ime,
+      uloga: korisnik.uloga || null,
+    });
   });
 });
 

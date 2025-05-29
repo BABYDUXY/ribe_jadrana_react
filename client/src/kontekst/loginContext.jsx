@@ -12,6 +12,7 @@ export function LoginProvider({ children }) {
     const { korisnik_id, exp, iat, ...withoutId } = user;
     sessionStorage.setItem("korisnik", JSON.stringify(withoutId));
     setUser(withoutId);
+    console.log(user);
   };
 
   const logout = () => {

@@ -97,7 +97,7 @@ function Novosti() {
               </span>
             </div>
             <h4 className="mt-2 italic text-white font-glavno">
-              Najnovije vnovosti iz morskog svijeta jadrana.
+              Najnovije novosti iz morskog svijeta jadrana.
             </h4>
           </div>
           {paginatedData.map((objava) => (

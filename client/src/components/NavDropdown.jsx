@@ -16,8 +16,12 @@ function NavDropdown({ role }) {
         />
       </div>
       <ul
-        className="absolute  w-[10rem]  flex flex-col justify-center top-[105%] items-center  outline outline-[4px] outline-white rounded-b-[15px] [&>*]:bg-moja_plava [&>*]:flex [&>*]:justify-center [&>li]:p-[0.2rem_0] [&>li>a]:p-[0.1rem_1rem] [&>*:hover]:cursor-pointer [&>*:hover]:bg-moja_plava-tamna [&>*]:w-full [&>*]:text-center text-white font-glavno [&>li>a]:border-b-2 
-      [&>li>a]:px-2 [&>li:nth-last-child(1)]:border-0 [&>li:hover>a]:px-3 [&>li:nth-last-child(1)>a]:border-0 [&>li>a]:transition-all [&>li>a]:duration-300 [&>li>a]:ease-in-out h-0 opacity-0 overflow-hidden transition-all duration-300 ease-in group-hover:h-[9rem] group-hover:opacity-100"
+        className={`absolute  w-[10rem]  flex flex-col justify-center top-[105%] items-center  outline outline-[4px] outline-white rounded-b-[15px] [&>*]:bg-moja_plava [&>*]:flex [&>*]:justify-center [&>li]:p-[0.2rem_0] [&>li>a]:p-[0.1rem_1rem] [&>*:hover]:cursor-pointer [&>*:hover]:bg-moja_plava-tamna [&>*]:w-full [&>*]:text-center text-white font-glavno [&>li>a]:border-b-2 
+      [&>li>a]:px-2 [&>li:nth-last-child(1)]:border-0 [&>li:hover>a]:px-3 [&>li:nth-last-child(1)>a]:border-0 [&>li>a]:transition-all [&>li>a]:duration-300 [&>li>a]:ease-in-out h-0 opacity-0 overflow-hidden transition-all duration-300 ease-in ${
+        user?.uloga === "admin"
+          ? "group-hover:h-[11rem]"
+          : "group-hover:h-[9rem]"
+      } group-hover:opacity-100`}
       >
         <li className="">
           <Link to="/mojprofil">Moj profil</Link>
@@ -28,6 +32,13 @@ function NavDropdown({ role }) {
         <li>
           <Link to="/mojasvidanja">Moja Sviđanja</Link>
         </li>
+        {user?.uloga === "admin" ? (
+          <li>
+            <Link to="/adminpanel">Admin Panel</Link>
+          </li>
+        ) : (
+          ""
+        )}
         <li>
           <Link
             onClick={() => {
