@@ -45,7 +45,7 @@ function LandingPage() {
   return (
     <div className="flex flex-col min-h-screen">
       <Navigacija />
-      <div className="flex flex-col items-center justify-center w-1/2 m-[0_auto] mt-10 text-center text-white  glavno-nav">
+      <div className="flex flex-col items-center justify-center w-1/2 m-[0_auto] mt-20 text-center text-white  glavno-nav">
         <h1 className="text-[1.7rem] font-bold mb-4">
           <span className="!text-[2rem]">Ribe Jadrana</span>: "Gdje more postaje
           strast"
