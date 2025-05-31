@@ -13,6 +13,7 @@ import MojaSviđanja from "./page/MojaSviđanja";
 import MojiUlovi from "./page/MojiUlovi";
 import Novosti from "./page/Novosti";
 import AdminPanel from "./page/AdminPanel";
+import LandingPage from "./page/LandingPage";
 
 const App = () => {
   const endpointUrl = "http://localhost:5000";
@@ -22,6 +23,10 @@ const App = () => {
   const router = createBrowserRouter([
     {
       path: "/",
+      element: <LandingPage />,
+    },
+    {
+      path: "/ribe",
       element: (
         <AllFishes
           backendData={backendData}

@@ -10,7 +10,8 @@ function AdminPanel() {
   const { endpointUrl } = useContext(EndpointUrlContext);
   const { logout } = useLogin();
   const navigate = useNavigate();
-  const [user, setUser] = useState(null); // ✅ useState instead of let
+  const [user, setUser] = useState(null);
+  const [choice, setChoice] = useState("ribe");
 
   useEffect(() => {
     const token = sessionStorage.getItem("token");
@@ -34,8 +35,7 @@ function AdminPanel() {
         return response.json();
       })
       .then((data) => {
-        console.log("KORISNIK:", data);
-        setUser(data); // ✅ Update state
+        setUser(data);
       })
       .catch((error) => {
         console.error("Greška kod verifikacije tokena:", error);
@@ -64,6 +64,119 @@ function AdminPanel() {
     return null;
   }
 
+  const fishTableConfig = {
+    columns: [
+      {
+        field: "ID",
+        label: "ID",
+        sortable: true,
+      },
+      {
+        field: "ime",
+        label: "ime",
+        sortable: true,
+      },
+      {
+        field: "ostali_nazivi",
+        label: "ostali_nazivi",
+        sortable: true,
+        type: "truncate",
+      },
+      {
+        field: "lat_ime",
+        label: "lat_ime",
+        sortable: true,
+      },
+      {
+        field: "vrsta",
+        label: "vrsta",
+        sortable: true,
+      },
+      {
+        field: "dubina",
+        label: "dubina",
+        type: "range",
+        minField: "min_dubina",
+        maxField: "max_dubina",
+        unit: "m",
+        cellClass: "w-auto text-nowrap",
+        sortable: true,
+      },
+      {
+        field: "max_duljina",
+        label: "max_duljina",
+        type: "unit",
+        unit: "cm",
+        sortable: true,
+      },
+      {
+        field: "max_tezina",
+        label: "max_tezina",
+        type: "unit",
+        unit: "kg",
+        sortable: true,
+      },
+      {
+        field: "opis",
+        label: "opis",
+        type: "truncate",
+        truncateClass: "max-w-xs truncate",
+        sortable: true,
+      },
+      {
+        field: "slika",
+        label: "slika",
+        type: "image",
+        alt: "ime",
+        imageClass: "w-auto h-12",
+        sortable: false,
+      },
+    ],
+  };
+
+  const korisnikTableConfig = {
+    columns: [
+      {
+        field: "ID",
+        label: "ID",
+        sortable: true,
+      },
+      {
+        field: "korisnicko_ime",
+        label: "Korisničko ime",
+        sortable: true,
+      },
+      {
+        field: "email",
+        label: "Email",
+        sortable: true,
+      },
+      {
+        field: "lozinka_hash",
+        label: "Lozinka",
+        type: "truncate",
+        truncateClass: "max-w-xs truncate",
+        sortable: false,
+        render: (item) => "••••••••", // Hide password hash for security
+      },
+      {
+        field: "datum_kreiranja",
+        label: "Datum kreiranja",
+        type: "datetime",
+        sortable: true,
+        render: (item) =>
+          new Date(item.datum_kreiranja).toLocaleString("hr-HR"),
+      },
+      {
+        field: "zadnja_imjena",
+        label: "Zadnja izmjena",
+        type: "datetime",
+        sortable: true,
+        render: (item) => new Date(item.zadnja_imjena).toLocaleString("hr-HR"),
+      },
+    ],
+  };
+
   // Ako je admin
   return (
     <div className="flex flex-col min-h-screen">
@@ -71,14 +184,79 @@ function AdminPanel() {
       <div className="flex justify-center flex-1 text-white">
         <div className="w-[90%] mt-6 ">
           <ul className="flex justify-center gap-5 text-lg font-glavno [&>li]:outline [&>li]:outline-2 [&>li]:outline-white [&>li]:w-[6rem] [&>li]:rounded-[11px] [&>li]:text-center [&>li]:py-1 [&>li:hover]:w-[6.5rem] [&>li]:cursor-pointer">
-            <li className="form-btn-hover">Ribe</li>
-            <li className="form-btn-hover">Korisnici</li>
-            <li className="form-btn-hover">članci</li>
-            <li className="form-btn-hover">objave</li>
-            <li className="form-btn-hover">oprema</li>
-            <li className="form-btn-hover">upiti</li>
+            <li
+              onClick={() => {
+                setChoice("ribe");
+              }}
+              className="form-btn-hover"
+            >
+              Ribe
+            </li>
+            <li
+              onClick={() => {
+                setChoice("korisnici");
+              }}
+              className="form-btn-hover"
+            >
+              Korisnici
+            </li>
+            <li
+              onClick={() => {
+                setChoice("članci");
+              }}
+              className="form-btn-hover"
+            >
+              članci
+            </li>
+            <li
+              onClick={() => {
+                setChoice("objave");
+              }}
+              className="form-btn-hover"
+            >
+              objave
+            </li>
+            <li
+              onClick={() => {
+                setChoice("oprema");
+              }}
+              className="form-btn-hover"
+            >
+              oprema
+            </li>
+            <li
+              onClick={() => {
+                setChoice("upiti");
+              }}
+              className="form-btn-hover"
+            >
+              upiti
+            </li>
           </ul>
-          <RibaTable />
+          {choice === "ribe" ? (
+            <RibaTable
+              tableConfig={fishTableConfig}
+              endpoint="/"
+              navigateUrlTemplate="/fish/{id}"
+              searchField="ime"
+              searchPlaceholder="Pretraži po imenu..."
+              rowsPerPage={10}
+              highlightCondition={(item) => item.otrovna}
+              highlightClass="text-red-200"
+            />
+          ) : choice === "korisnici" ? (
+            <RibaTable
+              tableConfig={korisnikTableConfig}
+              endpoint="/admin/korisnici" // Adjust to your API endpoint
+              //navigateUrlTemplate="" // Optional: if you want clickable rows
+              searchField="korisnicko_ime"
+              searchPlaceholder="Pretraži po imenu"
+              rowsPerPage={10}
+              secure={true}
+            />
+          ) : (
+            ""
+          )}
         </div>
       </div>
       <Footer />

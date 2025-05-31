@@ -107,6 +107,48 @@ app.get("/otrovne", (req, res) => {
     return res.json(data);
   });
 });
+
+app.get("/admin/korisnici", verifyToken, async (req, res) => {
+  try {
+    const userEmail = req.user.email;
+
+    // Check if user exists and get their role
+    const checkUserSql = `
+      SELECT korisnik.email, uloga.uloga 
+      FROM korisnik 
+      LEFT JOIN uloga ON uloga.ID_korisnika = korisnik.ID 
+      WHERE korisnik.email = ?
+    `;
+
+    db.query(checkUserSql, [userEmail], (err, userResult) => {
+      if (err) {
+        return res.status(500).json({ error: "Database error" });
+      }
+
+      if (userResult.length === 0) {
+        return res.status(403).json({ error: "Unauthorized access" });
+      }
+
+      const user = userResult[0];
+
+      if (user.uloga !== "admin") {
+        return res.status(403).json({ error: "Admin access required" });
+      }
+
+      const sql =
+        "SELECT ID, korisnicko_ime, email, datum_kreiranja, zadnja_imjena FROM korisnik";
+
+      db.query(sql, (err, data) => {
+        if (err) {
+          return res.status(500).json({ error: "Failed to fetch users" });
+        }
+        return res.json(data);
+      });
+    });
+  } catch (error) {
+    return res.status(500).json({ error: "Server error" });
+  }
+});
 /* REGISTRACIJA KORISNIKA U SUSTAV */
 app.post("/api/registracija", async (req, res) => {
   const podaci = req.body;
@@ -153,7 +195,7 @@ app.post("/api/registracija", async (req, res) => {
     const lozinka_hash = await bcrypt.hash(lozinka, sol);
 
     const sql =
-      "INSERT INTO korisnik (korisnicko_ime, email, lozinka_hash, sol) VALUES(?, ?, ?, ?)";
+      "INSERT INTO korisnik (korisnicko_ime, email, lozinka_hash) VALUES(?, ?, ?)";
 
     /* Ubacujemo korisnika u bazu */
     const rezultat = await new Promise((resolve, reject) => {

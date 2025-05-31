@@ -2,41 +2,72 @@ import React, { useContext, useEffect, useState } from "react";
 import { EndpointUrlContext } from "../kontekst/EndpointUrlContext";
 import { useNavigate } from "react-router-dom";
 
-function RibaTable() {
-  const [ribe, setRibe] = useState([]);
-  const [filteredRibe, setFilteredRibe] = useState([]);
+function RibaTable({
+  tableConfig,
+  endpoint = "/",
+  secure = false,
+  navigateUrlTemplate,
+  searchField = "ime",
+  searchPlaceholder = "Pretraži...",
+  rowsPerPage = 10,
+  highlightCondition,
+  highlightClass = "text-red-200",
+}) {
+  const [data, setData] = useState([]);
+  const [filteredData, setFilteredData] = useState([]);
   const [search, setSearch] = useState("");
-  const [sortField, setSortField] = useState("ime");
+  const [sortField, setSortField] = useState(
+    tableConfig.columns[0]?.field || ""
+  );
   const [sortOrder, setSortOrder] = useState("asc");
   const [currentPage, setCurrentPage] = useState(1);
-  const rowsPerPage = 10;
   const { endpointUrl } = useContext(EndpointUrlContext);
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetch(`${endpointUrl}/`)
-      .then((res) => res.json())
-      .then((data) => {
-        setRibe(data);
-        setFilteredRibe(data);
+    const requestOptions = {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    };
+
+    // Add Authorization header if secure prop is true
+    if (secure) {
+      const token = sessionStorage.getItem("token");
+      if (token) {
+        requestOptions.headers["Authorization"] = `Bearer ${token}`;
+      }
+    }
+
+    fetch(`${endpointUrl}${endpoint}`, requestOptions)
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error(`HTTP error! status: ${res.status}`);
+        }
+        return res.json();
       })
-      .catch((err) => console.error("Greška kod dohvata riba:", err));
-  }, []);
+      .then((data) => {
+        setData(data);
+        setFilteredData(data);
+      })
+      .catch((err) => console.error(`Greška kod dohvata podataka:`, err));
+  }, [endpointUrl, endpoint, secure]);
 
   useEffect(() => {
-    const filtered = ribe.filter((riba) =>
-      riba.ime.toLowerCase().includes(search.toLowerCase())
+    const filtered = data.filter((item) =>
+      item[searchField]?.toString().toLowerCase().includes(search.toLowerCase())
     );
-    setFilteredRibe(filtered);
+    setFilteredData(filtered);
     setCurrentPage(1);
-  }, [search, ribe]);
+  }, [search, data, searchField]);
 
   const handleSort = (field) => {
     const order = field === sortField && sortOrder === "asc" ? "desc" : "asc";
     setSortField(field);
     setSortOrder(order);
 
-    const sorted = [...filteredRibe].sort((a, b) => {
+    const sorted = [...filteredData].sort((a, b) => {
       const valA = a[field] ?? "";
       const valB = b[field] ?? "";
 
@@ -48,25 +79,70 @@ function RibaTable() {
       return order === "asc" ? valA - valB : valB - valA;
     });
 
-    setFilteredRibe(sorted);
+    setFilteredData(sorted);
   };
 
-  const paginatedRibe = filteredRibe.slice(
+  const renderCellContent = (item, column) => {
+    if (column.render) {
+      return column.render(item);
+    }
+
+    if (column.type === "image") {
+      return item[column.field] ? (
+        <img
+          src={item[column.field]}
+          alt={column.alt ? item[column.alt] : ""}
+          className={column.imageClass || "w-auto h-12"}
+        />
+      ) : (
+        "-"
+      );
+    }
+
+    if (column.type === "range") {
+      return `${item[column.minField]} - ${item[column.maxField]} ${
+        column.unit || ""
+      }`;
+    }
+
+    if (column.type === "unit") {
+      return `${item[column.field]} ${column.unit || ""}`;
+    }
+
+    if (column.type === "truncate") {
+      return (
+        <span className={column.truncateClass || "max-w-xs truncate"}>
+          {item[column.field]}
+        </span>
+      );
+    }
+
+    return item[column.field];
+  };
+
+  const paginatedData = filteredData.slice(
     (currentPage - 1) * rowsPerPage,
     currentPage * rowsPerPage
   );
 
-  const totalPages = Math.ceil(filteredRibe.length / rowsPerPage);
+  const totalPages = Math.ceil(filteredData.length / rowsPerPage);
+
+  const handleRowClick = (item) => {
+    if (navigateUrlTemplate && navigate) {
+      const url = navigateUrlTemplate.replace("{id}", item.ID || item.id);
+      navigate(url);
+    }
+  };
 
   return (
-    <div className="p-4 text-white ">
+    <div className="p-4 text-white">
       <div className="flex items-center justify-between mb-4">
         <input
           type="text"
-          placeholder="Pretraži po imenu..."
+          placeholder={searchPlaceholder}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="p-2 text-white border border-white  bg-moja_plava-tamna rounded-[11px] placeholder:text-white"
+          className="p-2 text-white border border-white bg-moja_plava-tamna rounded-[11px] placeholder:text-white"
         />
         <div>
           Page {currentPage} of {totalPages}
@@ -77,70 +153,49 @@ function RibaTable() {
         <table className="min-w-full table-auto outline outline-4 outline-white rounded-[21px] p-4">
           <thead className="bg-moja_plava-tamna">
             <tr>
-              {[
-                "ID",
-                "ime",
-                "ostali_nazivi",
-                "lat_ime",
-                "vrsta",
-                "dubina",
-                "max_duljina",
-                "max_tezina",
-                "opis",
-                "slika",
-              ].map((field) => (
+              {tableConfig.columns.map((column) => (
                 <th
-                  key={field}
-                  onClick={() => handleSort(field)}
-                  className={`p-2 border  cursor-pointer hover:bg-moja_plava-tamna`}
+                  key={column.field}
+                  onClick={() =>
+                    column.sortable !== false && handleSort(column.field)
+                  }
+                  className={`p-2 border ${
+                    column.sortable !== false
+                      ? "cursor-pointer hover:bg-moja_plava-tamna"
+                      : ""
+                  }`}
                 >
-                  {field}{" "}
-                  {sortField === field && (sortOrder === "asc" ? "▲" : "▼")}
+                  {column.label}{" "}
+                  {sortField === column.field &&
+                    column.sortable !== false &&
+                    (sortOrder === "asc" ? "▲" : "▼")}
                 </th>
               ))}
             </tr>
           </thead>
           <tbody>
-            {paginatedRibe.map((riba) => (
+            {paginatedData.map((item, index) => (
               <tr
-                onClick={() => {
-                  navigate(`/fish/${riba.ID}`);
-                }}
-                key={riba.ID}
-                className={`hover:bg-moja_plava-tamna ${
-                  riba.otrovna ? "text-red-200" : ""
+                key={item.ID || item.id || index}
+                onClick={() => handleRowClick(item)}
+                className={`hover:bg-moja_plava-tamna   ${
+                  navigateUrlTemplate ? "cursor-pointer" : ""
+                } ${
+                  highlightCondition && highlightCondition(item)
+                    ? highlightClass
+                    : ""
                 }`}
               >
-                <td className="p-2 border border-white">{riba.ID}</td>
-                <td className="p-2 border border-white">{riba.ime}</td>
-                <td className="p-2 border border-white">
-                  {riba.ostali_nazivi}
-                </td>
-                <td className="p-2 border border-white">{riba.lat_ime}</td>
-                <td className="p-2 border border-white">{riba.vrsta}</td>
-                <td className="w-auto p-2 border border-white text-nowrap">
-                  {riba.min_dubina} - {riba.max_dubina} m
-                </td>
-                <td className="p-2 border border-white">
-                  {riba.max_duljina} cm
-                </td>
-                <td className="p-2 border border-white">
-                  {riba.max_tezina} kg
-                </td>
-                <td className="max-w-xs p-2 truncate border border-white">
-                  {riba.opis}
-                </td>
-                <td className="p-2 border border-white">
-                  {riba.slika ? (
-                    <img
-                      src={riba.slika}
-                      alt={riba.ime}
-                      className="w-auto h-12"
-                    />
-                  ) : (
-                    "-"
-                  )}
-                </td>
+                {tableConfig.columns.map((column) => (
+                  <td
+                    key={column.field}
+                    className={`p-2 border max-w-[5rem] overflow-hidden  border-white ${
+                      column.cellClass || ""
+                    }`}
+                  >
+                    {renderCellContent(item, column)}
+                  </td>
+                ))}
               </tr>
             ))}
           </tbody>
@@ -150,13 +205,13 @@ function RibaTable() {
       <div className="flex justify-center mt-4 space-x-2">
         <button
           onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
-          className="px-3 py-2 rounded bg-moja_plava-tamna hover:bg-moja_plava-tamna"
+          className="px-3 py-2 rounded bg-moja_plava-tamna form-btn-hover hover:outline-2 hover:outline hover:outline-white"
         >
           Prethodna
         </button>
         <button
           onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
-          className="px-3 py-1 rounded bg-moja_plava-tamna hover:bg-moja_plava-tamna"
+          className="px-3 py-1 rounded bg-moja_plava-tamna form-btn-hover hover:outline-2 hover:outline hover:outline-white"
         >
           Sljedeća
         </button>

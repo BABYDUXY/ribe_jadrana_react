@@ -9,7 +9,7 @@ function FishAllInfo({ value }) {
     <>
       <Navigacija />
       <div className=" w-screen  grid py-16  grid-cols-[auto_1fr_auto]">
-        <Link to="/" className="hover:cursor-default w-min h-min">
+        <Link to="/ribe" className="hover:cursor-default w-min h-min">
           <img
             className="w-[60px] absolute ml-[6rem] hover:scale-x-[1.15] hover:scale-y-[1.05] transition-all duration-300  ease-in-out hover:cursor-pointer origin-right"
             src="/logo/arrow_back.svg"

@@ -6,9 +6,11 @@ import { PaginationContext } from "../kontekst/PaginationContext";
 import { EndpointUrlContext } from "../kontekst/EndpointUrlContext";
 import ListObjava from "../components/ListObjava";
 import Pagination from "../components/Pagination";
+import { Navigate, useNavigate } from "react-router-dom";
 
 function MojiUlovi() {
   const { endpointUrl } = useContext(EndpointUrlContext);
+  const user = sessionStorage.getItem("korisnik");
 
   const [sortOptions, setSortOptions] = useState({
     field: "ime",
@@ -66,6 +68,10 @@ function MojiUlovi() {
   useEffect(() => {
     fetchPosts();
   }, []);
+
+  if (!user) {
+    return <Navigate to="/prijava" />;
+  }
 
   return (
     <div className="flex flex-col min-h-screen">
