@@ -92,6 +92,7 @@ function MojiUlovi() {
               key={objava.hash}
               value={objava}
               refreshPosts={fetchPosts}
+              status={""}
             />
           ))}
         </div>

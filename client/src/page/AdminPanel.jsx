@@ -5,6 +5,7 @@ import Navigacija from "../components/Navigacija";
 import Footer from "../components/Footer";
 import { EndpointUrlContext } from "../kontekst/EndpointUrlContext";
 import RibaTable from "../components/RibaTable";
+import AdminObjave from "../components/AdminObjave";
 
 function AdminPanel() {
   const { endpointUrl } = useContext(EndpointUrlContext);
@@ -25,7 +26,7 @@ function AdminPanel() {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Token ${token}`, // send token in header
+        Authorization: `Token ${token}`,
       },
     })
       .then((response) => {
@@ -254,6 +255,8 @@ function AdminPanel() {
               rowsPerPage={10}
               secure={true}
             />
+          ) : choice === "objave" ? (
+            <AdminObjave />
           ) : (
             ""
           )}

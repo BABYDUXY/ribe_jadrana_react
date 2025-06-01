@@ -3,7 +3,12 @@ import OdabirRibe from "./OdabirRibe";
 import ComboBox from "./ComboBox";
 import imageCompression from "browser-image-compression";
 
-function ObrazacUlov({ privatnost, setRibaId, setCompressedImage }) {
+function ObrazacUlov({
+  privatnost,
+  setRibaId,
+  setCompressedImage,
+  promptValues = {},
+}) {
   const [slika, setSlika] = useState(null);
 
   const lista = [
@@ -34,6 +39,18 @@ function ObrazacUlov({ privatnost, setRibaId, setCompressedImage }) {
     }
   };
 
+  const [stap_brend, stap_model] =
+    Array.isArray(promptValues?.kombinirani_model) &&
+    promptValues.kombinirani_model[0]
+      ? promptValues.kombinirani_model[0].split(" ")
+      : ["", ""];
+
+  const [rola_brend, rola_model] =
+    Array.isArray(promptValues?.kombinirani_model) &&
+    promptValues.kombinirani_model[1]
+      ? promptValues.kombinirani_model[1].split(" ")
+      : ["", ""];
+
   return (
     <div className="flex flex-col items-center w-[45rem] gap-6 my-10 font-glavno">
       <div className="w-[50%] flex  items-center justify-between ">
@@ -41,7 +58,10 @@ function ObrazacUlov({ privatnost, setRibaId, setCompressedImage }) {
           <label className="text-white glavno-nav" htmlFor="riba">
             Ulovljena riba:
           </label>
-          <OdabirRibe onSelect={setRibaId} />
+          <OdabirRibe
+            onSelect={setRibaId}
+            defaultValue={promptValues.id_ribe || null}
+          />
         </div>
 
         <div className="flex flex-col gap-1 w-[30%]">
@@ -55,6 +75,7 @@ function ObrazacUlov({ privatnost, setRibaId, setCompressedImage }) {
             id="tezina"
             step="0.1"
             min="0"
+            defaultValue={promptValues?.tezina || ""}
             placeholder="0.7 kg"
             required
           />
@@ -72,13 +93,21 @@ function ObrazacUlov({ privatnost, setRibaId, setCompressedImage }) {
             <label className="text-white glavno-nav " htmlFor="stap_brend">
               Brend:
             </label>
-            <ComboBox lista={lista} name={"stap_brend"} />
+            <ComboBox
+              lista={lista}
+              defaultValue={stap_brend || ""}
+              name={"stap_brend"}
+            />
           </div>
           <div className="flex flex-col gap-1 w-[60%]">
             <label className="text-white glavno-nav" htmlFor="stap_model">
               Model:
             </label>
-            <ComboBox lista={lista} name={"stap_model"} />
+            <ComboBox
+              lista={lista}
+              defaultValue={stap_model || ""}
+              name={"stap_model"}
+            />
           </div>
         </div>
       </div>
@@ -94,13 +123,21 @@ function ObrazacUlov({ privatnost, setRibaId, setCompressedImage }) {
             <label className="text-white glavno-nav " htmlFor="rola_brend">
               Brend:
             </label>
-            <ComboBox lista={lista} name={"rola_brend"} />
+            <ComboBox
+              lista={lista}
+              defaultValue={rola_brend || ""}
+              name={"rola_brend"}
+            />
           </div>
           <div className="flex flex-col gap-1 w-[60%]">
             <label className="text-white glavno-nav" htmlFor="rola_model">
               Model:
             </label>
-            <ComboBox lista={lista} name={"rola_model"} />
+            <ComboBox
+              lista={lista}
+              defaultValue={rola_model || ""}
+              name={"rola_model"}
+            />
           </div>
         </div>
       </div>
@@ -115,6 +152,7 @@ function ObrazacUlov({ privatnost, setRibaId, setCompressedImage }) {
           name="mamac"
           id="mamac"
           required
+          defaultValue={promptValues?.mamac || ""}
         />
       </div>
       <div className="flex flex-col w-[50%] gap-1">
@@ -127,6 +165,7 @@ function ObrazacUlov({ privatnost, setRibaId, setCompressedImage }) {
           name="opis"
           type="text"
           placeholder="Upiši ovdje..."
+          defaultValue={promptValues?.opis_objave || ""}
         />
       </div>
       <div className="w-[50%] flex  items-center justify-between">
@@ -141,27 +180,32 @@ function ObrazacUlov({ privatnost, setRibaId, setCompressedImage }) {
             name="mjesto"
             id="mjesto"
             required
+            defaultValue={promptValues?.mjesto || ""}
           />
         </div>
-        <div className="flex flex-col w-[30%] gap-1">
-          <label className="text-white glavno-nav" htmlFor="uploadSlike">
-            Slika:
-          </label>
-          <input
-            id="uploadSlike"
-            type="file"
-            accept="image/*"
-            onChange={handleSlikaChange}
-            className="hidden text-sm"
-            required
-          />
-          <label
-            htmlFor="uploadSlike"
-            className="px-4 py-2 font-glavno w-[100%]  form-btn-hover text-white transition rounded cursor-pointer outline outline-[2px] outline-white bg-moja_plava-tamna hover:w-[105%]"
-          >
-            Odaberi
-          </label>
-        </div>
+        {promptValues?.slika_direktorij ? (
+          ""
+        ) : (
+          <div className="flex flex-col w-[30%] gap-1">
+            <label className="text-white glavno-nav" htmlFor="uploadSlike">
+              Slika:
+            </label>
+            <input
+              id="uploadSlike"
+              type="file"
+              accept="image/*"
+              onChange={handleSlikaChange}
+              className="hidden text-sm"
+              required
+            />
+            <label
+              htmlFor="uploadSlike"
+              className="px-4 py-2 font-glavno w-[100%]  form-btn-hover text-white transition rounded cursor-pointer outline outline-[2px] outline-white bg-moja_plava-tamna hover:w-[105%]"
+            >
+              Odaberi
+            </label>
+          </div>
+        )}
       </div>
       {slika && (
         <div className="w-[50%] flex items-center justify-center rounded-[11px] ">
@@ -194,12 +238,16 @@ function ObrazacUlov({ privatnost, setRibaId, setCompressedImage }) {
           Prihvaćam uvjete korištenja.
         </label>
       </div>
-      <button
-        className="w-[20%] text-white glavno-nav form-btn-hover hover:w-[23%] bg-moja_plava-tamna p-[0.3rem_0rem] mt-2 self-center rounded-[7px] outline outline-white outline-[3px]"
-        type="submit"
-      >
-        Objavi
-      </button>
+      {promptValues?.id_ribe ? (
+        ""
+      ) : (
+        <button
+          className="w-[20%] text-white glavno-nav form-btn-hover hover:w-[23%] bg-moja_plava-tamna p-[0.3rem_0rem] mt-2 self-center rounded-[7px] outline outline-white outline-[3px]"
+          type="submit"
+        >
+          Objavi
+        </button>
+      )}
     </div>
   );
 }

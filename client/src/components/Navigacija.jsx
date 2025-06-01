@@ -9,11 +9,11 @@ const Navigacija = () => {
   const { user } = useLogin();
   return (
     <nav className="w-full h-[15vh] bg-moja_plava flex items-center  border-b-[7px] border-white select-none">
-      <div className="flex items-center  w-max ml-[5vw] ">
-        <div
-          onClick={() => navigate("/")}
-          className="flex items-center justify-center cursor-pointer group w-max"
-        >
+      <div
+        onClick={() => navigate("/")}
+        className="flex items-center  w-max ml-[5vw] cursor-pointer group "
+      >
+        <div className="flex items-center justify-center cursor-pointer w-max">
           <img
             className="h-[60px] select-none pointer-events-none opacity-100  transition-all duration-[500ms] ease-in-out"
             src="/logo/logo.svg"

@@ -602,7 +602,7 @@ app.post(
         stapLinkId = insertStapLink.insertId;
         console.log("link za stap je unesen id: " + stapLinkId);
       } else {
-        stapLinkId = linkOpremeResult.map((row) => row.ID);
+        stapLinkId = linkOpremeResult[0].ID;
         console.log("Postojeci Linkovi za štap su:" + stapLinkId);
       }
       /* LINK za rolu */
@@ -632,7 +632,7 @@ app.post(
         rolaLinkId = insertRolaLink.insertId;
         console.log("link za rolu je unesen id: " + rolaLinkId);
       } else {
-        rolaLinkId = linkOpremeResultRola.map((row) => row.ID);
+        rolaLinkId = linkOpremeResultRola[0].ID;
         console.log("Postojeci Linkovi za Rolu su:" + rolaLinkId);
       }
 
@@ -663,7 +663,7 @@ app.post(
         mamacLinkId = insertMamaclink.insertId;
         console.log("Link za mamac je unesen id:" + mamacLinkId);
       } else {
-        mamacLinkId = linkOpremeResultMamac.map((row) => row.ID);
+        mamacLinkId = linkOpremeResultMamac[0].ID;
         console.log("Postojeci Linkovi za Mamac su:" + mamacLinkId);
       }
 
@@ -697,8 +697,10 @@ app.post(
       });
 
       const opremaLinkIds = [stapLinkId, rolaLinkId, mamacLinkId];
+
+      const uniqueOpremaLinkIds = [...new Set(opremaLinkIds)];
       const insertOpremauUlovu = await Promise.all(
-        opremaLinkIds.map((opremaId) => {
+        uniqueOpremaLinkIds.map((opremaId) => {
           return new Promise((resolve, reject) => {
             db.query(
               "INSERT INTO oprema_u_ulovu (oprema_id, ulov_id) VALUES (?, ?)",
@@ -1091,6 +1093,7 @@ app.get("/objave/ulovi", (req, res) => {
   ulov.mjesto,
   ulov.opis AS opis_ulova,
 
+ riba.ID AS id_ribe,
   riba.ime AS ime_ribe,
 
   -- Oprema samo ako postoji ulov
@@ -1168,7 +1171,7 @@ app.get("/privatni/ulovi", (req, res) => {
   ulov.datum_ulova AS datum_kreiranja,
 
   korisnik.korisnicko_ime AS autor,
-  
+  riba.ID AS id_ribe,
   riba.ime AS ime_ribe,
 
   GROUP_CONCAT(DISTINCT brend.naziv) AS brend,
@@ -1451,7 +1454,7 @@ app.post("/api/komentar", verifyToken, async (req, res) => {
     }
   });
 });
-
+/* ---------ADMIN---------- */
 app.post("/api/provjeri-token", verifyToken, async (req, res) => {
   const userInfo = req.user;
 
@@ -1486,6 +1489,34 @@ app.post("/api/provjeri-token", verifyToken, async (req, res) => {
       korisnicko_ime: korisnik.korisnicko_ime,
       uloga: korisnik.uloga || null,
     });
+  });
+});
+
+app.patch("/objave/ulovi/:hash", verifyToken, async (req, res) => {
+  const { hash } = req.params;
+  const { status } = req.body;
+  const userInfo = req.user;
+
+  if (!userInfo?.email) {
+    return res.status(400).json({ poruka: "Nevažeći token." });
+  }
+
+  if (!["public", "hidden", "pending"].includes(status)) {
+    return res.status(400).json({ error: "Invalid status value" });
+  }
+
+  const sql = "UPDATE objava SET status = ? WHERE hash = ?";
+  db.query(sql, [status, hash], (err, results) => {
+    if (err) {
+      console.error("MySQL error:", err);
+      return res.status(500).json({ error: "Database error" });
+    }
+
+    if (results.affectedRows === 0) {
+      return res.status(404).json({ error: "Objava not found" });
+    }
+
+    res.status(200).json({ message: "Status updated successfully" });
   });
 });
 

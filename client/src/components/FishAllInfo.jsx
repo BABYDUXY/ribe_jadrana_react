@@ -40,25 +40,25 @@ function FishAllInfo({ value }) {
           </div>
           <div className="flex justify-center  pb-[2rem] pt-[1.5rem]">
             <div className="w-[60%] h-full bg-moja_plava-tamna rounded-[9px] outline outline-white outline-[3px] p-[1.5rem]">
-              <ul className="w-full h-full flex flex-col justify-between  [&>li>h8]:text-white [&>li>h8]:glavno-nav [&>li>h8]:font-semibold [&>li>p]:text-white [&>li>p]:leading-[20px] [&>li>p]:text-[1.05rem] [&>li>p]:-mt-1">
+              <ul className="w-full h-full flex flex-col justify-between  [&>li>h6]:text-white [&>li>h6]:glavno-nav [&>li>h6]:font-semibold [&>li>p]:text-white [&>li>p]:leading-[20px] [&>li>p]:text-[1.05rem] [&>li>p]:-mt-1">
                 <li className="pb-2">
-                  <h8>Ostali nazivi:</h8>
+                  <h6>Ostali nazivi:</h6>
                   <p>{value.ostali_nazivi ? value.ostali_nazivi : "Nema"}</p>
                 </li>
                 <li className="flex items-center gap-3">
-                  <h8>Dubina: </h8>
+                  <h6>Dubina: </h6>
                   <p>{`${value.min_dubina}  - ${value.max_dubina} m`}</p>
                 </li>
                 <li className="flex items-center gap-3">
-                  <h8>Max duljina: </h8>
+                  <h6>Max duljina: </h6>
                   <p>{`${value.max_duljina} cm`}</p>
                 </li>
                 <li className="flex items-center gap-3">
-                  <h8>Max težina: </h8>
+                  <h6>Max težina: </h6>
                   <p>{`${value.max_tezina} kg`}</p>
                 </li>
                 <li className="flex items-center gap-3 ">
-                  <h8>Otrovna: </h8>
+                  <h6>Otrovna: </h6>
                   <p
                     className={`${
                       value.otrovna ? "font-bold !text-[1.2rem]" : ""

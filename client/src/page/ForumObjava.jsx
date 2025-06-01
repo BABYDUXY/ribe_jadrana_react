@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect, useContext, useMemo } from "react";
 import Navigacija from "../components/Navigacija";
 import Footer from "../components/Footer";
 import ForumFilters from "../components/ForumFilters";
@@ -6,7 +6,6 @@ import { PaginationContext } from "../kontekst/PaginationContext";
 import { EndpointUrlContext } from "../kontekst/EndpointUrlContext";
 import ListObjava from "../components/ListObjava";
 import Pagination from "../components/Pagination";
-
 function ForumObjava() {
   const { endpointUrl } = useContext(EndpointUrlContext);
 
@@ -19,6 +18,10 @@ function ForumObjava() {
   const [javniUlovi, setJavniUlovi] = useState([]);
   const [itemsPerPage, setItemsPerPage] = useState(6);
 
+  const publicUlovi = useMemo(() => {
+    return javniUlovi.filter((ulov) => ulov.status === "public");
+  }, [javniUlovi]);
+
   // Fallback ako PaginationContext nije dostupan
   let paginationContext = useContext(PaginationContext);
   const [localPage, setLocalPage] = useState(1);
@@ -27,8 +30,8 @@ function ForumObjava() {
 
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
-  const paginatedData = javniUlovi?.slice(startIndex, endIndex);
-  const totalPages = Math.ceil((javniUlovi?.length || 0) / itemsPerPage);
+  const paginatedData = publicUlovi.slice(startIndex, endIndex);
+  const totalPages = Math.ceil(publicUlovi.length / itemsPerPage);
 
   useEffect(() => {
     const updateItemsPerPage = () => {
@@ -88,6 +91,7 @@ function ForumObjava() {
               key={`${objava.hash}-${objava.komentari.length}`}
               value={objava}
               refreshPosts={fetchPosts}
+              status="public"
             />
           ))}
         </div>

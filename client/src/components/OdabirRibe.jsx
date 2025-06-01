@@ -2,16 +2,28 @@ import { useContext, useState, useEffect } from "react";
 import Select from "react-select";
 import { EndpointUrlContext } from "../kontekst/EndpointUrlContext";
 
-const OdabirRibe = ({ onSelect }) => {
+const OdabirRibe = ({ onSelect, defaultValue }) => {
   const { endpointUrl } = useContext(EndpointUrlContext);
   const [backendData, setBackendData] = useState([]);
+  const [selectedOption, setSelectedOption] = useState(null);
   useEffect(() => {
     fetch(endpointUrl)
       .then((res) => res.json())
       .then((data) => {
         setBackendData(data);
+
+        if (defaultValue) {
+          const defaultRiba = data.find((riba) => riba.ID === defaultValue);
+          if (defaultRiba) {
+            setSelectedOption({
+              value: defaultRiba.ID,
+              label: defaultRiba.ime,
+            });
+            onSelect(defaultRiba.ID); // opcionalno automatski pozvati
+          }
+        }
       });
-  }, []);
+  }, [endpointUrl, defaultValue]);
   const ribe = backendData.map((riba) => ({
     value: riba.ID,
     label: riba.ime,
@@ -52,16 +64,23 @@ const OdabirRibe = ({ onSelect }) => {
       fontSize: "1rem",
     }),
   };
-
+  const handleChange = (selected) => {
+    setSelectedOption(selected);
+    onSelect(selected.value);
+  };
   return (
     <Select
       inputId="riba"
       options={ribe}
       placeholder="Odaberi ribu..."
-      onChange={(selected) => onSelect(selected.value)}
+      onChange={(selected) => {
+        setSelectedOption(selected);
+        onSelect(selected.value);
+      }}
       isSearchable={true}
       styles={customStyles}
       name="riba_autofill"
+      value={selectedOption}
       required
     />
   );

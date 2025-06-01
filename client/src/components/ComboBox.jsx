@@ -1,7 +1,7 @@
 import { useState } from "react";
 
-function ComboBox({ lista, name }) {
-  const [inputValue, setInputValue] = useState("");
+function ComboBox({ lista, name, defaultValue }) {
+  const [inputValue, setInputValue] = useState(defaultValue);
   const [filteredSuggestions, setFilteredSuggestions] = useState([]);
   const [showDropdown, setShowDropdown] = useState(false);
 

@@ -5,7 +5,7 @@ import { EndpointUrlContext } from "../kontekst/EndpointUrlContext";
 import { useState, useRef, useEffect } from "react";
 import { useLogin } from "../kontekst/loginContext";
 
-function ListObjava({ value, refreshPosts }) {
+function ListObjava({ value, refreshPosts, status }) {
   const date = new Date(value.datum_kreiranja);
   const { endpointUrl } = useContext(EndpointUrlContext);
   const contentRef = useRef(null);
@@ -170,7 +170,7 @@ function ListObjava({ value, refreshPosts }) {
       console.error("Failed to send reaction");
     }
   };
-  return value.naslov && value?.status === "pending" ? (
+  return value.naslov && value?.status === status ? (
     <div
       ref={contentRef}
       style={{
@@ -338,7 +338,7 @@ function ListObjava({ value, refreshPosts }) {
         )}
       </div>
     </div>
-  ) : !value.naslov && value?.status === "pending" ? (
+  ) : !value.naslov && value?.status === status ? (
     <div
       ref={contentRef}
       style={{
@@ -448,7 +448,7 @@ function ListObjava({ value, refreshPosts }) {
                 </ul>
               </div>
             </div>
-            <div className="w-full h-max ">
+            <div className="w-full mb-4 h-max">
               <h3 className="glavno-nav text-[1.3rem] mb-2">Komentari:</h3>
               <div className="bg-moja_plava-tamna outline outline-[2px] p-4 outline-white rounded-[13px]  ">
                 <div className="overflow-auto max-h-28">
