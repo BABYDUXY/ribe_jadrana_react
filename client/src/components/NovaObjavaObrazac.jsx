@@ -101,7 +101,11 @@ function NovaObjavaObrazac() {
       const result = await response.json();
       if (response.ok) {
         console.log("Success:", result);
-        alert("Objava poslana na odobravanje");
+        if (odabranaPrivatnost == "privatno") {
+          alert("Privatni ulov spremljen");
+        } else {
+          alert("Objava poslana na odobravanje");
+        }
         navigate("/");
       } else {
         console.error("Server error:", result.poruka);

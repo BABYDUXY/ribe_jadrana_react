@@ -1084,14 +1084,13 @@ app.get("/objave/ulovi", (req, res) => {
   objava.status,
   objava.datum_kreiranja,
   objava.naslov,
-  objava.sadrzaj AS opis_objave,
+  objava.sadrzaj AS opis,
 
   korisnik.korisnicko_ime AS autor,
 
   ulov.tezina,
   ulov.slika_direktorij,
   ulov.mjesto,
-  ulov.opis AS opis_ulova,
 
  riba.ID AS id_ribe,
   riba.ime AS ime_ribe,
@@ -1167,7 +1166,7 @@ app.get("/privatni/ulovi", (req, res) => {
   ulov.tezina,
   ulov.slika_direktorij,
   ulov.mjesto,
-  ulov.opis AS opis_ulova,
+  ulov.opis AS opis,
   ulov.datum_ulova AS datum_kreiranja,
 
   korisnik.korisnicko_ime AS autor,
@@ -1240,14 +1239,13 @@ app.get("/objave/mojasvidanja", verifyToken, async (req, res) => {
   objava.status,
   objava.datum_kreiranja,
   objava.naslov,
-  objava.sadrzaj AS opis_objave,
+  objava.sadrzaj AS opis,
 
   korisnik.korisnicko_ime AS autor,
 
   ulov.tezina,
   ulov.slika_direktorij,
   ulov.mjesto,
-  ulov.opis AS opis_ulova,
 
   riba.ime AS ime_ribe,
 
@@ -1518,6 +1516,357 @@ app.patch("/objave/ulovi/:hash", verifyToken, async (req, res) => {
 
     res.status(200).json({ message: "Status updated successfully" });
   });
+});
+/* uredđivanje objava prije prihvaćanja */
+app.put(
+  "/api/objava/javno/:hash",
+  upload.none(),
+  verifyToken,
+  async (req, res) => {
+    const {
+      riba,
+      tezina,
+      stap_brend,
+      stap_model,
+      link_stap,
+      rola_brend,
+      rola_model,
+      link_rola,
+      mamac,
+      link_mamac,
+      opis,
+      mjesto,
+    } = req.body;
+
+    const { hash } = req.params;
+    const userInfo = req.user;
+    const id = userInfo.korisnik_id;
+
+    if (!hash) return res.status(400).json({ poruka: "Nedostaje hash." });
+    console.log("Primljeni podaci:", req.body);
+    try {
+      const stapBrendId = await new Promise((resolve, reject) => {
+        db.query(
+          "SELECT ID FROM brend WHERE naziv = ?",
+          [stap_brend],
+          (err, result) => {
+            if (err) return reject(err);
+            if (result.length) return resolve(result[0].ID);
+            db.query(
+              "INSERT INTO brend (naziv) VALUES (?)",
+              [stap_brend],
+              (err2, insert) => {
+                if (err2) return reject(err2);
+                resolve(insert.insertId);
+              }
+            );
+          }
+        );
+      });
+
+      const rolaBrendId =
+        stap_brend !== rola_brend
+          ? await new Promise((resolve, reject) => {
+              db.query(
+                "SELECT ID FROM brend WHERE naziv = ?",
+                [rola_brend],
+                (err, result) => {
+                  if (err) return reject(err);
+                  if (result.length) return resolve(result[0].ID);
+                  db.query(
+                    "INSERT INTO brend (naziv) VALUES (?)",
+                    [rola_brend],
+                    (err2, insert) => {
+                      if (err2) return reject(err2);
+                      resolve(insert.insertId);
+                    }
+                  );
+                }
+              );
+            })
+          : stapBrendId;
+
+      const stapModelId = await new Promise((resolve, reject) => {
+        db.query(
+          "SELECT ID FROM model_opreme WHERE naziv = ? AND brend = ?",
+          [stap_model, stapBrendId],
+          (err, result) => {
+            if (err) return reject(err);
+            if (result.length) return resolve(result[0].ID);
+            db.query(
+              "INSERT INTO model_opreme (tip_id, naziv, brend) VALUES (?, ?, ?)",
+              [1, stap_model, stapBrendId],
+              (err2, insert) => {
+                if (err2) return reject(err2);
+                resolve(insert.insertId);
+              }
+            );
+          }
+        );
+      });
+
+      const rolaModelId = await new Promise((resolve, reject) => {
+        db.query(
+          "SELECT ID FROM model_opreme WHERE naziv = ? AND brend = ?",
+          [rola_model, rolaBrendId],
+          (err, result) => {
+            if (err) return reject(err);
+            if (result.length) return resolve(result[0].ID);
+            db.query(
+              "INSERT INTO model_opreme (tip_id, naziv, brend) VALUES (?, ?, ?)",
+              [2, rola_model, rolaBrendId],
+              (err2, insert) => {
+                if (err2) return reject(err2);
+                resolve(insert.insertId);
+              }
+            );
+          }
+        );
+      });
+
+      const mamacModelId = await new Promise((resolve, reject) => {
+        db.query(
+          "SELECT ID FROM model_opreme WHERE naziv = ? AND brend IS NULL",
+          [mamac],
+          (err, result) => {
+            if (err) return reject(err);
+            if (result.length) return resolve(result[0].ID);
+            db.query(
+              "INSERT INTO model_opreme (tip_id, naziv, brend) VALUES (?, ?, NULL)",
+              [3, mamac],
+              (err2, insert) => {
+                if (err2) return reject(err2);
+                resolve(insert.insertId);
+              }
+            );
+          }
+        );
+      });
+
+      const ensureLink = (modelId, link) =>
+        new Promise((resolve, reject) => {
+          db.query(
+            "SELECT ID FROM link_opreme WHERE model_id = ?",
+            [modelId],
+            (err, result) => {
+              if (err) return reject(err);
+              if (result.length) {
+                db.query(
+                  "UPDATE link_opreme SET link = ? WHERE model_id = ?",
+                  [link, modelId],
+                  (err2) => {
+                    if (err2) return reject(err2);
+                    resolve(result[0].ID);
+                  }
+                );
+              } else {
+                db.query(
+                  "INSERT INTO link_opreme (model_id, link) VALUES (?, ?)",
+                  [modelId, link],
+                  (err2, insert) => {
+                    if (err2) return reject(err2);
+                    resolve(insert.insertId);
+                  }
+                );
+              }
+            }
+          );
+        });
+
+      await ensureLink(stapModelId, link_stap || "#");
+      await ensureLink(rolaModelId, link_rola || "#");
+      await ensureLink(mamacModelId, link_mamac || "#");
+
+      const ulovResult = await new Promise((resolve, reject) => {
+        db.query(
+          "SELECT ID FROM ulov WHERE hash = ?",
+          [hash],
+          (err, result) => {
+            if (err) return reject(err);
+            resolve(result);
+          }
+        );
+      });
+
+      if (!ulovResult.length)
+        return res.status(404).json({ poruka: "Ulov nije pronađen." });
+      const ulovId = ulovResult[0].ID;
+
+      await new Promise((resolve, reject) => {
+        db.query(
+          "UPDATE ulov SET riba_id = ?, tezina = ?, mjesto = ? WHERE ID = ? AND korisnik_id = ?",
+          [riba, tezina, mjesto, ulovId, id],
+          (err) => {
+            if (err) return reject(err);
+            resolve();
+          }
+        );
+      });
+
+      await new Promise((resolve, reject) => {
+        db.query(
+          "UPDATE objava SET sadrzaj = ? WHERE ulov_id = ? AND korisnik_id = ?",
+          [opis || "nema", ulovId, id],
+          (err) => {
+            if (err) return reject(err);
+            resolve();
+          }
+        );
+      });
+
+      await new Promise((resolve, reject) => {
+        db.query(
+          "DELETE FROM oprema_u_ulovu WHERE ulov_id = ?",
+          [ulovId],
+          (err) => {
+            if (err) return reject(err);
+            resolve();
+          }
+        );
+      });
+
+      const getLinkId = (modelId) =>
+        new Promise((resolve, reject) => {
+          db.query(
+            "SELECT ID FROM link_opreme WHERE model_id = ?",
+            [modelId],
+            (err, result) => {
+              if (err || !result.length)
+                return reject(err || new Error("Link not found"));
+              resolve(result[0].ID);
+            }
+          );
+        });
+
+      const opremaModeli = [stapModelId, rolaModelId, mamacModelId];
+      await Promise.all(
+        opremaModeli.map(async (modelId) => {
+          const linkId = await getLinkId(modelId);
+          return new Promise((resolve, reject) => {
+            db.query(
+              "INSERT INTO oprema_u_ulovu (oprema_id, ulov_id) VALUES (?, ?)",
+              [linkId, ulovId],
+              (err) => {
+                if (err) return reject(err);
+                resolve();
+              }
+            );
+          });
+        })
+      );
+
+      return res.status(200).json({ poruka: "Objava uspješno ažurirana." });
+    } catch (err) {
+      console.error("Greška pri ažuriranju objave:", err);
+      return res.status(500).json({ poruka: "Greška na serveru." });
+    }
+  }
+);
+
+app.get("/admin/oprema", verifyToken, async (req, res) => {
+  try {
+    const userEmail = req.user.email;
+
+    const checkUserSql = `
+      SELECT korisnik.email, uloga.uloga 
+      FROM korisnik 
+      LEFT JOIN uloga ON uloga.ID_korisnika = korisnik.ID 
+      WHERE korisnik.email = ?
+    `;
+
+    db.query(checkUserSql, [userEmail], (err, userResult) => {
+      if (err) {
+        return res.status(500).json({ error: "Database error" });
+      }
+
+      if (userResult.length === 0) {
+        return res.status(403).json({ error: "Unauthorized access" });
+      }
+
+      const user = userResult[0];
+
+      if (user.uloga !== "admin") {
+        return res.status(403).json({ error: "Admin access required" });
+      }
+
+      const sql = `SELECT DISTINCT
+  brend.naziv AS brend,
+  model_opreme.naziv AS model,
+  tip_opreme.naziv AS tip,
+  link_opreme.link AS link
+FROM link_opreme
+LEFT JOIN model_opreme ON link_opreme.model_id = model_opreme.ID
+LEFT JOIN tip_opreme ON model_opreme.tip_id = tip_opreme.ID
+LEFT JOIN brend ON model_opreme.brend = brend.ID
+ORDER BY tip, brend, model;`;
+
+      db.query(sql, (err, data) => {
+        if (err) {
+          return res
+            .status(500)
+            .json({ error: "neuspjelo prikupljanje podataka" });
+        }
+        return res.json(data);
+      });
+    });
+  } catch (error) {
+    return res.status(500).json({ error: "Server error" });
+  }
+});
+
+app.get("/admin/clanci", verifyToken, async (req, res) => {
+  try {
+    const userEmail = req.user.email;
+
+    const checkUserSql = `
+      SELECT korisnik.email, uloga.uloga 
+      FROM korisnik 
+      LEFT JOIN uloga ON uloga.ID_korisnika = korisnik.ID 
+      WHERE korisnik.email = ?
+    `;
+
+    db.query(checkUserSql, [userEmail], (err, userResult) => {
+      if (err) {
+        return res.status(500).json({ error: "Database error" });
+      }
+
+      if (userResult.length === 0) {
+        return res.status(403).json({ error: "Unauthorized access" });
+      }
+
+      const user = userResult[0];
+
+      if (user.uloga !== "admin") {
+        return res.status(403).json({ error: "Admin access required" });
+      }
+
+      const sql = `
+        SELECT 
+          clanak.ID,
+          korisnik.korisnicko_ime AS autor,
+          kategorija.kategorija,
+          clanak.naslov,
+          clanak.sadrzaj,
+          clanak.slika_direktorij AS slika,
+          clanak.datum_objave AS datum
+        FROM clanak
+        LEFT JOIN korisnik ON clanak.autor_id = korisnik.ID
+        LEFT JOIN kategorija ON clanak.kategorija = kategorija.ID
+        ORDER BY clanak.datum_objave DESC;
+      `;
+
+      db.query(sql, (err, data) => {
+        if (err) {
+          return res
+            .status(500)
+            .json({ error: "Neuspjelo prikupljanje podataka" });
+        }
+        return res.json(data);
+      });
+    });
+  } catch (error) {
+    return res.status(500).json({ error: "Server error" });
+  }
 });
 
 app.listen(5000, () => {

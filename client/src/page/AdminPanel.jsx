@@ -6,19 +6,36 @@ import Footer from "../components/Footer";
 import { EndpointUrlContext } from "../kontekst/EndpointUrlContext";
 import RibaTable from "../components/RibaTable";
 import AdminObjave from "../components/AdminObjave";
+import DodavanjeStavkiAdmin from "../components/DodavanjeStavkiAdmin";
+import OdabirRibe from "../components/OdabirRibe";
 
 function AdminPanel() {
-  const { endpointUrl } = useContext(EndpointUrlContext);
+  const { endpointUrl, backendData } = useContext(EndpointUrlContext);
   const { logout } = useLogin();
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [choice, setChoice] = useState("ribe");
+  const [izmjena, setIzmjena] = useState(null);
+  const [ribaId, setRibaId] = useState(null);
+  const [ribaData, setRibaData] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    console.log("RIBA ID", ribaId);
+    console.log("BackendData:", backendData);
+
+    if (!ribaId || !Array.isArray(backendData) || izmjena !== "uredi") return;
+
+    const odabranaRiba = backendData.find((r) => r.ID === Number(ribaId));
+    console.log("ODABRANA RIBA", odabranaRiba);
+    setRibaData(odabranaRiba || null);
+  }, [ribaId, backendData, izmjena]);
 
   useEffect(() => {
     const token = sessionStorage.getItem("token");
 
     if (!token) {
-      navigate("/"); // No token, redirect
+      navigate("/");
       return;
     }
 
@@ -46,7 +63,30 @@ function AdminPanel() {
       });
   }, []);
 
-  // Dok čekamo podatke
+  function convertTableToFormFields(columns) {
+    return columns.map((col) => {
+      let type = "text";
+
+      if (col.type === "unit" || col.type === "range") {
+        type = "number";
+      }
+
+      if (col.field === "slika") {
+        type = "file";
+      }
+
+      if (col.field === "opis") {
+        type = "textarea";
+      }
+
+      return {
+        name: col.field,
+        label: col.label || col.field,
+        type,
+      };
+    });
+  }
+
   if (!user) {
     return (
       <div className="flex flex-col min-h-screen">
@@ -59,10 +99,8 @@ function AdminPanel() {
     );
   }
 
-  // Ako korisnik nije admin
-  if (user.uloga !== "admin") {
+  if (user && user.uloga !== "admin") {
     navigate("/");
-    return null;
   }
 
   const fishTableConfig = {
@@ -158,7 +196,7 @@ function AdminPanel() {
         type: "truncate",
         truncateClass: "max-w-xs truncate",
         sortable: false,
-        render: (item) => "••••••••", // Hide password hash for security
+        render: (item) => "••••••••",
       },
       {
         field: "datum_kreiranja",
@@ -178,7 +216,101 @@ function AdminPanel() {
     ],
   };
 
-  // Ako je admin
+  const opremaTableConfig = {
+    columns: [
+      {
+        field: "brend",
+        label: "Brend",
+        sortable: true,
+      },
+      {
+        field: "model",
+        label: "Model",
+        sortable: true,
+      },
+      {
+        field: "tip",
+        label: "Tip",
+        sortable: true,
+      },
+      {
+        field: "link",
+        label: "Link",
+        type: "link",
+        sortable: false,
+        render: (item) => (
+          <a
+            href={item.link}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline "
+          >
+            {item.link}
+          </a>
+        ),
+      },
+    ],
+  };
+
+  const clanciTableConfig = {
+    columns: [
+      {
+        field: "ID",
+        label: "ID",
+        sortable: true,
+      },
+      {
+        field: "autor",
+        label: "Autor",
+        sortable: true,
+      },
+      {
+        field: "kategorija",
+        label: "Kategorija",
+        sortable: true,
+      },
+      {
+        field: "naslov",
+        label: "Naslov",
+        sortable: true,
+      },
+      {
+        field: "sadrzaj",
+        label: "Sadržaj",
+        type: "truncate",
+        truncateClass: "max-w-md truncate",
+        sortable: false,
+      },
+      {
+        field: "slika",
+        label: "Slika",
+        type: "image",
+        sortable: false,
+        render: (item) => (
+          <img
+            src={item.slika}
+            alt="slika"
+            className="object-cover w-24 h-16 rounded-md shadow"
+          />
+        ),
+      },
+      {
+        field: "datum",
+        label: "Datum",
+        type: "datetime",
+        sortable: true,
+        render: (item) => new Date(item.datum).toLocaleString("hr-HR"),
+      },
+    ],
+  };
+  const formFieldsRibe = convertTableToFormFields(fishTableConfig.columns);
+
+  formFieldsRibe.push({
+    name: "otrovna",
+    label: "Otrovna",
+    type: "checkbox",
+  });
+
   return (
     <div className="flex flex-col min-h-screen">
       <Navigacija />
@@ -235,28 +367,94 @@ function AdminPanel() {
             </li>
           </ul>
           {choice === "ribe" ? (
-            <RibaTable
-              tableConfig={fishTableConfig}
-              endpoint="/"
-              navigateUrlTemplate="/fish/{id}"
-              searchField="ime"
-              searchPlaceholder="Pretraži po imenu..."
-              rowsPerPage={10}
-              highlightCondition={(item) => item.otrovna}
-              highlightClass="text-red-200"
-            />
+            <>
+              <RibaTable
+                tableConfig={fishTableConfig}
+                endpoint="/"
+                navigateUrlTemplate="/fish/{id}"
+                searchField="ime"
+                searchPlaceholder="Pretraži po imenu..."
+                rowsPerPage={10}
+                highlightCondition={(item) => item.otrovna}
+                highlightClass="text-red-200"
+              />
+              <div className="flex items-center justify-center w-full gap-12 [&>button:hover]:underline my-8">
+                <button
+                  onClick={() => {
+                    setIzmjena("novo");
+                  }}
+                  className="glavno-nav"
+                >
+                  Dodaj Novu
+                </button>
+                <button
+                  onClick={() => {
+                    setIzmjena("uredi");
+                  }}
+                  className="glavno-nav"
+                >
+                  {" "}
+                  Uredi
+                </button>
+              </div>
+              <div className="flex justify-center mb-10 align-center">
+                {izmjena === "novo" ? (
+                  <DodavanjeStavkiAdmin
+                    title="Ribu"
+                    submitUrl="/api/riba"
+                    fields={formFieldsRibe}
+                  />
+                ) : (
+                  ""
+                )}{" "}
+                {izmjena === "uredi" && (
+                  <div className="flex flex-col items-center gap-6">
+                    <OdabirRibe onSelect={setRibaId} defaultValue={null} />
+                    {ribaId && (
+                      <DodavanjeStavkiAdmin
+                        title="Ribu"
+                        editUrl={`/api/riba/${ribaId}/`}
+                        isEdit={true}
+                        defaultValues={ribaData}
+                        fields={formFieldsRibe}
+                      />
+                    )}
+                  </div>
+                )}
+              </div>
+            </>
           ) : choice === "korisnici" ? (
             <RibaTable
               tableConfig={korisnikTableConfig}
-              endpoint="/admin/korisnici" // Adjust to your API endpoint
-              //navigateUrlTemplate="" // Optional: if you want clickable rows
+              endpoint="/admin/korisnici"
+              //navigateUrlTemplate=""
               searchField="korisnicko_ime"
               searchPlaceholder="Pretraži po imenu"
               rowsPerPage={10}
               secure={true}
             />
+          ) : choice === "članci" ? (
+            <RibaTable
+              tableConfig={clanciTableConfig}
+              endpoint="/admin/clanci"
+              //navigateUrlTemplate=""
+              searchField="kategorija"
+              searchPlaceholder="Pretraži po kategoriji"
+              rowsPerPage={10}
+              secure={true}
+            />
           ) : choice === "objave" ? (
             <AdminObjave />
+          ) : choice === "oprema" ? (
+            <RibaTable
+              tableConfig={opremaTableConfig}
+              endpoint="/admin/oprema"
+              //navigateUrlTemplate=""
+              searchField="model"
+              searchPlaceholder="Pretraži po modelu"
+              rowsPerPage={10}
+              secure={true}
+            />
           ) : (
             ""
           )}

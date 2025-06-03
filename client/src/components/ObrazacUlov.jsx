@@ -110,6 +110,26 @@ function ObrazacUlov({
             />
           </div>
         </div>
+        {promptValues?.link ? (
+          <div className="flex flex-col gap-1 w-[100%]">
+            <label className="text-white glavno-nav" htmlFor="link_stap">
+              Link:
+            </label>
+            <input
+              className="h-10 w-full rounded-[7px] p-3 text-moja_plava font-semibold "
+              type="text"
+              name="link_stap"
+              id="link_stap"
+              required
+              defaultValue={
+                promptValues?.link[0] ||
+                "https://topfishing.hr/ribolovna-oprema-kategorija/79/stapovi"
+              }
+            />
+          </div>
+        ) : (
+          ""
+        )}
       </div>
       <div className="flex flex-col w-[50%] gap-1 ">
         <label
@@ -140,8 +160,28 @@ function ObrazacUlov({
             />
           </div>
         </div>
+        {promptValues?.link ? (
+          <div className="flex flex-col gap-1 w-[100%]">
+            <label className="text-white glavno-nav" htmlFor="link_rola">
+              Link:
+            </label>
+            <input
+              className="h-10 w-full rounded-[7px] p-3 text-moja_plava font-semibold "
+              type="text"
+              name="link_rola"
+              id="link_rola"
+              required
+              defaultValue={
+                promptValues?.link[2] ||
+                "https://topfishing.hr/ribolovna-oprema-kategorija/80/role"
+              }
+            />
+          </div>
+        ) : (
+          ""
+        )}
       </div>
-      <div className="flex flex-col w-[50%] gap-1">
+      <div className="flex flex-col w-[50%] gap-1 ">
         <label className="text-white glavno-nav" htmlFor="mamac">
           Mamac / varalica:
         </label>
@@ -154,7 +194,28 @@ function ObrazacUlov({
           required
           defaultValue={promptValues?.mamac || ""}
         />
+        {promptValues?.link ? (
+          <div className="flex flex-col gap-1 w-[100%]">
+            <label className="text-white glavno-nav" htmlFor="link_mamac">
+              Link:
+            </label>
+            <input
+              className="h-10 w-full rounded-[7px] p-3 text-moja_plava font-semibold "
+              type="text"
+              name="link_mamac"
+              id="link_mamac"
+              required
+              defaultValue={
+                promptValues?.link[1] ||
+                "https://topfishing.hr/ribolovna-oprema-kategorija/170/mamci-za-morski-ribolov"
+              }
+            />
+          </div>
+        ) : (
+          ""
+        )}
       </div>
+
       <div className="flex flex-col w-[50%] gap-1">
         <label className="text-white glavno-nav" htmlFor="opis">
           Opis: - neobavezno
@@ -165,7 +226,7 @@ function ObrazacUlov({
           name="opis"
           type="text"
           placeholder="Upiši ovdje..."
-          defaultValue={promptValues?.opis_objave || ""}
+          defaultValue={promptValues?.opis || ""}
         />
       </div>
       <div className="w-[50%] flex  items-center justify-between">

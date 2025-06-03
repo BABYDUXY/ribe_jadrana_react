@@ -95,11 +95,51 @@ function AdminObjave() {
     }
   };
 
+  const handleSubmitUlov = async (e, hash) => {
+    e.preventDefault();
+
+    const formData = new FormData(e.target);
+
+    if (ribaId) {
+      formData.append("riba", ribaId);
+    }
+
+    console.log("PODACI SU:");
+    for (let [key, value] of formData.entries()) {
+      console.log(`${key}:`, value);
+    }
+
+    try {
+      const response = await fetch(`${endpointUrl}/api/objava/javno/${hash}`, {
+        method: "PUT",
+        headers: {
+          Authorization: `Token ${sessionStorage.getItem("token")}`,
+        },
+        body: formData,
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        console.log("Uspješno ažurirano:", result);
+        alert("Ulov je uspješno ažuriran.");
+        setUredi(null);
+        fetchPosts();
+      } else {
+        console.error("Greška:", result.poruka);
+        alert("Greška: " + result.poruka);
+      }
+    } catch (err) {
+      console.error("Mrežna greška:", err);
+      alert("Dogodila se mrežna greška.");
+    }
+  };
+
   return (
     <PaginationContext.Provider value={{ currentPage, setCurrentPage }}>
       <div className="flex flex-col items-center w-full gap-16 mt-24 mb-24">
         {uredi ? (
-          <form onSubmit={(e) => handleSubmitUlov(e, "javno")}>
+          <form onSubmit={(e) => handleSubmitUlov(e, uredi.hash)}>
             <ObrazacUlov
               privatnost={"javno"}
               setRibaId={setRibaId}

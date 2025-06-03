@@ -96,6 +96,7 @@ function MojaSviđanja() {
               key={objava.hash}
               value={objava}
               refreshPosts={fetchPosts}
+              status={"public"}
             />
           ))}
         </div>

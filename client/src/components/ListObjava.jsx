@@ -437,7 +437,7 @@ function ListObjava({ value, refreshPosts, status }) {
                       </Link>
                     )}
                   </li>
-                  {value.opis ? (
+                  {value?.opis && value.opis != "nema" ? (
                     <li className="overflow-auto max-h-32">
                       Opis:{" "}
                       <span className="ml-1 font-normal">{value.opis}</span>
@@ -696,7 +696,7 @@ function ListObjava({ value, refreshPosts, status }) {
                       </Link>
                     )}
                   </li>
-                  {value.opis ? (
+                  {value?.opis && value.opis != "nema" ? (
                     <li className="overflow-auto max-h-32">
                       Opis:{" "}
                       <span className="ml-1 font-normal">{value.opis}</span>
