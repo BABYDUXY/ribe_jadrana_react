@@ -12,6 +12,7 @@ function RibaTable({
   rowsPerPage = 10,
   highlightCondition,
   highlightClass = "text-red-200",
+  setUrediId = null,
 }) {
   const [data, setData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
@@ -36,7 +37,7 @@ function RibaTable({
     if (secure) {
       const token = sessionStorage.getItem("token");
       if (token) {
-        requestOptions.headers["Authorization"] = `Bearer ${token}`;
+        requestOptions.headers["Authorization"] = `Token ${token}`;
       }
     }
 
@@ -90,7 +91,7 @@ function RibaTable({
     if (column.type === "image") {
       return item[column.field] ? (
         <img
-          src={item[column.field]}
+          src={`${item[column.field]}`}
           alt={column.alt ? item[column.alt] : ""}
           className={column.imageClass || "w-auto h-12"}
         />
@@ -128,6 +129,11 @@ function RibaTable({
   const totalPages = Math.ceil(filteredData.length / rowsPerPage);
 
   const handleRowClick = (item) => {
+    if (setUrediId) {
+      const itemId = item.ID || item.id;
+      setUrediId(itemId);
+    }
+
     if (navigateUrlTemplate && navigate) {
       const url = navigateUrlTemplate.replace("{id}", item.ID || item.id);
       navigate(url);
@@ -179,7 +185,7 @@ function RibaTable({
                 key={item.ID || item.id || index}
                 onClick={() => handleRowClick(item)}
                 className={`hover:bg-moja_plava-tamna   ${
-                  navigateUrlTemplate ? "cursor-pointer" : ""
+                  navigateUrlTemplate || setUrediId ? "cursor-pointer" : ""
                 } ${
                   highlightCondition && highlightCondition(item)
                     ? highlightClass

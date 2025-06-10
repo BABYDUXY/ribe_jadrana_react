@@ -78,7 +78,9 @@ function ForumObjava() {
     <div className="flex flex-col min-h-screen">
       <Navigacija />
 
-      <PaginationContext.Provider value={{ currentPage, setCurrentPage }}>
+      <PaginationContext.Provider
+        value={{ currentPage, setCurrentPage, itemsPerPage, setItemsPerPage }}
+      >
         <ForumFilters
           setSortOptions={setSortOptions}
           setSearchQuery={setSearchQuery}

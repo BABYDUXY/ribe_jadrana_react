@@ -4,6 +4,7 @@ import ForumFilterBtn from "./ForumFilterBtn";
 import { EndpointUrlContext } from "../kontekst/EndpointUrlContext";
 import { useLogin } from "../kontekst/loginContext";
 import MoreOptionsDropdown from "./MoreOptionsDropdown";
+import SliderTocke from "./SliderTocke";
 const popularnoFilters = {
   1: {
     sort: { field: "likes", direction: "asc" },
@@ -89,6 +90,9 @@ function ForumFilters({ setSortOptions, setSearchQuery, searchQuery }) {
   const [toggleFilteri, setToggleFilteri] = useState(false);
   const [searchInput, setSearchInput] = useState(false);
   const [moreOptionsToggle, setMoreOptionsToggle] = useState(false);
+  const [toggleViewOptions, setToggleViewOptions] = useState(false);
+
+  const valueSlider = { default: 6, step: 1, min: 3, max: 10 };
 
   return (
     <div className="grid grid-cols-[15%_35%_35%_15%] place-items-center mt-10 mb-10 ">
@@ -138,12 +142,63 @@ function ForumFilters({ setSortOptions, setSearchQuery, searchQuery }) {
           </div>
         </div>
       ) : (
-        <img
-          className="h-[15px] col-start-1 row-start-1"
-          draggable="false"
-          src="./public/logo/three_dots.svg"
-          alt=""
-        />
+        <div className="relative">
+          <img
+            className={`
+              col-start-1 row-start-1 hover:scale-110 transition-all duration-300 ease-in-out cursor-pointer
+              ${
+                toggleViewOptions
+                  ? "w-[35px] opacity-100 translate-x-0"
+                  : "w-0 opacity-0 translate-x-20"
+              }
+            `}
+            draggable="false"
+            src="/logo/x.svg"
+            alt="Close"
+            onClick={() => setToggleViewOptions(false)}
+          />
+
+          <div
+            className={`
+              absolute top-0  min-h-20 bg-moja_plava  flex items-center justify-center transition-all duration-700 ease-in-out origin-left outline outline-[3px]  outline-white rounded-[11px] overflow-clip 
+              ${
+                toggleViewOptions
+                  ? "w-[15rem] opacity-100 right-[-17rem] z-10 "
+                  : "w-[1rem] opacity-0 right-0"
+              }
+            `}
+          >
+            <div
+              className={`flex transition-all duration-200  flex-col ${
+                toggleViewOptions
+                  ? "w-34  delay-[400ms] opacity-100"
+                  : "w-0 opacity-0 h-0"
+              }`}
+            >
+              <h5
+                className={`text-center text-white glavno-nav overflow-hidden text-nowrap `}
+              >
+                Broj objava po stranici
+              </h5>
+              <SliderTocke values={valueSlider} />
+            </div>
+          </div>
+
+          <img
+            className={`
+              col-start-1 row-start-1 hover:scale-110 transition-all duration-[300ms] ease-in-out cursor-pointer 
+              ${
+                !toggleViewOptions
+                  ? "h-[15px] opacity-100 -translate-x-0"
+                  : "h-0 opacity-0 -translate-x-10"
+              }
+            `}
+            draggable="false"
+            src="/logo/three_dots.svg"
+            alt="Open"
+            onClick={() => setToggleViewOptions(true)}
+          />
+        </div>
       )}
 
       <ul

@@ -17,8 +17,8 @@ function Novosti() {
   });
 
   const [searchQuery, setSearchQuery] = useState("");
-  const [javniUlovi, setJavniUlovi] = useState([]);
-  const [itemsPerPage, setItemsPerPage] = useState(6);
+  const [clanci, setClanci] = useState([]);
+  const [itemsPerPage, setItemsPerPage] = useState(3);
 
   // Fallback ako PaginationContext nije dostupan
   let paginationContext = useContext(PaginationContext);
@@ -28,18 +28,18 @@ function Novosti() {
 
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
-  const paginatedData = javniUlovi?.slice(startIndex, endIndex);
-  const totalPages = Math.ceil((javniUlovi?.length || 0) / itemsPerPage);
+  const paginatedData = clanci?.slice(startIndex, endIndex);
+  const totalPages = Math.ceil((clanci?.length || 0) / itemsPerPage);
 
   useEffect(() => {
     const updateItemsPerPage = () => {
       const width = window.innerWidth;
       if (width < 768) {
-        setItemsPerPage(20); // sm to < md
+        setItemsPerPage(3); // sm to < md
       } else if (width < 1280) {
-        setItemsPerPage(6); // lg to < xl
+        setItemsPerPage(3); // lg to < xl
       } else {
-        setItemsPerPage(6); // xl+
+        setItemsPerPage(3); // xl+
       }
     };
 
@@ -48,24 +48,26 @@ function Novosti() {
     return () => window.removeEventListener("resize", updateItemsPerPage);
   }, []);
 
+  useEffect(() => {
+    console.log(itemsPerPage);
+  }, [itemsPerPage]);
+
   const fetchPosts = async () => {
     try {
-      const response = await fetch(`${endpointUrl}/objave/ulovi`);
+      const response = await fetch(`${endpointUrl}/clanci`);
       const data = await response.json();
 
       // Sortiranje po najnovijima
-      const sorted = data.sort(
-        (a, b) => new Date(b.datum_kreiranja) - new Date(a.datum_kreiranja)
-      );
+      const sorted = data.sort((a, b) => new Date(b.datum) - new Date(a.datum));
 
-      setJavniUlovi(sorted);
+      setClanci(sorted);
     } catch (error) {
       console.error("Error fetching posts:", error);
     }
   };
 
   useEffect(() => {
-    console.log("ULOVI UPDATE:", paginatedData);
+    console.log("Clanci:", paginatedData);
   }, [paginatedData]);
 
   useEffect(() => {
@@ -76,7 +78,9 @@ function Novosti() {
     <div className="flex flex-col min-h-screen">
       <Navigacija />
 
-      <PaginationContext.Provider value={{ currentPage, setCurrentPage }}>
+      <PaginationContext.Provider
+        value={{ currentPage, setCurrentPage, itemsPerPage, setItemsPerPage }}
+      >
         <ForumFilters
           setSortOptions={setSortOptions}
           setSearchQuery={setSearchQuery}
@@ -100,10 +104,10 @@ function Novosti() {
               Najnovije novosti iz morskog svijeta jadrana.
             </h4>
           </div>
-          {paginatedData.map((objava) => (
+          {paginatedData.map((clanak) => (
             <ListNovosti
-              key={`${objava.hash}-${objava.komentari.length}`}
-              value={objava}
+              key={`${clanak.ID}`}
+              value={clanak}
               refreshPosts={fetchPosts}
             />
           ))}

@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef, useContext } from "react";
 import imageCompression from "browser-image-compression";
+import { EndpointUrlContext } from "../kontekst/EndpointUrlContext";
 
 const DodavanjeStavkiAdmin = ({
   fields = [],
@@ -13,19 +14,51 @@ const DodavanjeStavkiAdmin = ({
   const [formData, setFormData] = useState({});
   const [previewImages, setPreviewImages] = useState({});
   const [message, setMessage] = useState("");
+  const [slika, setSlika] = useState(null);
+  const { endpointUrl } = useContext(EndpointUrlContext);
+  const [compressedImage, setCompressedImage] = useState(null);
 
-  // ✅ SVI HOOK-OVI MORAJU BITI NA VRHU, PRIJE BILO KAKVOG CONDITIONAL RETURN-A
+  function getFileExtension(mimeType) {
+    const map = {
+      "image/jpeg": ".jpg",
+      "image/png": ".png",
+      "image/gif": ".gif",
+      "image/webp": ".webp",
+    };
+    return map[mimeType] || ".jpg";
+  }
+
+  const handleSlikaChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    try {
+      const options = {
+        maxSizeMB: 0.5,
+        maxWidthOrHeight: 1024,
+        useWebWorker: true,
+      };
+      const compressed = await imageCompression(file, options);
+
+      setSlika(URL.createObjectURL(compressed));
+      setCompressedImage(compressed);
+    } catch (err) {
+      console.error("Greška pri kompresiji slike:", err);
+    }
+  };
+
+  const isInitialized = useRef(false);
   useEffect(() => {
-    if (isEdit && defaultValues) {
+    if (isEdit && defaultValues && !isInitialized.current) {
       setFormData(defaultValues);
       setPreviewImages({});
-    } else if (!isEdit) {
+      isInitialized.current = true;
+    } else if (!isEdit && !isInitialized.current) {
       setFormData({});
       setPreviewImages({});
+      isInitialized.current = true;
     }
   }, [isEdit, defaultValues]);
 
-  // ✅ CONDITIONAL RETURN NAKON SVIH HOOK-OVA
   if (isEdit && !defaultValues) {
     return <div className="text-white">Učitavanje podataka...</div>;
   }
@@ -34,7 +67,6 @@ const DodavanjeStavkiAdmin = ({
     const { name, type, value, files } = e.target;
 
     if (type === "file") {
-      const file = files[0];
       if (!file) return;
 
       try {
@@ -69,14 +101,30 @@ const DodavanjeStavkiAdmin = ({
       }
     }
 
+    if (compressedImage) {
+      const extension = getFileExtension(compressedImage.type);
+      const fileWithExtension = new File(
+        [compressedImage],
+        `image_${Date.now()}${extension}`,
+        { type: compressedImage.type }
+      );
+
+      data.append("slika", fileWithExtension);
+    }
+
     try {
-      const res = await fetch(isEdit ? editUrl || submitUrl : submitUrl, {
-        method: isEdit ? "PUT" : "POST",
-        headers: {
-          Authorization: `Token ${sessionStorage.getItem("token")}`,
-        },
-        body: data,
-      });
+      const res = await fetch(
+        isEdit
+          ? `${endpointUrl}${editUrl}` || submitUrl
+          : `${endpointUrl}${submitUrl}`,
+        {
+          method: isEdit ? "PUT" : "POST",
+          headers: {
+            Authorization: `Token ${sessionStorage.getItem("token")}`,
+          },
+          body: data,
+        }
+      );
 
       const result = await res.json();
 
@@ -141,7 +189,6 @@ const DodavanjeStavkiAdmin = ({
                   onChange={handleChange}
                   className="p-2 border rounded-[9px] mb-4 text-moja_plava font-medium"
                   rows={4}
-                  required
                 />
               ) : field.type === "file" ? (
                 <>
@@ -149,16 +196,17 @@ const DodavanjeStavkiAdmin = ({
                     type="file"
                     name={field.name}
                     accept={field.accept || "*"}
-                    onChange={handleChange}
+                    onChange={handleSlikaChange}
                     className="p-2 border rounded-[9px]"
-                    required
                   />
-                  {previewImages[field.name] && (
-                    <img
-                      src={previewImages[field.name]}
-                      alt="preview"
-                      className="object-contain w-full mt-2 border rounded max-h-64"
-                    />
+                  {slika && (
+                    <div className="w-full flex items-center justify-center rounded-[11px] ">
+                      <img
+                        src={slika}
+                        alt="Odabrana slika"
+                        className="w-full h-auto rounded-[9px] border-2 border-white"
+                      />
+                    </div>
                   )}
                 </>
               ) : (
@@ -168,7 +216,6 @@ const DodavanjeStavkiAdmin = ({
                   value={formData[field.name] || ""}
                   onChange={handleChange}
                   className="p-2 border rounded-[9px] mb-3 text-moja_plava font-medium"
-                  required
                 />
               )}
             </>

@@ -66,6 +66,8 @@ function FilterButtons({
   const [toggleFilteri, setToggleFilteri] = useState(false);
   const [toggleViewOptions, setToggleViewOptions] = useState(false);
 
+  const valueSlider = { default: 16, step: 4, min: 12, max: 32 };
+
   return (
     <div className="grid grid-cols-[11%_39%_39%_11%] place-items-center mt-10 mb-10 ">
       <img
@@ -116,7 +118,7 @@ function FilterButtons({
             >
               Broj riba po stranici
             </h5>
-            <SliderTocke />
+            <SliderTocke values={valueSlider} />
           </div>
         </div>
 

@@ -104,11 +104,6 @@ function AdminObjave() {
       formData.append("riba", ribaId);
     }
 
-    console.log("PODACI SU:");
-    for (let [key, value] of formData.entries()) {
-      console.log(`${key}:`, value);
-    }
-
     try {
       const response = await fetch(`${endpointUrl}/api/objava/javno/${hash}`, {
         method: "PUT",

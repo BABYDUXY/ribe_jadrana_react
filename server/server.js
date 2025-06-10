@@ -26,6 +26,16 @@ if (!fs.existsSync(uploadDir2)) {
   fs.mkdirSync(uploadDir2);
 }
 
+const uploadDir3 = "uploads/clanci";
+if (!fs.existsSync(uploadDir3)) {
+  fs.mkdirSync(uploadDir3);
+}
+
+const uploadDir4 = "uploads/ribe";
+if (!fs.existsSync(uploadDir4)) {
+  fs.mkdirSync(uploadDir4);
+}
+
 function generateHash() {
   return crypto.randomBytes(6).toString("hex");
 }
@@ -35,6 +45,8 @@ app.use(cors());
 app.use(express.json());
 app.use("/uploads/javno", express.static("uploads/javno"));
 app.use("/uploads/privatno", express.static("uploads/privatno"));
+app.use("/uploads/clanci", express.static("uploads/clanci"));
+app.use("/uploads/ribe", express.static("uploads/ribe"));
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 const storage = multer.diskStorage({
@@ -56,8 +68,30 @@ const storagePrivatno = multer.diskStorage({
     cb(null, unikatnoIme);
   },
 });
+
+const storageRibe = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, "uploads/ribe/");
+  },
+  filename: function (req, file, cb) {
+    const unikatnoIme = Date.now() + path.extname(file.originalname);
+    cb(null, unikatnoIme);
+  },
+});
+
+const storageClanci = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, "uploads/clanci/");
+  },
+  filename: function (req, file, cb) {
+    const unikatnoIme = Date.now() + path.extname(file.originalname);
+    cb(null, unikatnoIme);
+  },
+});
 const upload = multer({ storage });
 const uploadPrivatno = multer({ storage: storagePrivatno });
+const uploadClanci = multer({ storage: storageClanci });
+const uploadRibe = multer({ storage: storageRibe });
 
 const host = process.env.HOST;
 const user = process.env.USER;
@@ -67,11 +101,15 @@ const tajni_token = process.env.TAJNI_KLJUC;
 
 console.log(host);
 
-const db = mysql.createConnection({
+const db = mysql.createPool({
+  connectionLimit: 15,
   host: host,
   user: user,
   password: password,
   database: database,
+  acquireTimeout: 60000,
+  timeout: 60000,
+  reconnect: true,
 });
 
 // prettier-ignore
@@ -1452,6 +1490,36 @@ app.post("/api/komentar", verifyToken, async (req, res) => {
     }
   });
 });
+
+app.get("/clanci", async (req, res) => {
+  try {
+    const sql = `
+        SELECT 
+          clanak.ID,
+          korisnik.korisnicko_ime AS autor,
+          kategorija.kategorija,
+          clanak.naslov,
+          clanak.sadrzaj,
+          clanak.slika_direktorij AS slika,
+          clanak.datum_objave AS datum
+        FROM clanak
+        LEFT JOIN korisnik ON clanak.autor_id = korisnik.ID
+        LEFT JOIN kategorija ON clanak.kategorija = kategorija.ID
+        ORDER BY clanak.datum_objave DESC;
+      `;
+
+    db.query(sql, (err, data) => {
+      if (err) {
+        return res
+          .status(500)
+          .json({ error: "Neuspjelo prikupljanje podataka" });
+      }
+      return res.json(data);
+    });
+  } catch (error) {
+    return res.status(500).json({ error: "Server error" });
+  }
+});
 /* ---------ADMIN---------- */
 app.post("/api/provjeri-token", verifyToken, async (req, res) => {
   const userInfo = req.user;
@@ -1868,6 +1936,277 @@ app.get("/admin/clanci", verifyToken, async (req, res) => {
     return res.status(500).json({ error: "Server error" });
   }
 });
+
+app.post(
+  "/api/novariba",
+  verifyToken,
+  uploadPrivatno.single("slika"),
+
+  async (req, res) => {
+    const podaci = req.body;
+
+    const obaveznaPolja = [
+      "ime",
+      "ostali_nazivi",
+      "lat_ime",
+      "vrsta",
+      "min_dubina",
+      "max_dubina",
+      "max_duljina",
+      "max_tezina",
+      "opis",
+    ];
+
+    const nedostajePolje = obaveznaPolja.some((key) => !podaci[key]);
+
+    if (nedostajePolje) {
+      return res.status(400).json({ poruka: "Sva polja su obavezna." });
+    }
+
+    let slika = null;
+    if (req.file) {
+      slika = `/uploads/privatno/${req.file.filename}`;
+    }
+
+    const {
+      opis,
+      max_tezina,
+      max_duljina,
+      max_dubina,
+      min_dubina,
+      vrsta,
+      lat_ime,
+      ostali_nazivi,
+      ime,
+      otrovna,
+    } = podaci;
+    try {
+      const sql =
+        "INSERT INTO riba (ime, ostali_nazivi, lat_ime, vrsta, min_dubina, max_dubina, max_duljina, max_tezina, opis, slika, otrovna) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+      const rezultat = await new Promise((resolve, reject) => {
+        db.query(
+          sql,
+          [
+            ime,
+            ostali_nazivi,
+            lat_ime,
+            vrsta,
+            min_dubina,
+            max_dubina,
+            max_duljina,
+            max_tezina,
+            opis,
+            slika,
+            otrovna || false,
+          ],
+          (err, result) => {
+            if (err) {
+              reject(err);
+            } else {
+              resolve(result);
+            }
+          }
+        );
+      });
+      console.log("Uspješno dodana Riba, ID:", rezultat.insertId);
+      return res.status(201).json({ poruka: "Dodana Riba!" });
+    } catch (err) {
+      console.error("Greška kod dodavanja:", err);
+      return res.status(500).json({ poruka: "Greška kod dodavanja" });
+    }
+  }
+);
+app.put(
+  "/api/updateribe/:id",
+  verifyToken,
+  uploadPrivatno.single("slika"),
+  async (req, res) => {
+    const id = req.params.id;
+    const podaci = req.body;
+
+    const obaveznaPolja = [
+      "ime",
+      "ostali_nazivi",
+      "lat_ime",
+      "vrsta",
+      "min_dubina",
+      "max_dubina",
+      "max_duljina",
+      "max_tezina",
+      "opis",
+    ];
+
+    const nedostajePolje = obaveznaPolja.some((key) => !podaci[key]);
+    if (nedostajePolje) {
+      return res.status(400).json({ poruka: "Sva polja su obavezna." });
+    }
+
+    const {
+      opis,
+      max_tezina,
+      max_duljina,
+      max_dubina,
+      min_dubina,
+      vrsta,
+      lat_ime,
+      ostali_nazivi,
+      ime,
+      otrovna,
+    } = podaci;
+
+    const otrovnaBool = otrovna === "true" || otrovna === true;
+
+    let slika = null;
+    if (req.file) {
+      slika = `/uploads/privatno/${req.file.filename}`;
+    }
+
+    try {
+      let sql, params;
+
+      if (slika) {
+        sql = `
+          UPDATE riba 
+          SET ime = ?, ostali_nazivi = ?, lat_ime = ?, vrsta = ?, min_dubina = ?, max_dubina = ?, 
+              max_duljina = ?, max_tezina = ?, opis = ?, slika = ?, otrovna = ?
+          WHERE ID = ?`;
+        params = [
+          ime,
+          ostali_nazivi,
+          lat_ime,
+          vrsta,
+          min_dubina,
+          max_dubina,
+          max_duljina,
+          max_tezina,
+          opis,
+          slika,
+          otrovnaBool,
+          id,
+        ];
+      } else {
+        sql = `
+          UPDATE riba 
+          SET ime = ?, ostali_nazivi = ?, lat_ime = ?, vrsta = ?, min_dubina = ?, max_dubina = ?, 
+              max_duljina = ?, max_tezina = ?, opis = ?, otrovna = ?
+          WHERE ID = ?`;
+        params = [
+          ime,
+          ostali_nazivi,
+          lat_ime,
+          vrsta,
+          min_dubina,
+          max_dubina,
+          max_duljina,
+          max_tezina,
+          opis,
+          otrovnaBool,
+          id,
+        ];
+      }
+
+      const rezultat = await new Promise((resolve, reject) => {
+        db.query(sql, params, (err, result) => {
+          if (err) return reject(err);
+          resolve(result);
+        });
+      });
+
+      return res.status(200).json({ poruka: "Riba uspješno ažurirana." });
+    } catch (err) {
+      console.error("Greška kod ažuriranja:", err);
+      return res.status(500).json({ poruka: "Greška kod ažuriranja." });
+    }
+  }
+);
+
+app.post(
+  "/admin/noviclanak",
+  verifyToken,
+  uploadClanci.single("slika"),
+  async (req, res) => {
+    const podaci = req.body;
+    const userId = req.user.korisnik_id;
+
+    const obaveznaPolja = ["kategorija", "naslov", "sadrzaj"];
+
+    const nedostajePolje = obaveznaPolja.some((key) => !podaci[key]);
+
+    if (nedostajePolje) {
+      return res.status(400).json({ poruka: "Sva polja su obavezna." });
+    }
+
+    let slika = null;
+    if (req.file) {
+      slika = `/uploads/clanci/${req.file.filename}`;
+    }
+
+    const { kategorija, naslov, sadrzaj } = podaci;
+    console.log(podaci);
+    try {
+      const checkKategorijaSql =
+        "SELECT ID FROM kategorija WHERE kategorija = ?";
+
+      db.query(checkKategorijaSql, [kategorija], (err, results) => {
+        if (err) {
+          console.error("Greška kod provjere kategorije:", err);
+          return res
+            .status(500)
+            .json({ poruka: "Greška kod provjere kategorije" });
+        }
+
+        let kategorija_id;
+
+        if (results.length > 0) {
+          kategorija_id = results[0].ID;
+          insertClanak(kategorija_id);
+        } else {
+          const insertKategorijaSql =
+            "INSERT INTO kategorija (kategorija) VALUES (?)";
+
+          db.query(insertKategorijaSql, [kategorija], (err, result) => {
+            if (err) {
+              console.error("Greška kod dodavanja kategorije:", err);
+              return res
+                .status(500)
+                .json({ poruka: "Greška kod dodavanja kategorije" });
+            }
+
+            kategorija_id = result.insertId;
+            insertClanak(kategorija_id);
+          });
+        }
+
+        function insertClanak(kat_id) {
+          const insertClanakSql =
+            "INSERT INTO clanak (autor_id,kategorija, naslov, sadrzaj,slika_direktorij) VALUES (?, ?, ?, ?, ?)";
+
+          db.query(
+            insertClanakSql,
+            [userId, kat_id, naslov, sadrzaj, slika],
+            (err, result) => {
+              if (err) {
+                console.error("Greška kod dodavanja clanka:", err);
+                return res
+                  .status(500)
+                  .json({ poruka: "Greška kod dodavanja clanka" });
+              }
+
+              console.log("Uspješno dodan Clanak, ID:", result.insertId);
+              return res.status(201).json({
+                poruka: "Dodan Clanak!",
+              });
+            }
+          );
+        }
+      });
+    } catch (err) {
+      console.error("Greška kod dodavanja:", err);
+      return res.status(500).json({ poruka: "Greška kod dodavanja" });
+    }
+  }
+);
 
 app.listen(5000, () => {
   console.log("server je pokrenut na portu 5000");

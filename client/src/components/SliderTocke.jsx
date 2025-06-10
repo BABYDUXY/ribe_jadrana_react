@@ -8,7 +8,7 @@ function valuetext(value) {
   return value;
 }
 
-export default function WhiteSlider() {
+export default function WhiteSlider({ values }) {
   const { currentPage, setCurrentPage, itemsPerPage, setItemsPerPage } =
     useContext(PaginationContext);
 
@@ -22,15 +22,15 @@ export default function WhiteSlider() {
       {/* Optional black bg for contrast */}
       <Slider
         aria-label="White slider"
-        defaultValue={16}
+        defaultValue={values.default}
         value={itemsPerPage}
         onChange={handleChange}
         getAriaValueText={valuetext}
         valueLabelDisplay="auto"
-        step={4}
+        step={values.step}
         marks
-        min={12}
-        max={32}
+        min={values.min}
+        max={values.max}
         sx={{
           color: "#ffffff", // track + thumb
           "& .MuiSlider-thumb": {

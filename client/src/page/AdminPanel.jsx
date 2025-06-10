@@ -18,18 +18,86 @@ function AdminPanel() {
   const [izmjena, setIzmjena] = useState(null);
   const [ribaId, setRibaId] = useState(null);
   const [ribaData, setRibaData] = useState(null);
+  const [clanakData, setClanakData] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [urediId, setUrediId] = useState(null);
+  const [selectedItemData, setSelectedItemData] = useState(null);
 
   useEffect(() => {
-    console.log("RIBA ID", ribaId);
-    console.log("BackendData:", backendData);
+    setUrediId(null);
+    setSelectedItemData(null);
+  }, [choice]);
 
+  useEffect(() => {
+    if (!urediId) {
+      setSelectedItemData(null);
+      return;
+    }
+
+    const getEndpointForChoice = (choice) => {
+      switch (choice) {
+        case "članci":
+          return `/clanci`;
+        case "oprema":
+          return `/admin/oprema/${urediId}`;
+        default:
+          return null;
+      }
+    };
+
+    const endpoint = getEndpointForChoice(choice);
+    if (!endpoint) return;
+
+    setLoading(true);
+
+    const requestOptions = {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    };
+
+    if ((choice !== "ribe", choice !== "članci")) {
+      const token = sessionStorage.getItem("token");
+      if (token) {
+        requestOptions.headers["Authorization"] = `Token ${token}`;
+      }
+    }
+
+    fetch(`${endpointUrl}${endpoint}`, requestOptions)
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error(`HTTP error! status: ${res.status}`);
+        }
+        return res.json();
+      })
+      .then((data) => {
+        setSelectedItemData(data);
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error(`Greška kod dohvata podataka za ${choice}:`, err);
+        setSelectedItemData(null);
+        setLoading(false);
+      });
+  }, [urediId, choice, endpointUrl]);
+
+  useEffect(() => {
     if (!ribaId || !Array.isArray(backendData) || izmjena !== "uredi") return;
 
     const odabranaRiba = backendData.find((r) => r.ID === Number(ribaId));
-    console.log("ODABRANA RIBA", odabranaRiba);
     setRibaData(odabranaRiba || null);
   }, [ribaId, backendData, izmjena]);
+
+  useEffect(() => {
+    if (!urediId || !Array.isArray(selectedItemData) || izmjena !== "uredi")
+      return;
+
+    const odabranClanak = selectedItemData.find(
+      (r) => r.ID === Number(urediId)
+    );
+    setClanakData(odabranClanak || null);
+  }, [urediId, selectedItemData]);
 
   useEffect(() => {
     const token = sessionStorage.getItem("token");
@@ -67,8 +135,12 @@ function AdminPanel() {
     return columns.map((col) => {
       let type = "text";
 
-      if (col.type === "unit" || col.type === "range") {
+      if (col.type === "unit") {
         type = "number";
+      }
+
+      if (col.type === "range") {
+        type = "text";
       }
 
       if (col.field === "slika") {
@@ -79,6 +151,10 @@ function AdminPanel() {
         type = "textarea";
       }
 
+      if (col.field === "sadrzaj") {
+        type = "textarea";
+      }
+
       return {
         name: col.field,
         label: col.label || col.field,
@@ -86,6 +162,11 @@ function AdminPanel() {
       };
     });
   }
+
+  const handleChoiceChange = (newChoice) => {
+    setChoice(newChoice);
+    setIzmjena(null); // Reset izmjena when changing choice
+  };
 
   if (!user) {
     return (
@@ -131,12 +212,17 @@ function AdminPanel() {
         label: "vrsta",
         sortable: true,
       },
+
       {
-        field: "dubina",
-        label: "dubina",
-        type: "range",
-        minField: "min_dubina",
-        maxField: "max_dubina",
+        field: "min_dubina",
+        label: "min_dubina",
+        unit: "m",
+        cellClass: "w-auto text-nowrap",
+        sortable: true,
+      },
+      {
+        field: "max_dubina",
+        label: "max_dubina",
         unit: "m",
         cellClass: "w-auto text-nowrap",
         sortable: true,
@@ -288,7 +374,7 @@ function AdminPanel() {
         sortable: false,
         render: (item) => (
           <img
-            src={item.slika}
+            src={`${endpointUrl}${item.slika}`}
             alt="slika"
             className="object-cover w-24 h-16 rounded-md shadow"
           />
@@ -303,13 +389,54 @@ function AdminPanel() {
       },
     ],
   };
+
   const formFieldsRibe = convertTableToFormFields(fishTableConfig.columns);
+  const formFieldsClanci = convertTableToFormFields(clanciTableConfig.columns);
+  const formFieldsKorisnici = convertTableToFormFields(
+    korisnikTableConfig.columns
+  );
+  const formFieldsOprema = convertTableToFormFields(opremaTableConfig.columns);
 
   formFieldsRibe.push({
     name: "otrovna",
     label: "Otrovna",
     type: "checkbox",
   });
+
+  const getFormFieldsAndUrl = () => {
+    switch (choice) {
+      case "ribe":
+        return {
+          fields: formFieldsRibe,
+          submitUrl: "/api/novariba",
+        };
+      case "članci":
+        return {
+          fields: formFieldsClanci,
+          editUrl: `/admin/clanci/${urediId}/`,
+          submitUrl: "/admin/noviclanak",
+          data: selectedItemData,
+        };
+      case "korisnici":
+        return {
+          fields: formFieldsKorisnici,
+          editUrl: `/admin/korisnici/${urediId}/`,
+          submitUrl: "/admin/korisnici",
+          data: selectedItemData,
+        };
+      case "oprema":
+        return {
+          fields: formFieldsOprema,
+          editUrl: `/admin/oprema/${urediId}/`,
+          submitUrl: "/admin/oprema",
+          data: selectedItemData,
+        };
+      default:
+        return { fields: [], editUrl: "", submitUrl: "", data: null };
+    }
+  };
+
+  const { fields, editUrl, submitUrl, data } = getFormFieldsAndUrl();
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -318,49 +445,37 @@ function AdminPanel() {
         <div className="w-[90%] mt-6 ">
           <ul className="flex justify-center gap-5 text-lg font-glavno [&>li]:outline [&>li]:outline-2 [&>li]:outline-white [&>li]:w-[6rem] [&>li]:rounded-[11px] [&>li]:text-center [&>li]:py-1 [&>li:hover]:w-[6.5rem] [&>li]:cursor-pointer">
             <li
-              onClick={() => {
-                setChoice("ribe");
-              }}
+              onClick={() => handleChoiceChange("ribe")}
               className="form-btn-hover"
             >
               Ribe
             </li>
             <li
-              onClick={() => {
-                setChoice("korisnici");
-              }}
+              onClick={() => handleChoiceChange("korisnici")}
               className="form-btn-hover"
             >
               Korisnici
             </li>
             <li
-              onClick={() => {
-                setChoice("članci");
-              }}
+              onClick={() => handleChoiceChange("članci")}
               className="form-btn-hover"
             >
               članci
             </li>
             <li
-              onClick={() => {
-                setChoice("objave");
-              }}
+              onClick={() => handleChoiceChange("objave")}
               className="form-btn-hover"
             >
               objave
             </li>
             <li
-              onClick={() => {
-                setChoice("oprema");
-              }}
+              onClick={() => handleChoiceChange("oprema")}
               className="form-btn-hover"
             >
               oprema
             </li>
             <li
-              onClick={() => {
-                setChoice("upiti");
-              }}
+              onClick={() => handleChoiceChange("upiti")}
               className="form-btn-hover"
             >
               upiti
@@ -377,6 +492,7 @@ function AdminPanel() {
                 rowsPerPage={10}
                 highlightCondition={(item) => item.otrovna}
                 highlightClass="text-red-200"
+                setUrediId={setUrediId}
               />
               <div className="flex items-center justify-center w-full gap-12 [&>button:hover]:underline my-8">
                 <button
@@ -401,8 +517,8 @@ function AdminPanel() {
                 {izmjena === "novo" ? (
                   <DodavanjeStavkiAdmin
                     title="Ribu"
-                    submitUrl="/api/riba"
-                    fields={formFieldsRibe}
+                    submitUrl={submitUrl}
+                    fields={fields}
                   />
                 ) : (
                   ""
@@ -413,7 +529,7 @@ function AdminPanel() {
                     {ribaId && (
                       <DodavanjeStavkiAdmin
                         title="Ribu"
-                        editUrl={`/api/riba/${ribaId}/`}
+                        editUrl={`/api/updateribe/${ribaId}`}
                         isEdit={true}
                         defaultValues={ribaData}
                         fields={formFieldsRibe}
@@ -424,37 +540,170 @@ function AdminPanel() {
               </div>
             </>
           ) : choice === "korisnici" ? (
-            <RibaTable
-              tableConfig={korisnikTableConfig}
-              endpoint="/admin/korisnici"
-              //navigateUrlTemplate=""
-              searchField="korisnicko_ime"
-              searchPlaceholder="Pretraži po imenu"
-              rowsPerPage={10}
-              secure={true}
-            />
+            <>
+              <RibaTable
+                tableConfig={korisnikTableConfig}
+                endpoint="/admin/korisnici"
+                searchField="korisnicko_ime"
+                searchPlaceholder="Pretraži po imenu"
+                rowsPerPage={10}
+                secure={true}
+                setUrediId={setUrediId}
+              />
+
+              <div className="flex justify-center mb-10 align-center">
+                {izmjena === "novo" ? (
+                  <DodavanjeStavkiAdmin
+                    title="Korisnika"
+                    submitUrl={submitUrl}
+                    fields={fields}
+                  />
+                ) : (
+                  ""
+                )}
+                {izmjena === "uredi" && (
+                  <div className="flex flex-col items-center gap-6">
+                    {urediId ? (
+                      loading ? (
+                        <p>Učitavanje...</p>
+                      ) : (
+                        <DodavanjeStavkiAdmin
+                          title="Korisnika"
+                          editUrl={editUrl}
+                          isEdit={true}
+                          defaultValues={data}
+                          fields={fields}
+                        />
+                      )
+                    ) : (
+                      <p>Pritisni na korisnika u tablici za uređivanje</p>
+                    )}
+                  </div>
+                )}
+              </div>
+            </>
           ) : choice === "članci" ? (
-            <RibaTable
-              tableConfig={clanciTableConfig}
-              endpoint="/admin/clanci"
-              //navigateUrlTemplate=""
-              searchField="kategorija"
-              searchPlaceholder="Pretraži po kategoriji"
-              rowsPerPage={10}
-              secure={true}
-            />
+            <>
+              <RibaTable
+                tableConfig={clanciTableConfig}
+                endpoint="/admin/clanci"
+                searchField="kategorija"
+                searchPlaceholder="Pretraži po kategoriji"
+                rowsPerPage={10}
+                secure={true}
+                setUrediId={setUrediId}
+              />
+              <div className="flex items-center justify-center w-full gap-12 [&>button:hover]:underline my-8">
+                <button
+                  onClick={() => {
+                    setIzmjena("novo");
+                  }}
+                  className="glavno-nav"
+                >
+                  Dodaj Novi
+                </button>
+                <button
+                  onClick={() => {
+                    setIzmjena("uredi");
+                  }}
+                  className="glavno-nav"
+                >
+                  Uredi
+                </button>
+              </div>
+              <div className="flex justify-center mb-10 align-center">
+                {izmjena === "novo" ? (
+                  <DodavanjeStavkiAdmin
+                    title="članak"
+                    submitUrl={submitUrl}
+                    fields={fields}
+                  />
+                ) : (
+                  ""
+                )}
+                {izmjena === "uredi" && (
+                  <div className="flex flex-col items-center gap-6">
+                    {urediId ? (
+                      loading ? (
+                        <p>Učitavanje...</p>
+                      ) : (
+                        <DodavanjeStavkiAdmin
+                          title="članak"
+                          editUrl={editUrl}
+                          isEdit={true}
+                          defaultValues={clanakData}
+                          fields={fields}
+                        />
+                      )
+                    ) : (
+                      <p>Pritisni na članak u tablici za uređivanje</p>
+                    )}
+                  </div>
+                )}
+              </div>
+            </>
           ) : choice === "objave" ? (
             <AdminObjave />
           ) : choice === "oprema" ? (
-            <RibaTable
-              tableConfig={opremaTableConfig}
-              endpoint="/admin/oprema"
-              //navigateUrlTemplate=""
-              searchField="model"
-              searchPlaceholder="Pretraži po modelu"
-              rowsPerPage={10}
-              secure={true}
-            />
+            <>
+              <RibaTable
+                tableConfig={opremaTableConfig}
+                endpoint="/admin/oprema"
+                searchField="model"
+                searchPlaceholder="Pretraži po modelu"
+                rowsPerPage={10}
+                secure={true}
+                setUrediId={setUrediId}
+              />
+              <div className="flex items-center justify-center w-full gap-12 [&>button:hover]:underline my-8">
+                <button
+                  onClick={() => {
+                    setIzmjena("novo");
+                  }}
+                  className="glavno-nav"
+                >
+                  Dodaj Novu
+                </button>
+                <button
+                  onClick={() => {
+                    setIzmjena("uredi");
+                  }}
+                  className="glavno-nav"
+                >
+                  Uredi
+                </button>
+              </div>
+              <div className="flex justify-center mb-10 align-center">
+                {izmjena === "novo" ? (
+                  <DodavanjeStavkiAdmin
+                    title="Opremu"
+                    submitUrl={submitUrl}
+                    fields={fields}
+                  />
+                ) : (
+                  ""
+                )}
+                {izmjena === "uredi" && (
+                  <div className="flex flex-col items-center gap-6">
+                    {urediId ? (
+                      loading ? (
+                        <p>Učitavanje...</p>
+                      ) : (
+                        <DodavanjeStavkiAdmin
+                          title="Opremu"
+                          editUrl={editUrl}
+                          isEdit={true}
+                          defaultValues={data}
+                          fields={fields}
+                        />
+                      )
+                    ) : (
+                      <p>Pritisni na opremu u tablici za uređivanje</p>
+                    )}
+                  </div>
+                )}
+              </div>
+            </>
           ) : (
             ""
           )}

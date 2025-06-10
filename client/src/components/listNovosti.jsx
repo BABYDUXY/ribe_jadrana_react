@@ -6,26 +6,18 @@ import { useState, useRef, useEffect } from "react";
 import { useLogin } from "../kontekst/loginContext";
 
 function ListNovosti({ value, refreshPosts }) {
-  const date = new Date(value.datum_kreiranja);
+  const date = new Date(value.datum);
   const { endpointUrl } = useContext(EndpointUrlContext);
   const contentRef = useRef(null);
   const day = String(date.getUTCDate()).padStart(2, "0");
   const month = String(date.getUTCMonth() + 1).padStart(2, "0"); // Months are 0-indexed
   const year = date.getUTCFullYear();
   const [isExpanded, setIsExpanded] = useState(false);
-  const defaultLink = "#";
   const [height, setHeight] = useState("13rem");
   const formattedDate = `${day}.${month}.${year}.`;
-  const [reaction, setReaction] = useState(null);
   const { user } = useLogin();
-  const [reactionCount, setReactionCount] = useState({
-    likes: value.broj_lajkova,
-    dislikes: value.broj_dislajkova,
-  });
-  const [komentar, setKomentar] = useState("");
-  const [komentari, setKomentari] = useState(value.komentari);
+
   const [loading, setLoading] = useState(false);
-  const [toggleSharePost, setToggleSharePost] = useState(false);
 
   const handleloading = (time) => {
     setLoading(true);
@@ -58,7 +50,7 @@ function ListNovosti({ value, refreshPosts }) {
         overflow: "hidden",
         transition: `height ${isExpanded ? "0.4s" : "0.3s"} ease-in `,
       }}
-      className={` outline  outline-[5px] outline-white   w-[50rem] grid grid-cols-[58%_41%] gap-7   text-white p-[1.5rem_3rem] font-glavno rounded-[22px] overflow-hidden`}
+      className={` outline  outline-[5px] outline-white w-[50rem] grid grid-cols-[58%_41%] gap-7  text-white p-[1.5rem_3rem] font-glavno rounded-[22px] overflow-hidden`}
     >
       <div
         className={`flex flex-col  justify-between row-start-1  ${
@@ -74,7 +66,7 @@ function ListNovosti({ value, refreshPosts }) {
               }overflow-hidden`}
             >
               {" "}
-              Ovo je naslov neke jako bitne objave
+              {value.naslov}
             </h2>
           </div>
         </div>
@@ -87,19 +79,10 @@ function ListNovosti({ value, refreshPosts }) {
         )}
         {isExpanded && (
           <>
-            <div className="w-full h-max min-h-60 ">
+            <div className="w-full h-max min-h-72 ">
               <h3 className="glavno-nav text-[1.3rem] mb-2">Sadržaj</h3>
               <div className="bg-moja_plava-tamna min-h-32 max-h-96 overflow-auto p-4 outline outline-[2px] outline-white rounded-[13px]">
-                <p>
-                  Lorem ipsum dolor sit amet, consectetur adipisicing elit.
-                  Earum quibusdam quos, ipsam sed numquam rerum est iure dolorum
-                  voluptate, non fuga excepturi nisiLorem ipsum dolor sit amet,
-                  consectetur adipisicing elit. Earum quibusdam quos, ipsam sed
-                  numquam rerum est iure dolorum voluptate, non fuga excepturi
-                  nisiLorem ipsum dolor sit amet, consectetur adipisicing elit.
-                  Earum quibusdam quos, ipsam sed numquam rerum est iure dolorum
-                  voluptate, non fuga excepturi nisi
-                </p>
+                <p>{value.sadrzaj}</p>
               </div>
               <div className="mt-5">
                 <p>{formattedDate}</p>
@@ -143,8 +126,8 @@ function ListNovosti({ value, refreshPosts }) {
             }
           >
             <img
-              className={`object-cover transition-all duration-[250ms] ease-out w-full h-full `}
-              srcSet={`${endpointUrl}${value.slika_direktorij}`}
+              className={`object-cover transition-all duration-[250ms] mb-8 ease-out w-full h-full `}
+              srcSet={`${endpointUrl}${value.slika}`}
               alt=""
             />
           </div>
@@ -156,7 +139,7 @@ function ListNovosti({ value, refreshPosts }) {
               handleloading(400);
             }
           }}
-          className={`w-[60px] h-[60px] hover:cursor-pointer hover:scale-105 transition-all duration-500  ease-in-out ${
+          className={`w-[60px] h-[60px]  hover:cursor-pointer hover:scale-105 transition-all duration-500  ease-in-out ${
             isExpanded ? "self-end" : ""
           }`}
         >
