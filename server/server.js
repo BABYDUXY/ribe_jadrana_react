@@ -2208,6 +2208,13 @@ app.post(
   }
 );
 
-app.listen(5000, () => {
-  console.log("server je pokrenut na portu 5000");
-});
+// Eksportiraj app za testove
+module.exports = app;
+
+// Pokreni server samo ako se datoteka pokreće direktno
+if (require.main === module) {
+  const PORT = process.env.PORT || 5000;
+  app.listen(PORT, () => {
+    console.log(`Server pokrenut na portu ${PORT}`);
+  });
+}
