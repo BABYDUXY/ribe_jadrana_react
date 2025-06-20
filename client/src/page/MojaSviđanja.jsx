@@ -7,6 +7,7 @@ import { EndpointUrlContext } from "../kontekst/EndpointUrlContext";
 import ListObjava from "../components/ListObjava";
 import Pagination from "../components/Pagination";
 import { Navigate, useNavigate } from "react-router-dom";
+import NaslovStranice from "../components/NaslovStranice";
 
 function MojaSviđanja() {
   const { endpointUrl } = useContext(EndpointUrlContext);
@@ -88,9 +89,10 @@ function MojaSviđanja() {
         />
 
         <div className="flex flex-col items-center w-full gap-16 mb-24 -mt-20">
-          <h1 className="text-white glavno-naslov text-[2rem]">
-            Moja sviđanja
-          </h1>
+          <NaslovStranice
+            tekst="Moja Sviđanja"
+            opis="Sve objave koje ti se sviđaju."
+          />
           {paginatedData.map((objava) => (
             <ListObjava
               key={objava.hash}

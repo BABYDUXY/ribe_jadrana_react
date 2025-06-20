@@ -7,6 +7,7 @@ import { EndpointUrlContext } from "../kontekst/EndpointUrlContext";
 import ListObjava from "../components/ListObjava";
 import Pagination from "../components/Pagination";
 import { Navigate, useNavigate } from "react-router-dom";
+import NaslovStranice from "../components/NaslovStranice";
 
 function MojiUlovi() {
   const { endpointUrl } = useContext(EndpointUrlContext);
@@ -85,7 +86,7 @@ function MojiUlovi() {
         />
 
         <div className="flex flex-col items-center w-full gap-16 mb-24 -mt-20">
-          <h1 className="text-white glavno-naslov text-[2rem]">Moji Ulovi</h1>
+          <NaslovStranice tekst="Moji Ulovi" opis="Galerija privatnih ulova." />
 
           {paginatedData.map((objava) => (
             <ListObjava

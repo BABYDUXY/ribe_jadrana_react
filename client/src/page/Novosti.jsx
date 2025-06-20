@@ -7,6 +7,7 @@ import { EndpointUrlContext } from "../kontekst/EndpointUrlContext";
 import ListObjava from "../components/ListObjava";
 import Pagination from "../components/Pagination";
 import ListNovosti from "../components/listNovosti";
+import NaslovStranice from "../components/NaslovStranice";
 
 function Novosti() {
   const { endpointUrl } = useContext(EndpointUrlContext);
@@ -88,22 +89,10 @@ function Novosti() {
         />
 
         <div className="flex flex-col items-center w-full gap-16 mb-24 -mt-20">
-          <div
-            draggable="false"
-            className="flex flex-col items-center pointer-events-none select-none"
-          >
-            <div className="relative inline-block px-1 overflow-hidden">
-              <h1 className="text-white glavno-naslov text-center text-[2rem] mb-1">
-                Novosti
-              </h1>
-              <span className="absolute bottom-0  w-[180%] animated-element overflow-hidden rounded-full h-max">
-                <img srcSet="logo/val.svg" className="w-full h-auto " />
-              </span>
-            </div>
-            <h4 className="mt-2 italic text-white font-glavno">
-              Najnovije novosti iz morskog svijeta jadrana.
-            </h4>
-          </div>
+          <NaslovStranice
+            tekst="Novosti"
+            opis="Najnovije novosti iz morskog svijeta jadrana."
+          />
           {paginatedData.map((clanak) => (
             <ListNovosti
               key={`${clanak.ID}`}

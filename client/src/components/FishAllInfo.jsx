@@ -3,8 +3,10 @@ import { useContext } from "react";
 import { Link } from "react-router-dom";
 import Navigacija from "./Navigacija";
 import Footer from "./Footer";
+import { EndpointUrlContext } from "../kontekst/EndpointUrlContext";
 
 function FishAllInfo({ value }) {
+  const { endpointUrl } = useContext(EndpointUrlContext);
   return (
     <>
       <Navigacija />
@@ -21,7 +23,11 @@ function FishAllInfo({ value }) {
             <div className="overflow-hidden h-4/5 w-[90%] rounded-[15px] outline outline-[3px] outline-white">
               <img
                 className="object-cover w-full h-full "
-                src={`/${value.slika}`}
+                srcSet={`${
+                  value.slika.includes("/uploads")
+                    ? `${endpointUrl}${value.slika}`
+                    : "/" + value.slika
+                }`}
                 alt={`Slika ribe ${value.ime}`}
               />
             </div>

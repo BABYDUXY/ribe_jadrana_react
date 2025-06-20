@@ -72,7 +72,7 @@ function FilterButtons({
     <div className="grid grid-cols-[11%_39%_39%_11%] place-items-center mt-10 mb-10 ">
       <img
         className="w-[40px] col-start-4 row-start-1 hover:scale-105 transition-all duration-200 ease-in-out cursor-pointer"
-        src="./public/logo/filter.svg"
+        src="/logo/filter.svg"
         alt=""
         draggable="false"
         onClick={() => {

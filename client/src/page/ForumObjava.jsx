@@ -6,6 +6,7 @@ import { PaginationContext } from "../kontekst/PaginationContext";
 import { EndpointUrlContext } from "../kontekst/EndpointUrlContext";
 import ListObjava from "../components/ListObjava";
 import Pagination from "../components/Pagination";
+import NaslovStranice from "../components/NaslovStranice";
 function ForumObjava() {
   const { endpointUrl } = useContext(EndpointUrlContext);
 
@@ -87,7 +88,12 @@ function ForumObjava() {
           searchQuery={searchQuery}
         />
 
-        <div className="flex flex-col items-center w-full gap-16 mb-24">
+        <div className="flex flex-col items-center w-full gap-16 mb-24 -mt-20">
+          <NaslovStranice
+            tekst="Ulovi"
+            opis="Svačije uspomene na jednom mjestu. "
+          />
+
           {paginatedData.map((objava) => (
             <ListObjava
               key={`${objava.hash}-${objava.komentari.length}`}

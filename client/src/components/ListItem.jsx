@@ -1,7 +1,11 @@
 import React from "react";
+import { useContext } from "react";
 import { Link } from "react-router-dom";
+import { EndpointUrlContext } from "../kontekst/EndpointUrlContext";
 
 function ListItem({ value }) {
+  const { endpointUrl } = useContext(EndpointUrlContext);
+
   return (
     <Link
       to={`/fish/${value.ID}`}
@@ -14,7 +18,11 @@ function ListItem({ value }) {
     >
       <div className="animate-spawn opacity-0 w-[100%] h-[80%]  justify-self-center flex  items-end justify-center rounded-[9px]  group-hover:h-[85%] transition-all ease-in-out duration-[340ms]  overflow-hidden relative flex-col outline outline-[3px] outline-white">
         <img
-          src={value.slika}
+          srcSet={`${
+            value.slika.includes("/uploads")
+              ? `${endpointUrl}${value.slika}`
+              : "/" + value.slika
+          }`}
           className="group-hover:scale-y-[0.95] scale-110 self-center justify-self-center w-full transition-transform duration-[340ms] ease-in-out relative "
           alt=""
         />

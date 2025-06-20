@@ -175,8 +175,8 @@ function MojProfil() {
           </button>
         </form>
         <div className="flex gap-4 -mt-3 underline">
-          <Link>Moji ulovi</Link>
-          <Link>Moja sviđanja</Link>
+          <Link to="/mojiulovi">Moji ulovi</Link>
+          <Link to="/mojasvidanja">Moja sviđanja</Link>
         </div>
       </div>
       <Footer />

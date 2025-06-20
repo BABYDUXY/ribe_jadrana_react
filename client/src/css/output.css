@@ -817,6 +817,10 @@ video {
   margin-bottom: 1rem;
 }
 
+.mb-8 {
+  margin-bottom: 2rem;
+}
+
 .mb-\[-0\.3rem\] {
   margin-bottom: -0.3rem;
 }
@@ -927,14 +931,6 @@ video {
 
 .mt-auto {
   margin-top: auto;
-}
-
-.mb-6 {
-  margin-bottom: 1.5rem;
-}
-
-.mb-8 {
-  margin-bottom: 2rem;
 }
 
 .block {
@@ -1119,8 +1115,8 @@ video {
   min-height: 8rem;
 }
 
-.min-h-60 {
-  min-height: 15rem;
+.min-h-72 {
+  min-height: 18rem;
 }
 
 .min-h-\[20rem\] {
@@ -1141,10 +1137,6 @@ video {
 
 .min-h-screen {
   min-height: 100vh;
-}
-
-.min-h-72 {
-  min-height: 18rem;
 }
 
 .\!w-\[40rem\] {
@@ -1203,8 +1195,16 @@ video {
   width: 120%;
 }
 
+.w-\[130\%\] {
+  width: 130%;
+}
+
 .w-\[140\%\] {
   width: 140%;
+}
+
+.w-\[150\%\] {
+  width: 150%;
 }
 
 .w-\[15rem\] {
@@ -1233,6 +1233,10 @@ video {
 
 .w-\[20rem\] {
   width: 20rem;
+}
+
+.w-\[250\%\] {
+  width: 250%;
 }
 
 .w-\[25px\] {
@@ -2326,8 +2330,44 @@ video {
   }
 }
 
+@keyframes slideX2 {
+  0% {
+    transform: translateX(-30%);
+  }
+
+  50% {
+    transform: translateX(-3%);
+  }
+
+  100% {
+    transform: translateX(-30%);
+  }
+}
+
+@keyframes slideX3 {
+  0% {
+    transform: translateX(-20%);
+  }
+
+  50% {
+    transform: translateX(-3%);
+  }
+
+  100% {
+    transform: translateX(-20%);
+  }
+}
+
 .animated-element {
   animation: slideX 7s ease-in-out infinite;
+}
+
+.animated-long-element {
+  animation: slideX2 7s ease-in-out infinite;
+}
+
+.animated-very-long-element {
+  animation: slideX3 7s ease-in-out infinite;
 }
 
 .\[\&\>li\>h6\]\:glavno-nav>li>h6 {

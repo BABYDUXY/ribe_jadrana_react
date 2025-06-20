@@ -95,10 +95,14 @@ function ForumFilters({ setSortOptions, setSearchQuery, searchQuery }) {
   const valueSlider = { default: 6, step: 1, min: 3, max: 10 };
 
   return (
-    <div className="grid grid-cols-[15%_35%_35%_15%] place-items-center mt-10 mb-10 ">
+    <div
+      className={`grid grid-cols-[15%_35%_35%_15%] place-items-center mt-10 transition-all duration-500 ease-out  ${
+        toggleFilteri ? "mb-20" : "mb-10"
+      }`}
+    >
       <img
         className="w-[40px] col-start-4 row-start-1 hover:scale-105 transition-all duration-200 ease-in-out cursor-pointer"
-        src="./public/logo/filter.svg"
+        src="/logo/filter.svg"
         alt=""
         draggable="false"
         onClick={() => {
@@ -113,7 +117,7 @@ function ForumFilters({ setSortOptions, setSearchQuery, searchQuery }) {
               moreOptionsToggle ? "opacity-0 z-0" : "opacity-100 z-10"
             }`}
             draggable="false"
-            src="./public/logo/plus.svg"
+            src="/logo/plus.svg"
             alt=""
             onClick={() => {
               setMoreOptionsToggle(true);
@@ -124,7 +128,7 @@ function ForumFilters({ setSortOptions, setSearchQuery, searchQuery }) {
               moreOptionsToggle ? "opacity-100 z-10 " : "opacity-0 z-0"
             }`}
             draggable="false"
-            src="./public/logo/minus.svg"
+            src="/logo/minus.svg"
             alt=""
             onClick={() => {
               setMoreOptionsToggle(false);
@@ -132,7 +136,7 @@ function ForumFilters({ setSortOptions, setSearchQuery, searchQuery }) {
           />
 
           <div
-            className={`form-btn-hover absolute left-[150%] text-nowrap outline outline-[3px]  outline-white rounded-[11px] overflow-clip ${
+            className={`form-btn-hover  absolute left-[150%] text-nowrap outline outline-[3px]  outline-white rounded-[11px] overflow-clip ${
               moreOptionsToggle
                 ? "opacity-100 w-40 ml-0"
                 : "opacity-0 w-0 -ml-10 "
@@ -202,9 +206,9 @@ function ForumFilters({ setSortOptions, setSearchQuery, searchQuery }) {
       )}
 
       <ul
-        className={`col-start-3 row-start-1 transition-all duration-500 ease-in flex flex-row justify-evenly justify-self-end [&>li]:inline-block px-7 border-white border-[3px] rounded-full -mr-10  h-min ${
+        className={`col-start-3 row-start-1 transition-all bg-moja_plava z-10  duration-500 ease-in flex flex-row justify-evenly justify-self-end [&>li]:inline-block px-7 border-white border-[3px] rounded-full -mr-10  h-min ${
           toggleFilteri
-            ? " w-[35rem] opacity-100 overflow-visible"
+            ? " w-[35rem] opacity-100 overflow-visible "
             : "w-0 opacity-0 overflow-hidden"
         }${searchInput ? " !w-[40rem]" : ""}`}
       >

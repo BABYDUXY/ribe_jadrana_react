@@ -48,6 +48,38 @@
   }
 }
 
+@keyframes slideX2 {
+  0% {
+    transform: translateX(-30%);
+  }
+  50% {
+    transform: translateX(-3%);
+  }
+  100% {
+    transform: translateX(-30%);
+  }
+}
+
+@keyframes slideX3 {
+  0% {
+    transform: translateX(-20%);
+  }
+  50% {
+    transform: translateX(-3%);
+  }
+  100% {
+    transform: translateX(-20%);
+  }
+}
+
 .animated-element {
   animation: slideX 7s ease-in-out infinite;
+}
+
+.animated-long-element {
+  animation: slideX2 7s ease-in-out infinite;
+}
+
+.animated-very-long-element {
+  animation: slideX3 7s ease-in-out infinite;
 }

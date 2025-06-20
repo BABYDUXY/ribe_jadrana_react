@@ -335,29 +335,52 @@ app.put("/api/korisnik/update", verifyToken, async (req, res) => {
   const { korisnicko_ime } = req.body;
   const userInfo = req.user;
   const email = userInfo.email;
-  console.log("email: ", email, "user:", korisnicko_ime);
 
   if (!email || !korisnicko_ime) {
     return res.status(400).json({ poruka: "Nedostaju podaci." });
   }
 
   try {
-    const sql = "UPDATE korisnik SET korisnicko_ime = ? WHERE email = ?";
-    db.query(sql, [korisnicko_ime, email], (err, result) => {
+    const checkSql = "SELECT zadnja_izmjena FROM korisnik WHERE email = ?";
+    db.query(checkSql, [email], (err, result) => {
       if (err) {
-        console.error("Greška kod upita:", err);
+        console.error("Greška kod provjere datuma:", err);
         return res.status(500).json({ poruka: "Greška na serveru." });
       }
 
-      if (result.affectedRows === 0) {
+      if (result.length === 0) {
         return res.status(404).json({ poruka: "Korisnik nije pronađen." });
       }
-      return res
-        .status(200)
-        .json({ poruka: "Korisničko ime ažurirano uspješno." });
+
+      const zadnjaIzmjena = new Date(result[0].zadnja_izmjena);
+      const mjesecDanaUnazad = new Date();
+      mjesecDanaUnazad.setMonth(mjesecDanaUnazad.getMonth() - 1);
+
+      if (zadnjaIzmjena > mjesecDanaUnazad) {
+        return res.status(403).json({
+          poruka: "Promjena korisničkog imena moguća je samo jednom mjesečno.",
+        });
+      }
+
+      const updateSql =
+        "UPDATE korisnik SET korisnicko_ime = ?, zadnja_izmjena = NOW() WHERE email = ?";
+      db.query(updateSql, [korisnicko_ime, email], (err, result) => {
+        if (err) {
+          console.error("Greška kod upita:", err);
+          return res.status(500).json({ poruka: "Greška na serveru." });
+        }
+
+        if (result.affectedRows === 0) {
+          return res.status(404).json({ poruka: "Korisnik nije pronađen." });
+        }
+
+        return res.status(200).json({
+          poruka: "Korisničko ime ažurirano uspješno.",
+        });
+      });
     });
   } catch (err) {
-    console.error(err);
+    console.error("Greška:", err);
     res.status(500).json({ poruka: "Greška na serveru." });
   }
 });
@@ -1134,14 +1157,24 @@ app.get("/objave/ulovi", (req, res) => {
   riba.ime AS ime_ribe,
 
   -- Oprema samo ako postoji ulov
-  GROUP_CONCAT(DISTINCT brend.naziv) AS brend,
-  GROUP_CONCAT(DISTINCT tip_opreme.naziv) AS tip,
-  GROUP_CONCAT(DISTINCT model_opreme.naziv) AS model,
-  GROUP_CONCAT(DISTINCT link_opreme.link) AS link,
-  GROUP_CONCAT(DISTINCT CONCAT(brend.naziv, ' ', model_opreme.naziv)) AS kombinirani_model,
+  GROUP_CONCAT(DISTINCT 
+  CONCAT(
+    brend.naziv, ' ', model_opreme.naziv,
+    CASE 
+      WHEN link_opreme.link IS NOT NULL THEN CONCAT(';', link_opreme.link) 
+      ELSE ''
+    END
+  )
+  ORDER BY tip_opreme.ID
+) AS kombinirani_model,
   GROUP_CONCAT(DISTINCT CASE 
-      WHEN model_opreme.tip_id = 3 AND model_opreme.brend IS NULL THEN model_opreme.naziv 
-  END) AS mamac,
+    WHEN model_opreme.tip_id = 3 AND model_opreme.brend IS NULL THEN 
+        CONCAT(model_opreme.naziv, 
+               CASE 
+                 WHEN link_opreme.link IS NOT NULL THEN CONCAT(';', link_opreme.link) 
+                 ELSE '' 
+               END)
+END) AS mamac,
 
   -- Lajkovi i dislajkovi
   (SELECT COUNT(*) FROM ocjena_objave WHERE ocjena_objave.objava_id = objava.ID AND ocjena_objave.pozitivno = 1) AS broj_lajkova,
@@ -1211,14 +1244,25 @@ app.get("/privatni/ulovi", (req, res) => {
   riba.ID AS id_ribe,
   riba.ime AS ime_ribe,
 
-  GROUP_CONCAT(DISTINCT brend.naziv) AS brend,
-  GROUP_CONCAT(DISTINCT tip_opreme.naziv) AS tip,
-  GROUP_CONCAT(DISTINCT model_opreme.naziv) AS model,
-  GROUP_CONCAT(DISTINCT link_opreme.link) AS link,
-  GROUP_CONCAT(DISTINCT CONCAT(brend.naziv, ' ', model_opreme.naziv)) AS kombinirani_model,
+  -- Oprema samo ako postoji ulov
+  GROUP_CONCAT(DISTINCT 
+  CONCAT(
+    brend.naziv, ' ', model_opreme.naziv,
+    CASE 
+      WHEN link_opreme.link IS NOT NULL THEN CONCAT(';', link_opreme.link) 
+      ELSE ''
+    END
+  )
+  ORDER BY tip_opreme.ID
+) AS kombinirani_model,
   GROUP_CONCAT(DISTINCT CASE 
-      WHEN model_opreme.tip_id = 3 AND model_opreme.brend IS NULL THEN model_opreme.naziv 
-  END) AS mamac
+    WHEN model_opreme.tip_id = 3 AND model_opreme.brend IS NULL THEN 
+        CONCAT(model_opreme.naziv, 
+               CASE 
+                 WHEN link_opreme.link IS NOT NULL THEN CONCAT(';', link_opreme.link) 
+                 ELSE '' 
+               END)
+END) AS mamac
 
 FROM ulov
 
@@ -1940,7 +1984,7 @@ app.get("/admin/clanci", verifyToken, async (req, res) => {
 app.post(
   "/api/novariba",
   verifyToken,
-  uploadPrivatno.single("slika"),
+  uploadRibe.single("slika"),
 
   async (req, res) => {
     const podaci = req.body;
@@ -1965,7 +2009,7 @@ app.post(
 
     let slika = null;
     if (req.file) {
-      slika = `/uploads/privatno/${req.file.filename}`;
+      slika = `/uploads/ribe/${req.file.filename}`;
     }
 
     const {
@@ -2207,9 +2251,6 @@ app.post(
     }
   }
 );
-
-// Eksportiraj app za testove
-module.exports = app;
 
 // Pokreni server samo ako se datoteka pokreće direktno
 if (require.main === module) {

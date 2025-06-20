@@ -27,6 +27,22 @@ function ListObjava({ value, refreshPosts, status }) {
   const [loading, setLoading] = useState(false);
   const [toggleSharePost, setToggleSharePost] = useState(false);
 
+  const kombinirani_model = [];
+  kombinirani_model.push(...value.kombinirani_model);
+  kombinirani_model.push(value.mamac);
+  const modeliLinks = kombinirani_model.map((item) => item.trim());
+  const naziv_modela = [];
+  const link = [];
+
+  modeliLinks.forEach((item) => {
+    const parts = item.split(";");
+
+    if (parts.length === 2) {
+      naziv_modela.push(parts[0].trim());
+      link.push(parts[1].trim());
+    }
+  });
+
   const handleloading = (time) => {
     setLoading(true);
     setTimeout(() => {
@@ -391,49 +407,40 @@ function ListObjava({ value, refreshPosts, status }) {
                 <ul className="flex flex-col gap-2 p-4 glavno-small [&>li]:font-semibold [&>li>a]:ml-1">
                   <li>
                     Štap:{" "}
-                    {value.link[0] != "#" ? (
-                      <Link
-                        className="font-normal underline"
-                        to={value.link[0]}
-                      >
+                    {link[0] != "#" ? (
+                      <Link className="font-normal underline" to={link[0]}>
                         {" "}
-                        {value.kombinirani_model[0]}
+                        {naziv_modela[0]}
                       </Link>
                     ) : (
                       <Link to={defaultLink} className="font-normal underline">
-                        {value.kombinirani_model[0]}
+                        {naziv_modela[0]}
                       </Link>
                     )}
                   </li>
                   <li>
                     Rola:{" "}
-                    {value.link[1] ? (
-                      <Link
-                        className="font-normal underline"
-                        to={value.link[1]}
-                      >
+                    {link[1] ? (
+                      <Link className="font-normal underline" to={link[1]}>
                         {" "}
-                        {value.kombinirani_model[1]}
+                        {naziv_modela[1]}
                       </Link>
                     ) : (
                       <Link to={defaultLink} className="font-normal underline">
-                        {value.kombinirani_model[1]}
+                        {naziv_modela[1]}
                       </Link>
                     )}
                   </li>
                   <li>
                     Mamac:{" "}
-                    {value.link[2] ? (
-                      <Link
-                        className="font-normal underline"
-                        to={value.link[2]}
-                      >
+                    {link[2] ? (
+                      <Link className="font-normal underline" to={link[2]}>
                         {" "}
-                        {value.mamac}
+                        {naziv_modela[2]}
                       </Link>
                     ) : (
                       <Link to={defaultLink} className="font-normal underline">
-                        {value.mamac}
+                        {naziv_modela[2]}
                       </Link>
                     )}
                   </li>
@@ -650,49 +657,40 @@ function ListObjava({ value, refreshPosts, status }) {
                 <ul className="flex flex-col gap-2 p-4 glavno-small [&>li]:font-semibold [&>li>a]:ml-1">
                   <li>
                     Štap:{" "}
-                    {value.link[0] != "#" ? (
-                      <Link
-                        className="font-normal underline"
-                        to={value.link[0]}
-                      >
+                    {link[0] != "#" ? (
+                      <Link className="font-normal underline" to={link[0]}>
                         {" "}
-                        {value.kombinirani_model[0]}
+                        {naziv_modela[0]}
                       </Link>
                     ) : (
                       <Link to={defaultLink} className="font-normal underline">
-                        {value.kombinirani_model[0]}
+                        {naziv_modela[0]}
                       </Link>
                     )}
                   </li>
                   <li>
                     Rola:{" "}
-                    {value.link[1] ? (
-                      <Link
-                        className="font-normal underline"
-                        to={value.link[1]}
-                      >
+                    {link[1] ? (
+                      <Link className="font-normal underline" to={link[1]}>
                         {" "}
-                        {value.kombinirani_model[1]}
+                        {naziv_modela[1]}
                       </Link>
                     ) : (
                       <Link to={defaultLink} className="font-normal underline">
-                        {value.kombinirani_model[1]}
+                        {naziv_modela[1]}
                       </Link>
                     )}
                   </li>
                   <li>
                     Mamac:{" "}
-                    {value.link[2] ? (
-                      <Link
-                        className="font-normal underline"
-                        to={value.link[2]}
-                      >
+                    {link[2] ? (
+                      <Link className="font-normal underline" to={link[2]}>
                         {" "}
-                        {value.mamac}
+                        {naziv_modela[2]}
                       </Link>
                     ) : (
                       <Link to={defaultLink} className="font-normal underline">
-                        {value.mamac}
+                        {naziv_modela[2]}
                       </Link>
                     )}
                   </li>

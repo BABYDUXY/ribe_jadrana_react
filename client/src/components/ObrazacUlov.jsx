@@ -39,16 +39,39 @@ function ObrazacUlov({
     }
   };
 
+  const kombinirani_model = [];
+  const naziv_modela = [];
+  const link = [];
+  if (
+    Array.isArray(promptValues?.kombinirani_model) &&
+    promptValues.kombinirani_model[0] &&
+    promptValues.mamac
+  ) {
+    kombinirani_model.push(...promptValues.kombinirani_model);
+    kombinirani_model.push(promptValues.mamac);
+
+    const modeliLinks = kombinirani_model.map((item) => item.trim());
+
+    modeliLinks.forEach((item) => {
+      const parts = item.split(";");
+
+      if (parts.length === 2) {
+        naziv_modela.push(parts[0].trim());
+        link.push(parts[1].trim());
+      }
+    });
+  }
+
   const [stap_brend, stap_model] =
     Array.isArray(promptValues?.kombinirani_model) &&
     promptValues.kombinirani_model[0]
-      ? promptValues.kombinirani_model[0].split(" ")
+      ? naziv_modela[0].split(" ")
       : ["", ""];
 
   const [rola_brend, rola_model] =
     Array.isArray(promptValues?.kombinirani_model) &&
     promptValues.kombinirani_model[1]
-      ? promptValues.kombinirani_model[1].split(" ")
+      ? naziv_modela[1].split(" ")
       : ["", ""];
 
   return (
@@ -122,7 +145,7 @@ function ObrazacUlov({
               id="link_stap"
               required
               defaultValue={
-                promptValues?.link[0] ||
+                link[0] ||
                 "https://topfishing.hr/ribolovna-oprema-kategorija/79/stapovi"
               }
             />
@@ -172,7 +195,7 @@ function ObrazacUlov({
               id="link_rola"
               required
               defaultValue={
-                promptValues?.link[2] ||
+                link[1] ||
                 "https://topfishing.hr/ribolovna-oprema-kategorija/80/role"
               }
             />
@@ -192,7 +215,7 @@ function ObrazacUlov({
           name="mamac"
           id="mamac"
           required
-          defaultValue={promptValues?.mamac || ""}
+          defaultValue={naziv_modela[2] || ""}
         />
         {promptValues?.link ? (
           <div className="flex flex-col gap-1 w-[100%]">
@@ -206,7 +229,7 @@ function ObrazacUlov({
               id="link_mamac"
               required
               defaultValue={
-                promptValues?.link[1] ||
+                link[2] ||
                 "https://topfishing.hr/ribolovna-oprema-kategorija/170/mamci-za-morski-ribolov"
               }
             />
