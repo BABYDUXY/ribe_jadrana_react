@@ -2,8 +2,9 @@ import React, { useContext, useState } from "react";
 import Navigacija from "../components/Navigacija";
 import Footer from "../components/Footer";
 import { useLogin } from "../kontekst/loginContext";
-import { Link, Navigate } from "react-router-dom";
+import { Link, Navigate, useNavigate } from "react-router-dom";
 import { EndpointUrlContext } from "../kontekst/EndpointUrlContext";
+import { useEffect } from "react";
 
 function formatDate(dateString) {
   const date = new Date(dateString);
@@ -18,6 +19,7 @@ function formatDate(dateString) {
 }
 
 function MojProfil() {
+  const navigate = useNavigate();
   const userData = sessionStorage.getItem("korisnik");
   const user = userData ? JSON.parse(userData) : null;
   const { isLoading, logout } = useLogin();
@@ -71,12 +73,12 @@ function MojProfil() {
       alert(err);
     }
   };
-
+  useEffect(() => {
+    if (!user) {
+      navigate("/prijava");
+    }
+  }, [user, navigate]);
   if (isLoading) return <div>Loading...</div>; // Optionally show loading state while checking the user
-
-  if (!user) {
-    return <Navigate to="/prijava" />;
-  }
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -177,6 +179,7 @@ function MojProfil() {
         <div className="flex gap-4 -mt-3 underline">
           <Link to="/mojiulovi">Moji ulovi</Link>
           <Link to="/mojasvidanja">Moja sviđanja</Link>
+          <Link to="/mojeobjave">Moje Objave</Link>
         </div>
       </div>
       <Footer />

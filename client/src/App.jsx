@@ -14,6 +14,7 @@ import MojiUlovi from "./page/MojiUlovi";
 import Novosti from "./page/Novosti";
 import AdminPanel from "./page/AdminPanel";
 import LandingPage from "./page/LandingPage";
+import MojeObjave from "./page/MojeObjave";
 
 const App = () => {
   const endpointUrl = "http://localhost:5000";
@@ -74,6 +75,10 @@ const App = () => {
     {
       path: "/adminpanel",
       element: <AdminPanel />,
+    },
+    {
+      path: "/mojeobjave",
+      element: <MojeObjave />,
     },
   ]);
 

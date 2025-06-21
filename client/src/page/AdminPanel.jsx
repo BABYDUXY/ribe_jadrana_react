@@ -13,7 +13,7 @@ function AdminPanel() {
   const { endpointUrl, backendData } = useContext(EndpointUrlContext);
   const { logout } = useLogin();
   const navigate = useNavigate();
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState(undefined); // undefined umjesto null
   const [choice, setChoice] = useState("ribe");
   const [izmjena, setIzmjena] = useState(null);
   const [ribaId, setRibaId] = useState(null);
@@ -57,7 +57,7 @@ function AdminPanel() {
       },
     };
 
-    if ((choice !== "ribe", choice !== "članci")) {
+    if (choice !== "ribe" || choice !== "članci") {
       const token = sessionStorage.getItem("token");
       if (token) {
         requestOptions.headers["Authorization"] = `Token ${token}`;
@@ -99,6 +99,7 @@ function AdminPanel() {
     setClanakData(odabranClanak || null);
   }, [urediId, selectedItemData]);
 
+  // Provjera tokena i autentifikacija
   useEffect(() => {
     const token = sessionStorage.getItem("token");
 
@@ -121,7 +122,11 @@ function AdminPanel() {
         return response.json();
       })
       .then((data) => {
-        setUser(data);
+        if (data.uloga !== "admin") {
+          navigate("/");
+        } else {
+          setUser(data);
+        }
       })
       .catch((error) => {
         console.error("Greška kod verifikacije tokena:", error);
@@ -129,7 +134,14 @@ function AdminPanel() {
         logout();
         navigate("/");
       });
-  }, []);
+  }, [endpointUrl, navigate, logout]);
+
+  // Dodatni useEffect za slučaj kada se user postavi na null (odjava)
+  useEffect(() => {
+    if (user === null) {
+      navigate("/");
+    }
+  }, [user, navigate]);
 
   function convertTableToFormFields(columns) {
     return columns.map((col) => {
@@ -168,7 +180,7 @@ function AdminPanel() {
     setIzmjena(null); // Reset izmjena when changing choice
   };
 
-  if (!user) {
+  if (user === undefined) {
     return (
       <div className="flex flex-col min-h-screen">
         <Navigacija />
@@ -178,10 +190,6 @@ function AdminPanel() {
         <Footer />
       </div>
     );
-  }
-
-  if (user && user.uloga !== "admin") {
-    navigate("/");
   }
 
   const fishTableConfig = {

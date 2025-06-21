@@ -2,6 +2,9 @@ import React, { useState } from "react";
 import OdabirRibe from "./OdabirRibe";
 import ComboBox from "./ComboBox";
 import imageCompression from "browser-image-compression";
+import { useEffect } from "react";
+import { useContext } from "react";
+import { EndpointUrlContext } from "../kontekst/EndpointUrlContext";
 
 function ObrazacUlov({
   privatnost,
@@ -10,6 +13,48 @@ function ObrazacUlov({
   promptValues = {},
 }) {
   const [slika, setSlika] = useState(null);
+  const { endpointUrl } = useContext(EndpointUrlContext);
+  const [brendovi, setBrendovi] = useState([]);
+  const [modeliStap, setModeliStap] = useState([]);
+  const [modeliRola, setModeliRola] = useState([]);
+  const [modeliMamac, setModeliMamac] = useState([]);
+
+  const fetchOprema = async () => {
+    try {
+      const response = await fetch(`${endpointUrl}/oprema`);
+      const podaci = await response.json();
+
+      const brendSet = new Set();
+      const stap = [];
+      const rola = [];
+      const mamac = [];
+
+      podaci.forEach((item) => {
+        if (item.brend) brendSet.add(item.brend);
+
+        switch (item.tip) {
+          case "štap":
+            stap.push(item.model);
+            break;
+          case "rola":
+            rola.push(item.model);
+            break;
+          case "mamac":
+            mamac.push(item.model);
+            break;
+          default:
+            break;
+        }
+      });
+
+      setBrendovi(Array.from(brendSet));
+      setModeliStap(stap);
+      setModeliRola(rola);
+      setModeliMamac(mamac);
+    } catch (error) {
+      console.error("Error fetching posts:", error);
+    }
+  };
 
   const lista = [
     "Apple",
@@ -74,6 +119,9 @@ function ObrazacUlov({
       ? naziv_modela[1].split(" ")
       : ["", ""];
 
+  useEffect(() => {
+    fetchOprema();
+  }, []);
   return (
     <div className="flex flex-col items-center w-[45rem] gap-6 my-10 font-glavno">
       <div className="w-[50%] flex  items-center justify-between ">
@@ -117,7 +165,7 @@ function ObrazacUlov({
               Brend:
             </label>
             <ComboBox
-              lista={lista}
+              lista={brendovi}
               defaultValue={stap_brend || ""}
               name={"stap_brend"}
             />
@@ -127,7 +175,7 @@ function ObrazacUlov({
               Model:
             </label>
             <ComboBox
-              lista={lista}
+              lista={modeliStap}
               defaultValue={stap_model || ""}
               name={"stap_model"}
             />
@@ -167,7 +215,7 @@ function ObrazacUlov({
               Brend:
             </label>
             <ComboBox
-              lista={lista}
+              lista={brendovi}
               defaultValue={rola_brend || ""}
               name={"rola_brend"}
             />
@@ -177,7 +225,7 @@ function ObrazacUlov({
               Model:
             </label>
             <ComboBox
-              lista={lista}
+              lista={modeliRola}
               defaultValue={rola_model || ""}
               name={"rola_model"}
             />
@@ -208,14 +256,10 @@ function ObrazacUlov({
         <label className="text-white glavno-nav" htmlFor="mamac">
           Mamac / varalica:
         </label>
-        <input
-          className="h-10 w-full rounded-[7px] p-3 text-moja_plava font-semibold "
-          type="text"
-          placeholder="npr. crv"
-          name="mamac"
-          id="mamac"
-          required
+        <ComboBox
+          lista={modeliMamac}
           defaultValue={naziv_modela[2] || ""}
+          name={"mamac"}
         />
         {promptValues?.link ? (
           <div className="flex flex-col gap-1 w-[100%]">

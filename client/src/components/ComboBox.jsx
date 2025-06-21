@@ -29,6 +29,7 @@ function ComboBox({ lista, name, defaultValue }) {
   return (
     <div className="relative w-full">
       <input
+        autoComplete="off"
         type="text"
         value={inputValue}
         onChange={handleChange}
