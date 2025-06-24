@@ -13,6 +13,7 @@ function RibaTable({
   highlightCondition,
   highlightClass = "text-red-200",
   setUrediId = null,
+  key = "100",
 }) {
   const [data, setData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);

@@ -146,47 +146,6 @@ app.get("/otrovne", (req, res) => {
   });
 });
 
-app.get("/admin/korisnici", verifyToken, async (req, res) => {
-  try {
-    const userEmail = req.user.email;
-
-    // Check if user exists and get their role
-    const checkUserSql = `
-      SELECT korisnik.email, uloga.uloga 
-      FROM korisnik 
-      LEFT JOIN uloga ON uloga.ID_korisnika = korisnik.ID 
-      WHERE korisnik.email = ?
-    `;
-
-    db.query(checkUserSql, [userEmail], (err, userResult) => {
-      if (err) {
-        return res.status(500).json({ error: "Database error" });
-      }
-
-      if (userResult.length === 0) {
-        return res.status(403).json({ error: "Unauthorized access" });
-      }
-
-      const user = userResult[0];
-
-      if (user.uloga !== "admin") {
-        return res.status(403).json({ error: "Admin access required" });
-      }
-
-      const sql =
-        "SELECT ID, korisnicko_ime, email, datum_kreiranja, zadnja_imjena FROM korisnik";
-
-      db.query(sql, (err, data) => {
-        if (err) {
-          return res.status(500).json({ error: "Failed to fetch users" });
-        }
-        return res.json(data);
-      });
-    });
-  } catch (error) {
-    return res.status(500).json({ error: "Server error" });
-  }
-});
 /* REGISTRACIJA KORISNIKA U SUSTAV */
 app.post("/api/registracija", async (req, res) => {
   const podaci = req.body;
@@ -1715,6 +1674,48 @@ app.post("/api/provjeri-token", verifyToken, async (req, res) => {
   });
 });
 
+app.get("/admin/korisnici", verifyToken, async (req, res) => {
+  try {
+    const userEmail = req.user.email;
+
+    // Check if user exists and get their role
+    const checkUserSql = `
+      SELECT korisnik.email, uloga.uloga 
+      FROM korisnik 
+      LEFT JOIN uloga ON uloga.ID_korisnika = korisnik.ID 
+      WHERE korisnik.email = ?
+    `;
+
+    db.query(checkUserSql, [userEmail], (err, userResult) => {
+      if (err) {
+        return res.status(500).json({ error: "Database error" });
+      }
+
+      if (userResult.length === 0) {
+        return res.status(403).json({ error: "Unauthorized access" });
+      }
+
+      const user = userResult[0];
+
+      if (user.uloga !== "admin") {
+        return res.status(403).json({ error: "Admin access required" });
+      }
+
+      const sql =
+        "SELECT ID, korisnicko_ime, email, datum_kreiranja, zadnja_izmjena FROM korisnik";
+
+      db.query(sql, (err, data) => {
+        if (err) {
+          return res.status(500).json({ error: "Failed to fetch users" });
+        }
+        return res.json(data);
+      });
+    });
+  } catch (error) {
+    return res.status(500).json({ error: "Server error" });
+  }
+});
+
 app.patch("/objave/ulovi/:hash", verifyToken, async (req, res) => {
   const { hash } = req.params;
   const { status } = req.body;
@@ -2364,6 +2365,55 @@ app.post(
     }
   }
 );
+
+/* brisanje korisnika */
+app.delete("/admin/korisnik/:id", verifyToken, async (req, res) => {
+  const { id } = req.params;
+  const userEmail = req.user?.email;
+
+  try {
+    const checkUserSql = `
+      SELECT korisnik.email, uloga.uloga 
+      FROM korisnik 
+      LEFT JOIN uloga ON uloga.ID_korisnika = korisnik.ID 
+      WHERE korisnik.email = ?
+    `;
+
+    db.query(checkUserSql, [userEmail], (err, userResult) => {
+      if (err) {
+        return res.status(500).json({ error: "Database error" });
+      }
+
+      if (userResult.length === 0) {
+        return res.status(403).json({ error: "Unauthorized access" });
+      }
+
+      const user = userResult[0];
+
+      if (user.uloga !== "admin") {
+        return res.status(403).json({ error: "Admin access required" });
+      }
+
+      const deleteSql = "DELETE FROM korisnik WHERE ID = ?";
+
+      db.query(deleteSql, [id], (err, data) => {
+        if (err) {
+          return res.status(500).json({ error: "Neuspjelo brisanje" });
+        }
+
+        if (data.affectedRows === 0) {
+          return res.status(404).json({ poruka: "Nije pronađen korisnik" });
+        }
+
+        res.json({ poruka: "Korisnik obrisan" });
+        console.log("Korisnik obrisan");
+      });
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ poruka: "Neuspješno brisanje" });
+  }
+});
 
 // Pokreni server samo ako se datoteka pokreće direktno
 if (require.main === module) {

@@ -22,10 +22,12 @@ function AdminPanel() {
   const [loading, setLoading] = useState(false);
   const [urediId, setUrediId] = useState(null);
   const [selectedItemData, setSelectedItemData] = useState(null);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
     setUrediId(null);
     setSelectedItemData(null);
+    setIzmjena(null);
   }, [choice]);
 
   useEffect(() => {
@@ -38,6 +40,8 @@ function AdminPanel() {
       switch (choice) {
         case "članci":
           return `/clanci`;
+        case "korisnici":
+          return `/admin/korisnici`;
         case "oprema":
           return `/admin/oprema/${urediId}`;
         default:
@@ -72,7 +76,15 @@ function AdminPanel() {
         return res.json();
       })
       .then((data) => {
-        setSelectedItemData(data);
+        if (choice === "korisnici") {
+          const korisniciMap = data.reduce((acc, korisnik) => {
+            acc[korisnik.ID] = korisnik;
+            return acc;
+          }, {});
+          setSelectedItemData(korisniciMap);
+        } else {
+          setSelectedItemData(data);
+        }
         setLoading(false);
       })
       .catch((err) => {
@@ -179,18 +191,6 @@ function AdminPanel() {
     setChoice(newChoice);
     setIzmjena(null); // Reset izmjena when changing choice
   };
-
-  if (user === undefined) {
-    return (
-      <div className="flex flex-col min-h-screen">
-        <Navigacija />
-        <div className="flex items-center justify-center flex-1 text-white">
-          Učitavanje...
-        </div>
-        <Footer />
-      </div>
-    );
-  }
 
   const fishTableConfig = {
     columns: [
@@ -305,7 +305,7 @@ function AdminPanel() {
         label: "Zadnja izmjena",
         type: "datetime",
         sortable: true,
-        render: (item) => new Date(item.zadnja_imjena).toLocaleString("hr-HR"),
+        render: (item) => new Date(item.zadnja_izmjena).toLocaleString("hr-HR"),
       },
     ],
   };
@@ -411,6 +411,31 @@ function AdminPanel() {
     type: "checkbox",
   });
 
+  const deleteKorisnik = async (id) => {
+    try {
+      const token = sessionStorage.getItem("token");
+
+      const response = await fetch(`${endpointUrl}/admin/korisnik/${id}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Token ${token}`,
+        },
+      });
+
+      if (response.ok) {
+        console.log(`Korisnik s ID ${id} je uspješno obrisan.`);
+        setUrediId(null);
+        setIzmjena(null);
+        setRefreshKey(1);
+      } else {
+        const errorData = await response.json();
+        console.error("Greška pri brisanju korisnika:", errorData);
+      }
+    } catch (error) {
+      console.error("Error deleting user:", error);
+    }
+  };
+
   const getFormFieldsAndUrl = () => {
     switch (choice) {
       case "ribe":
@@ -445,7 +470,17 @@ function AdminPanel() {
   };
 
   const { fields, editUrl, submitUrl, data } = getFormFieldsAndUrl();
-
+  if (user === undefined) {
+    return (
+      <div className="flex flex-col min-h-screen">
+        <Navigacija />
+        <div className="flex items-center justify-center flex-1 text-white">
+          Učitavanje...
+        </div>
+        <Footer />
+      </div>
+    );
+  }
   return (
     <div className="flex flex-col min-h-screen">
       <Navigacija />
@@ -557,34 +592,60 @@ function AdminPanel() {
                 rowsPerPage={10}
                 secure={true}
                 setUrediId={setUrediId}
+                key={refreshKey}
               />
 
-              <div className="flex justify-center mb-10 align-center">
-                {izmjena === "novo" ? (
-                  <DodavanjeStavkiAdmin
-                    title="Korisnika"
-                    submitUrl={submitUrl}
-                    fields={fields}
-                  />
-                ) : (
-                  ""
+              <div className="flex items-center justify-center w-full gap-12 [&>button:hover]:underline my-8">
+                {izmjena != "uredi" && (
+                  <button
+                    onClick={() => {
+                      setIzmjena("uredi");
+                    }}
+                    className="glavno-nav"
+                  >
+                    Obriši
+                  </button>
                 )}
+              </div>
+              <div className="flex justify-center mb-10 align-center">
                 {izmjena === "uredi" && (
                   <div className="flex flex-col items-center gap-6">
                     {urediId ? (
                       loading ? (
                         <p>Učitavanje...</p>
                       ) : (
-                        <DodavanjeStavkiAdmin
-                          title="Korisnika"
-                          editUrl={editUrl}
-                          isEdit={true}
-                          defaultValues={data}
-                          fields={fields}
-                        />
+                        <div className="flex flex-col gap-6 w-max">
+                          {" "}
+                          <p>
+                            Jesi li siguran da želiš obrisati korisnika "
+                            {selectedItemData
+                              ? selectedItemData[urediId]?.korisnicko_ime
+                              : ""}
+                            "
+                          </p>
+                          <div className="flex items-center justify-center w-full gap-8 [&>*]:outline [&>*]:outline-3 [&>*]:outline-white  [&>*:hover]:w-[4.3rem] [&>*]:rounded-[11px] [&>*]:w-16">
+                            <button
+                              onClick={() => {
+                                deleteKorisnik(urediId);
+                              }}
+                              className="form-btn-hover"
+                            >
+                              Da
+                            </button>{" "}
+                            <button
+                              onClick={() => {
+                                setIzmjena(null);
+                                setUrediId(null);
+                              }}
+                              className="bg-moja_plava-tamna form-btn-hover"
+                            >
+                              Ne
+                            </button>
+                          </div>
+                        </div>
                       )
                     ) : (
-                      <p>Pritisni na korisnika u tablici za uređivanje</p>
+                      <p>Pritisni na korisnika koga želiš obrisati</p>
                     )}
                   </div>
                 )}
