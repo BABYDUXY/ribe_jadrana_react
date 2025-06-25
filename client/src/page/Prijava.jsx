@@ -5,6 +5,7 @@ import Obrazac from "../components/Obrazac";
 import { Link, useNavigate } from "react-router-dom";
 import { useLogin } from "../kontekst/loginContext";
 import { jwtDecode } from "jwt-decode";
+import ErrorText from "../components/ErrorText";
 
 const polja = {
   1: { type: "email", naziv: "Email:", placeholder: "example@gmail.com" },
@@ -62,12 +63,7 @@ function Prijava({ endpointUrl }) {
       <Navigacija />
       {user ? (
         <div className="min-h-[35rem]  w-[30rem] col-span-4 place-self-center glavno-nav text-white flex flex-col items-center justify-center">
-          <div className="relative inline-block">
-            <p className="text-4xl">Već ste prijavljeni!</p>
-            <span className="absolute left-0 bottom-0 w-full h-[3px] rounded-full overflow-hidden">
-              <span className="block w-1/3 h-full bg-white rounded-full animate-underlinePingPong" />
-            </span>
-          </div>
+          <ErrorText tekst="Već ste prijavljeni !" />
           <Link
             onClick={() => {
               logout();

@@ -1268,6 +1268,53 @@ ORDER BY ulov.datum_ulova DESC;
   });
 });
 
+/* upiti korisnik */
+app.post("/api/noviupit", verifyToken, async (req, res) => {
+  try {
+    const podaci = req.body;
+    const userInfo = req.user;
+    const id = userInfo.korisnik_id;
+
+    if (!podaci["1"]) {
+      return res.status(400).json({ poruka: "Tekst je obavezan" });
+    }
+
+    await db.query("INSERT INTO upit (korisnik_id, upit) VALUES (?, ?)", [
+      id,
+      podaci[1],
+    ]);
+
+    return res.status(201).json({ poruka: "Upit uspješno dodan." });
+  } catch (err) {
+    console.error("Greška prilikom unosa upita:", err);
+    return res.status(500).json({ poruka: "Greška na serveru." });
+  }
+});
+
+app.get("/api/mojiupiti", verifyToken, (req, res) => {
+  const userInfo = req.user;
+  const id = userInfo.korisnik_id;
+
+  const sql = `
+    SELECT upit, odgovor FROM upit
+    WHERE korisnik_id = ?
+  `;
+
+  db.query(sql, [id], (err, data) => {
+    if (err) {
+      console.error("Greška u dohvaćanju upita:", err);
+      return res.status(500).json({ poruka: "Greška na serveru." });
+    }
+
+    if (data.length === 0) {
+      return res.status(404).json({ poruka: "Nema zapisa." });
+    }
+    const jsonUpiti = JSON.parse(JSON.stringify(data));
+
+    return res.status(200).json(jsonUpiti);
+  });
+});
+
 /* MOJa sviđanja */
 
 app.get("/objave/mojasvidanja", verifyToken, async (req, res) => {

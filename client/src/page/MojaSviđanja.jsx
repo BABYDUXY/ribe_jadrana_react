@@ -20,7 +20,7 @@ function MojaSviđanja() {
   const [searchQuery, setSearchQuery] = useState("");
   const [javniUlovi, setJavniUlovi] = useState([]);
   const [itemsPerPage, setItemsPerPage] = useState(6);
-
+  const navigate = useNavigate();
   let paginationContext = useContext(PaginationContext);
   const [localPage, setLocalPage] = useState(1);
   const currentPage = paginationContext?.currentPage || localPage;
@@ -74,9 +74,11 @@ function MojaSviđanja() {
   useEffect(() => {
     fetchPosts();
   }, []);
-  if (!user) {
-    return <Navigate to="/prijava" />;
-  }
+  useEffect(() => {
+    if (!user) {
+      navigate("/prijava");
+    }
+  }, [user, navigate]);
   return (
     <div className="flex flex-col min-h-screen">
       <Navigacija />

@@ -35,13 +35,24 @@ function Obrazac({ naslov, polja, onSubmit, errors }) {
               {polje.naziv}
             </label>
             <div className="relative flex items-center w-full">
-              <input
-                id={`polje${key}`}
-                name={key}
-                type={showPassword[key] ? "text" : polje.type}
-                placeholder={polje.placeholder ? polje.placeholder : ""}
-                className={`h-10 w-full rounded-[7px] p-3 text-moja_plava font-semibold`}
-              />
+              {polje.type === "textarea" ? (
+                <textarea
+                  required
+                  id={`polje${key}`}
+                  name={key}
+                  placeholder={polje.placeholder ? polje.placeholder : ""}
+                  className={`h-[15rem] resize-none w-full rounded-[7px] p-3 text-moja_plava font-normal`}
+                ></textarea>
+              ) : (
+                <input
+                  id={`polje${key}`}
+                  name={key}
+                  type={showPassword[key] ? "text" : polje.type}
+                  placeholder={polje.placeholder ? polje.placeholder : ""}
+                  className={`h-10 w-full rounded-[7px] p-3 text-moja_plava font-semibold`}
+                />
+              )}
+
               {polje.type === "password" && (
                 <div>
                   <img

@@ -15,6 +15,8 @@ import Novosti from "./page/Novosti";
 import AdminPanel from "./page/AdminPanel";
 import LandingPage from "./page/LandingPage";
 import MojeObjave from "./page/MojeObjave";
+import NoviUpit from "./page/NoviUpit";
+import MojiUpiti from "./page/MojiUpiti";
 
 const App = () => {
   const endpointUrl = "http://localhost:5000";
@@ -79,6 +81,14 @@ const App = () => {
     {
       path: "/mojeobjave",
       element: <MojeObjave />,
+    },
+    {
+      path: "/noviupit",
+      element: <NoviUpit />,
+    },
+    {
+      path: "/mojiupiti",
+      element: <MojiUpiti />,
     },
   ]);
 
