@@ -98,6 +98,15 @@ const user = process.env.USER;
 const password = process.env.PASSWORD;
 const database = process.env.DATABASE;
 const tajni_token = process.env.TAJNI_KLJUC;
+const default_link_stap =
+  process.env.LINK_STAP ||
+  "https://topfishing.hr/ribolovna-oprema-kategorija/79/stapovi";
+const default_link_rola =
+  process.env.LINK_ROLA ||
+  "https://topfishing.hr/ribolovna-oprema-kategorija/80/role";
+const default_link_mamac =
+  process.env.LINK_MAMAC ||
+  "https://topfishing.hr/ribolovna-oprema-kategorija/170/mamci-za-morski-ribolov";
 
 console.log(host);
 
@@ -612,7 +621,7 @@ app.post(
         const insertStapLink = await new Promise((resolve, reject) => {
           db.query(
             "INSERT INTO link_opreme (model_id, link) VALUES (?, ?)",
-            [stapModelId, "#"],
+            [stapModelId, default_link_stap],
             (err, result) => {
               if (err) reject(err);
               resolve(result);
@@ -642,7 +651,7 @@ app.post(
         const insertRolaLink = await new Promise((resolve, reject) => {
           db.query(
             "INSERT INTO link_opreme (model_id, link) VALUES (?, ?)",
-            [rolaModelId, "#"],
+            [rolaModelId, default_link_rola],
             (err, result) => {
               if (err) reject(err);
               resolve(result);
@@ -673,7 +682,7 @@ app.post(
         const insertMamaclink = await new Promise((resolve, reject) => {
           db.query(
             "INSERT INTO link_opreme (model_id, link) VALUES (?, ?)",
-            [mamacModelId, "#"],
+            [mamacModelId, default_link_mamac],
             (err, result) => {
               if (err) reject(err);
               resolve(result);
@@ -978,7 +987,7 @@ app.post(
         const insertStapLink = await new Promise((resolve, reject) => {
           db.query(
             "INSERT INTO link_opreme (model_id, link) VALUES (?, ?)",
-            [stapModelId, "#"],
+            [stapModelId, default_link_stap],
             (err, result) => {
               if (err) reject(err);
               resolve(result);
@@ -1008,7 +1017,7 @@ app.post(
         const insertRolaLink = await new Promise((resolve, reject) => {
           db.query(
             "INSERT INTO link_opreme (model_id, link) VALUES (?, ?)",
-            [rolaModelId, "#"],
+            [rolaModelId, default_link_rola],
             (err, result) => {
               if (err) reject(err);
               resolve(result);
@@ -1039,7 +1048,7 @@ app.post(
         const insertMamaclink = await new Promise((resolve, reject) => {
           db.query(
             "INSERT INTO link_opreme (model_id, link) VALUES (?, ?)",
-            [mamacModelId, "#"],
+            [mamacModelId, default_link_mamac],
             (err, result) => {
               if (err) reject(err);
               resolve(result);
@@ -2135,6 +2144,103 @@ app.get("/admin/clanci", verifyToken, async (req, res) => {
             .json({ error: "Neuspjelo prikupljanje podataka" });
         }
         return res.json(data);
+      });
+    });
+  } catch (error) {
+    return res.status(500).json({ error: "Server error" });
+  }
+});
+
+app.get("/admin/upiti", verifyToken, (req, res) => {
+  try {
+    const userEmail = req.user.email;
+
+    const checkUserSql = `
+      SELECT korisnik.email, uloga.uloga 
+      FROM korisnik 
+      LEFT JOIN uloga ON uloga.ID_korisnika = korisnik.ID 
+      WHERE korisnik.email = ?
+    `;
+
+    db.query(checkUserSql, [userEmail], (err, userResult) => {
+      if (err) {
+        return res.status(500).json({ error: "Database error" });
+      }
+
+      if (userResult.length === 0) {
+        return res.status(403).json({ error: "Unauthorized access" });
+      }
+
+      const user = userResult[0];
+
+      if (user.uloga !== "admin") {
+        return res.status(403).json({ error: "Admin access required" });
+      }
+
+      const sql = `
+    SELECT korisnik.korisnicko_ime, upit.upit, upit.odgovor, upit.ID 
+FROM upit
+JOIN korisnik ON upit.korisnik_id = korisnik.ID;
+
+  `;
+
+      db.query(sql, (err, data) => {
+        if (err) {
+          return res
+            .status(500)
+            .json({ error: "Neuspjelo prikupljanje podataka" });
+        }
+        const jsonUpiti = JSON.parse(JSON.stringify(data));
+        return res.status(200).json(jsonUpiti);
+      });
+    });
+  } catch (error) {
+    return res.status(500).json({ error: "Server error" });
+  }
+});
+
+app.patch("/admin/odgovor/:id", verifyToken, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { text } = req.body;
+    const userEmail = req.user.email;
+
+    const checkUserSql = `
+      SELECT korisnik.email, uloga.uloga 
+      FROM korisnik 
+      LEFT JOIN uloga ON uloga.ID_korisnika = korisnik.ID 
+      WHERE korisnik.email = ?
+    `;
+
+    db.query(checkUserSql, [userEmail], (err, userResult) => {
+      if (err) {
+        return res.status(500).json({ error: "Database error" });
+      }
+
+      if (userResult.length === 0) {
+        return res.status(403).json({ error: "Unauthorized access" });
+      }
+
+      const user = userResult[0];
+
+      if (user.uloga !== "admin") {
+        return res.status(403).json({ error: "Admin access required" });
+      }
+
+      const updateSql = `
+        UPDATE upit
+        SET odgovor = ?
+        WHERE ID = ?
+      `;
+
+      db.query(updateSql, [text, id], (err, result) => {
+        if (err) {
+          return res.status(500).json({ error: "Greška prilikom ažuriranja" });
+        }
+
+        return res
+          .status(200)
+          .json({ success: true, poruka: "Odgovor spremljen." });
       });
     });
   } catch (error) {

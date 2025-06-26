@@ -56,16 +56,6 @@ function ObrazacUlov({
     }
   };
 
-  const lista = [
-    "Apple",
-    "Banana",
-    "Orange",
-    "Grapes",
-    "slope",
-    "sisters",
-    "Watermelon",
-  ];
-
   const handleSlikaChange = async (e) => {
     const file = e.target.files[0];
     if (!file) return;

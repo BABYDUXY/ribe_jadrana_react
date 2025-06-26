@@ -408,10 +408,15 @@ function ListObjava({ value, refreshPosts, status }) {
                   <li>
                     Štap:{" "}
                     {link[0] != "#" ? (
-                      <Link className="font-normal underline" to={link[0]}>
+                      <a
+                        className="font-normal underline"
+                        href={link[0]}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
                         {" "}
                         {naziv_modela[0]}
-                      </Link>
+                      </a>
                     ) : (
                       <Link to={defaultLink} className="font-normal underline">
                         {naziv_modela[0]}
@@ -421,10 +426,15 @@ function ListObjava({ value, refreshPosts, status }) {
                   <li>
                     Rola:{" "}
                     {link[1] ? (
-                      <Link className="font-normal underline" to={link[1]}>
+                      <a
+                        className="font-normal underline"
+                        href={link[1]}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
                         {" "}
                         {naziv_modela[1]}
-                      </Link>
+                      </a>
                     ) : (
                       <Link to={defaultLink} className="font-normal underline">
                         {naziv_modela[1]}
@@ -434,10 +444,15 @@ function ListObjava({ value, refreshPosts, status }) {
                   <li>
                     Mamac:{" "}
                     {link[2] ? (
-                      <Link className="font-normal underline" to={link[2]}>
+                      <a
+                        className="font-normal underline"
+                        href={link[2]}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
                         {" "}
                         {naziv_modela[2]}
-                      </Link>
+                      </a>
                     ) : (
                       <Link to={defaultLink} className="font-normal underline">
                         {naziv_modela[2]}
@@ -658,10 +673,15 @@ function ListObjava({ value, refreshPosts, status }) {
                   <li>
                     Štap:{" "}
                     {link[0] != "#" ? (
-                      <Link className="font-normal underline" to={link[0]}>
+                      <a
+                        className="font-normal underline"
+                        href={link[0]}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
                         {" "}
                         {naziv_modela[0]}
-                      </Link>
+                      </a>
                     ) : (
                       <Link to={defaultLink} className="font-normal underline">
                         {naziv_modela[0]}
@@ -671,10 +691,15 @@ function ListObjava({ value, refreshPosts, status }) {
                   <li>
                     Rola:{" "}
                     {link[1] ? (
-                      <Link className="font-normal underline" to={link[1]}>
+                      <a
+                        className="font-normal underline"
+                        href={link[1]}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
                         {" "}
                         {naziv_modela[1]}
-                      </Link>
+                      </a>
                     ) : (
                       <Link to={defaultLink} className="font-normal underline">
                         {naziv_modela[1]}
@@ -684,10 +709,15 @@ function ListObjava({ value, refreshPosts, status }) {
                   <li>
                     Mamac:{" "}
                     {link[2] ? (
-                      <Link className="font-normal underline" to={link[2]}>
+                      <a
+                        className="font-normal underline"
+                        href={link[2]}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
                         {" "}
                         {naziv_modela[2]}
-                      </Link>
+                      </a>
                     ) : (
                       <Link to={defaultLink} className="font-normal underline">
                         {naziv_modela[2]}

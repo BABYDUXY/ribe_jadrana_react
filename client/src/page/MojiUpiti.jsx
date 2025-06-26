@@ -51,13 +51,19 @@ function MojiUpiti() {
   return (
     <div className="flex flex-col min-h-screen">
       <Navigacija />
-      <div className=" w-[35rem] h-[27rem] 3xl:h-[32rem] m-10 self-center flex flex-col items-center font-glavno text-white mb-16">
+      <div className=" w-[35rem]  min-h-[27rem] 3xl:min-h-[32rem] m-10 self-center flex flex-col items-center font-glavno text-white mb-16">
         <h1 className="mb-10 glavno-naslov text-[2rem]">Moji Upiti</h1>
         {upiti ? (
           <div className="flex flex-col items-center justify-center w-full gap-4">
             {upiti.map((upit, index) => (
               <Upit key={index} upit={upit} />
             ))}
+            <Link
+              className="font-glavno text-[1.1rem] underline"
+              to={"/noviupit"}
+            >
+              Pošalji upit
+            </Link>
           </div>
         ) : (
           ""

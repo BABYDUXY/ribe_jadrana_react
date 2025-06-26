@@ -8,6 +8,7 @@ import RibaTable from "../components/RibaTable";
 import AdminObjave from "../components/AdminObjave";
 import DodavanjeStavkiAdmin from "../components/DodavanjeStavkiAdmin";
 import OdabirRibe from "../components/OdabirRibe";
+import AdminUpiti from "../components/AdminUpiti";
 
 function AdminPanel() {
   const { endpointUrl, backendData } = useContext(EndpointUrlContext);
@@ -31,7 +32,7 @@ function AdminPanel() {
   }, [choice]);
 
   useEffect(() => {
-    if (!urediId) {
+    if (!urediId && choice != "upiti") {
       setSelectedItemData(null);
       return;
     }
@@ -44,6 +45,8 @@ function AdminPanel() {
           return `/admin/korisnici`;
         case "oprema":
           return `/admin/oprema/${urediId}`;
+        case "upiti":
+          return `/admin/upiti`;
         default:
           return null;
       }
@@ -772,6 +775,39 @@ function AdminPanel() {
                   </div>
                 )}
               </div>
+            </>
+          ) : choice === "upiti" ? (
+            <>
+              <ul className="flex items-center justify-center w-full gap-8 mt-12 [&>*:hover]:cursor-pointer [&>*:hover]:underline">
+                <li
+                  className={`${izmjena === "novi" ? "underline" : ""}`}
+                  onClick={() => {
+                    setIzmjena("novi");
+                  }}
+                >
+                  Novi Upiti
+                </li>{" "}
+                <li
+                  className={`${izmjena === "svi" ? "underline" : ""}`}
+                  onClick={() => {
+                    setIzmjena("svi");
+                  }}
+                >
+                  Svi upiti
+                </li>
+              </ul>
+              {izmjena === "novi" ? (
+                <AdminUpiti
+                  type="novi"
+                  data={selectedItemData}
+                  key={refreshKey}
+                  triggerRefresh={setUrediId}
+                />
+              ) : izmjena === "svi" ? (
+                <AdminUpiti type="svi" data={selectedItemData} />
+              ) : (
+                ""
+              )}
             </>
           ) : (
             ""

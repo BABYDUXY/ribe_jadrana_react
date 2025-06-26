@@ -67,10 +67,6 @@ function AdminObjave() {
   };
 
   useEffect(() => {
-    console.log("ULOVI UPDATE:", paginatedData);
-  }, [paginatedData]);
-
-  useEffect(() => {
     fetchPosts();
   }, []);
 
