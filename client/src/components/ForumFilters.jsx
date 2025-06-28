@@ -62,6 +62,19 @@ function ForumFilters({
     },
   };
 
+  const datumFiltersClanci = {
+    1: {
+      sort: { field: "datum", ascending: true },
+      fullname: "Datum A-Z",
+      name: "A-Z",
+    },
+    2: {
+      sort: { field: "datum", ascending: false },
+      fullname: "Datum Z-A",
+      name: "Z-A",
+    },
+  };
+
   const ostaloFilters = {
     1: {
       type: "hoverDropdown",
@@ -106,6 +119,20 @@ function ForumFilters({
       },
     };
   }
+  const [kategorijaFilters, setKategorijaFilters] = useState({
+    1: {
+      name: "Naziv",
+      type: "dropdown",
+      children: [],
+    },
+
+    2: {
+      type: "search",
+      fullname: "Kategorija: pretraži",
+      name: "Pretraži",
+    },
+  });
+
   const [opremaFilters, setOpremaFilters] = useState({
     1: {
       type: "hoverDropdown",
@@ -167,83 +194,102 @@ function ForumFilters({
   });
 
   useEffect(() => {
-    const fetchOprema = async () => {
+    const fetchData = async () => {
       try {
-        const response = await fetch(`${endpointUrl}/oprema`);
-        const data = await response.json();
+        if (privatnost === "clanci") {
+          const response = await fetch(`${endpointUrl}/kategorije`); // ili drugi URL
+          const data = await response.json();
 
-        const getUniqueBrands = (arr) => {
-          const map = new Map();
-          arr.forEach((item) => {
-            if (item.brend && !map.has(item.brend.toLowerCase())) {
-              map.set(item.brend.toLowerCase(), {
-                fullname: item.brend,
-                name: item.brend,
-              });
-            } else if (
-              !item.brand &&
-              item.model &&
-              !map.has(item.model.toLowerCase())
-            ) {
-              map.set(item.model.toLowerCase(), {
-                fullname: item.model,
-                name: item.model,
-              });
-            }
-          });
-          return Array.from(map.values());
-        };
+          // Postaviti samo kategorije bez ugniježđene strukture
+          const kategorijeOptions = data.map((kategorija) => ({
+            name: kategorija.kategorija,
+            fullname: kategorija.kategorija,
+          }));
 
-        const stapovi = getUniqueBrands(
-          data.filter((item) => item.tip.toLowerCase() === "štap")
-        );
-        const role = getUniqueBrands(
-          data.filter((item) => item.tip.toLowerCase() === "rola")
-        );
-        const mamac = getUniqueBrands(
-          data.filter((item) => item.tip.toLowerCase() === "mamac")
-        );
+          setKategorijaFilters((prev) => ({
+            ...prev,
+            1: {
+              ...prev[1],
+              children: kategorijeOptions,
+            },
+          }));
+        } else {
+          const response = await fetch(`${endpointUrl}/oprema`);
+          const data = await response.json();
 
-        setOpremaFilters((prev) => ({
-          ...prev,
-          1: {
-            ...prev[1],
-            children: {
-              ...prev[1].children,
-              1: {
-                ...prev[1].children[1],
-                children: stapovi,
+          const getUniqueBrands = (arr) => {
+            const map = new Map();
+            arr.forEach((item) => {
+              if (item.brend && !map.has(item.brend.toLowerCase())) {
+                map.set(item.brend.toLowerCase(), {
+                  fullname: item.brend,
+                  name: item.brend,
+                });
+              } else if (
+                !item.brand &&
+                item.model &&
+                !map.has(item.model.toLowerCase())
+              ) {
+                map.set(item.model.toLowerCase(), {
+                  fullname: item.model,
+                  name: item.model,
+                });
+              }
+            });
+            return Array.from(map.values());
+          };
+
+          const stapovi = getUniqueBrands(
+            data.filter((item) => item.tip.toLowerCase() === "štap")
+          );
+          const role = getUniqueBrands(
+            data.filter((item) => item.tip.toLowerCase() === "rola")
+          );
+          const mamac = getUniqueBrands(
+            data.filter((item) => item.tip.toLowerCase() === "mamac")
+          );
+
+          setOpremaFilters((prev) => ({
+            ...prev,
+            1: {
+              ...prev[1],
+              children: {
+                ...prev[1].children,
+                1: {
+                  ...prev[1].children[1],
+                  children: stapovi,
+                },
               },
             },
-          },
-          2: {
-            ...prev[2],
-            children: {
-              ...prev[2].children,
-              1: {
-                ...prev[2].children[1],
-                children: role,
+            2: {
+              ...prev[2],
+              children: {
+                ...prev[2].children,
+                1: {
+                  ...prev[2].children[1],
+                  children: role,
+                },
               },
             },
-          },
-          3: {
-            ...prev[3],
-            children: {
-              ...prev[3].children,
-              1: {
-                ...prev[3].children[1],
-                children: mamac,
+            3: {
+              ...prev[3],
+              children: {
+                ...prev[3].children,
+                1: {
+                  ...prev[3].children[1],
+                  children: mamac,
+                },
               },
             },
-          },
-        }));
+          }));
+        }
       } catch (error) {
-        console.error("Greška prilikom dohvaćanja opreme:", error);
+        console.error("Greška prilikom dohvaćanja podataka:", error);
       }
     };
 
-    fetchOprema();
-  }, [endpointUrl, setOpremaFilters]);
+    fetchData();
+  }, [endpointUrl, setOpremaFilters, setKategorijaFilters]);
 
   useEffect(() => {
     const searchTerm = filter.includes("pretraži")
@@ -258,6 +304,20 @@ function ForumFilters({
     const originalData = originalJavniUloviRef.current || javniUlovi;
 
     const filtered = originalData.filter((item) => {
+      // SPECIJALNA LOGIKA ZA ČLANKE - uvek filtrira samo po kategoriji
+      if (privatnost === "clanci") {
+        const fieldValue = item.kategorija;
+
+        if (!fieldValue) return false;
+
+        if (typeof fieldValue === "string") {
+          return fieldValue.toLowerCase().includes(searchTerm.toLowerCase());
+        }
+
+        return false;
+      }
+
+      // POSTOJEĆA LOGIKA ZA OSTALO (samo kada NIJE clanci)
       if (!filterField || filterField === "") {
         const searchableFields = ["ime_ribe", "mjesto", "autor", "mamac"];
 
@@ -339,7 +399,7 @@ function ForumFilters({
     });
 
     setJavniUlovi(filtered);
-  }, [filter, searchQuery, filterField]);
+  }, [filter, searchQuery, filterField, privatnost]);
 
   return (
     <div
@@ -457,19 +517,21 @@ function ForumFilters({
           toggleFilteri
             ? privatnost === "privatno"
               ? " w-[35rem] opacity-100 overflow-visible "
+              : privatnost === "clanci"
+              ? " w-[28rem] opacity-100 overflow-visible "
               : " w-[40rem] opacity-100 overflow-visible "
             : "w-0 opacity-0 overflow-hidden"
         }${
           searchInput
             ? privatnost === "privatno"
               ? " !w-[40rem]"
+              : privatnost === "clanci"
+              ? " !w-[35rem]"
               : " !w-[45rem]"
             : ""
         }`}
       >
-        {privatnost === "privatno" ? (
-          ""
-        ) : (
+        {privatnost !== "privatno" && privatnost !== "clanci" ? (
           <ForumFilterBtn
             name="Popularno"
             filters={popularnoFilters}
@@ -479,34 +541,61 @@ function ForumFilters({
             setFilterField={setFilterField}
             setSortOptions={setSortOptions}
           />
+        ) : (
+          ""
+        )}
+        {privatnost === "clanci" ? (
+          <>
+            <ForumFilterBtn
+              name="Datum"
+              filters={datumFiltersClanci}
+              setFilter={setSortFilter}
+              toggleFilteri={toggleFilteri}
+              setSearchInput={setSearchInput}
+              setFilterField={setFilterField}
+              setSortOptions={setSortOptions}
+            />
+
+            <ForumFilterBtn
+              name="Kategorija"
+              filters={kategorijaFilters}
+              setFilter={setFilter}
+              toggleFilteri={toggleFilteri}
+              setSearchInput={setSearchInput}
+              setFilterField={setFilterField}
+            />
+          </>
+        ) : (
+          <>
+            <ForumFilterBtn
+              name="Datum"
+              filters={datumFilters}
+              setFilter={setSortFilter}
+              toggleFilteri={toggleFilteri}
+              setSearchInput={setSearchInput}
+              setFilterField={setFilterField}
+              setSortOptions={setSortOptions}
+            />
+
+            <ForumFilterBtn
+              name="Oprema"
+              filters={opremaFilters}
+              setFilter={setFilter}
+              toggleFilteri={toggleFilteri}
+              setSearchInput={setSearchInput}
+              setFilterField={setFilterField}
+            />
+            <ForumFilterBtn
+              name="Ostalo"
+              filters={ostaloFilters}
+              setFilter={setFilter}
+              toggleFilteri={toggleFilteri}
+              setSearchInput={setSearchInput}
+              setFilterField={setFilterField}
+            />
+          </>
         )}
 
-        <ForumFilterBtn
-          name="Datum"
-          filters={datumFilters}
-          setFilter={setSortFilter}
-          toggleFilteri={toggleFilteri}
-          setSearchInput={setSearchInput}
-          setFilterField={setFilterField}
-          setSortOptions={setSortOptions}
-        />
-
-        <ForumFilterBtn
-          name="Oprema"
-          filters={opremaFilters}
-          setFilter={setFilter}
-          toggleFilteri={toggleFilteri}
-          setSearchInput={setSearchInput}
-          setFilterField={setFilterField}
-        />
-        <ForumFilterBtn
-          name="Ostalo"
-          filters={ostaloFilters}
-          setFilter={setFilter}
-          toggleFilteri={toggleFilteri}
-          setSearchInput={setSearchInput}
-          setFilterField={setFilterField}
-        />
         <input
           type="text"
           className={` relative transition-all duration-500 ease-in-out px-2 h-[full] bg-moja_plava border-b-2 border-gray-200 placeholder:text-[1rem]  focus:outline-none placeholder-gray-200 text-white glavno-nav focus:border-white  active:border-white place-self-center
@@ -559,7 +648,15 @@ function ForumFilters({
             <div
               onClick={() => {
                 setSortFilter("");
-                setSortOptions({ field: "datum_kreiranja", ascending: false });
+
+                if (privatnost === "clanci") {
+                  setSortOptions({ field: "datum", ascending: false });
+                } else {
+                  setSortOptions({
+                    field: "datum_kreiranja",
+                    ascending: false,
+                  });
+                }
               }}
               className="group hover:cursor-pointer flex flex-row  border-white border-[3px] rounded-full justify-center items-center p-[0.5rem_1rem] hover:p-[0.5rem_1.5rem] transition-all duration-300 ease-in-out bg-red"
             >

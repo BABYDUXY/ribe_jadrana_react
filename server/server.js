@@ -1324,6 +1324,15 @@ app.get("/api/mojiupiti", verifyToken, (req, res) => {
   });
 });
 
+/* kategorije */
+app.get("/kategorije", (req, res) => {
+  const sql = "SELECT kategorija FROM kategorija ORDER BY kategorija ASC;";
+
+  db.query(sql, (err, data) => {
+    if (err) return res.json(err);
+    return res.json(data);
+  });
+});
 /* MOJa sviđanja */
 
 app.get("/objave/mojasvidanja", verifyToken, async (req, res) => {
