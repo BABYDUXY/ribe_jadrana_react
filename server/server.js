@@ -1344,17 +1344,28 @@ app.get("/objave/mojasvidanja", verifyToken, async (req, res) => {
   ulov.slika_direktorij,
   ulov.mjesto,
 
+  riba.ID AS id_ribe,
   riba.ime AS ime_ribe,
 
   -- Oprema samo ako postoji ulov
-  GROUP_CONCAT(DISTINCT brend.naziv) AS brend,
-  GROUP_CONCAT(DISTINCT tip_opreme.naziv) AS tip,
-  GROUP_CONCAT(DISTINCT model_opreme.naziv) AS model,
-  GROUP_CONCAT(DISTINCT link_opreme.link) AS link,
-  GROUP_CONCAT(DISTINCT CONCAT(brend.naziv, ' ', model_opreme.naziv)) AS kombinirani_model,
+  GROUP_CONCAT(DISTINCT 
+  CONCAT(
+    brend.naziv, ' ', model_opreme.naziv,
+    CASE 
+      WHEN link_opreme.link IS NOT NULL THEN CONCAT(';', link_opreme.link) 
+      ELSE ''
+    END
+  )
+  ORDER BY tip_opreme.ID
+) AS kombinirani_model,
   GROUP_CONCAT(DISTINCT CASE 
-      WHEN model_opreme.tip_id = 3 AND model_opreme.brend IS NULL THEN model_opreme.naziv 
-  END) AS mamac,
+    WHEN model_opreme.tip_id = 3 AND model_opreme.brend IS NULL THEN 
+        CONCAT(model_opreme.naziv, 
+               CASE 
+                 WHEN link_opreme.link IS NOT NULL THEN CONCAT(';', link_opreme.link) 
+                 ELSE '' 
+               END)
+END) AS mamac,
 
   -- Lajkovi i dislajkovi
   (SELECT COUNT(*) FROM ocjena_objave WHERE ocjena_objave.objava_id = objava.ID AND ocjena_objave.pozitivno = 1) AS broj_lajkova,
@@ -1434,17 +1445,28 @@ app.get("/objave/mojeobjave", verifyToken, async (req, res) => {
   ulov.slika_direktorij,
   ulov.mjesto,
 
+  riba.ID AS id_ribe,
   riba.ime AS ime_ribe,
 
   -- Oprema samo ako postoji ulov
-  GROUP_CONCAT(DISTINCT brend.naziv) AS brend,
-  GROUP_CONCAT(DISTINCT tip_opreme.naziv) AS tip,
-  GROUP_CONCAT(DISTINCT model_opreme.naziv) AS model,
-  GROUP_CONCAT(DISTINCT link_opreme.link) AS link,
-  GROUP_CONCAT(DISTINCT CONCAT(brend.naziv, ' ', model_opreme.naziv)) AS kombinirani_model,
+  GROUP_CONCAT(DISTINCT 
+  CONCAT(
+    brend.naziv, ' ', model_opreme.naziv,
+    CASE 
+      WHEN link_opreme.link IS NOT NULL THEN CONCAT(';', link_opreme.link) 
+      ELSE ''
+    END
+  )
+  ORDER BY tip_opreme.ID
+) AS kombinirani_model,
   GROUP_CONCAT(DISTINCT CASE 
-      WHEN model_opreme.tip_id = 3 AND model_opreme.brend IS NULL THEN model_opreme.naziv 
-  END) AS mamac,
+    WHEN model_opreme.tip_id = 3 AND model_opreme.brend IS NULL THEN 
+        CONCAT(model_opreme.naziv, 
+               CASE 
+                 WHEN link_opreme.link IS NOT NULL THEN CONCAT(';', link_opreme.link) 
+                 ELSE '' 
+               END)
+END) AS mamac,
 
   -- Lajkovi i dislajkovi
   (SELECT COUNT(*) FROM ocjena_objave WHERE ocjena_objave.objava_id = objava.ID AND ocjena_objave.pozitivno = 1) AS broj_lajkova,

@@ -1,80 +1,10 @@
-import { useState, useEffect, useContext } from "react";
+import { useState, useEffect, useContext, useRef } from "react";
 import { Link } from "react-router-dom";
 import ForumFilterBtn from "./ForumFilterBtn";
 import { EndpointUrlContext } from "../kontekst/EndpointUrlContext";
 import { useLogin } from "../kontekst/loginContext";
 import MoreOptionsDropdown from "./MoreOptionsDropdown";
 import SliderTocke from "./SliderTocke";
-const popularnoFilters = {
-  1: {
-    sort: { field: "likes", direction: "asc" },
-    fullname: "Popularno A-Z",
-    name: "A-Z",
-  },
-  2: {
-    sort: { field: "likes", direction: "desc" },
-    fullname: "Popularno Z-A",
-    name: "Z-A",
-  },
-};
-
-const opremaFilters = {
-  1: {
-    type: "hoverDropdown",
-    url: "",
-    fullname: "Štap",
-    name: "Štap",
-    children: {
-      1: {
-        name: "Brand",
-        type: "dropdown",
-        children: {
-          1: {
-            sort: { field: "likes", direction: "asc" },
-            fullname: "Mitsubishi",
-            name: "Mitsubishi",
-          },
-          2: {
-            sort: { field: "likes", direction: "asc" },
-            fullname: "Kawasaki",
-            name: "Kawasaki",
-          },
-        },
-      },
-
-      2: {
-        type: "search",
-        fullname: "Štap: pretraži",
-        name: "Pretraži",
-      },
-    },
-  },
-  2: {
-    type: "hoverDropdown",
-    url: "",
-    fullname: "Rola",
-    name: "Rola",
-    children: {
-      1: {
-        name: "Brand",
-        type: "dropdown",
-        children: {
-          1: {
-            sort: { field: "likes", direction: "asc" },
-            fullname: "Mitsubishi",
-            name: "Mitsubishi",
-          },
-        },
-      },
-
-      2: {
-        type: "search",
-        fullname: "Rola: pretraži",
-        name: "Pretraži",
-      },
-    },
-  },
-};
 
 const moreOptionsDropdown = {
   1: { name: "Nova Objava", url: "/novaobjava" },
@@ -82,17 +12,334 @@ const moreOptionsDropdown = {
   3: { name: "Pošalji Upit", url: "/noviupit" },
 };
 
-function ForumFilters({ setSortOptions, setSearchQuery, searchQuery }) {
-  const { endpointUrl, setUrl, backendData } = useContext(EndpointUrlContext);
+function ForumFilters({
+  setSortOptions,
+  setSearchQuery,
+  searchQuery,
+  javniUlovi,
+  setJavniUlovi,
+  privatnost = "",
+}) {
+  console.log(javniUlovi);
+  const { endpointUrl, setUrl } = useContext(EndpointUrlContext);
   const { user } = useLogin();
   const [filter, setFilter] = useState("");
+  const [filterField, setFilterField] = useState("");
   const [sortFilter, setSortFilter] = useState("");
   const [toggleFilteri, setToggleFilteri] = useState(false);
   const [searchInput, setSearchInput] = useState(false);
   const [moreOptionsToggle, setMoreOptionsToggle] = useState(false);
   const [toggleViewOptions, setToggleViewOptions] = useState(false);
-
   const valueSlider = { default: 6, step: 1, min: 3, max: 10 };
+  const originalJavniUloviRef = useRef(null);
+  if (originalJavniUloviRef.current === null && javniUlovi.length > 0) {
+    originalJavniUloviRef.current = JSON.parse(JSON.stringify(javniUlovi));
+  }
+
+  const popularnoFilters = {
+    1: {
+      sort: { field: "popularnost", ascending: false },
+      fullname: "Popularno A-Z",
+      name: "A-Z",
+    },
+    2: {
+      sort: { field: "popularnost", ascending: true },
+      fullname: "Popularno Z-A",
+      name: "Z-A",
+    },
+  };
+
+  const datumFilters = {
+    1: {
+      sort: { field: "datum_kreiranja", ascending: true },
+      fullname: "Datum A-Z",
+      name: "A-Z",
+    },
+    2: {
+      sort: { field: "datum_kreiranja", ascending: false },
+      fullname: "Datum Z-A",
+      name: "Z-A",
+    },
+  };
+
+  const ostaloFilters = {
+    1: {
+      type: "hoverDropdown",
+      url: "",
+      fullname: "Riba",
+      name: "Riba",
+      children: {
+        1: {
+          type: "search",
+          fullname: "Riba: pretraži",
+          name: "Pretraži",
+        },
+      },
+    },
+    2: {
+      type: "hoverDropdown",
+      url: "",
+      fullname: "Mjesto",
+      name: "Mjesto",
+      children: {
+        1: {
+          type: "search",
+          fullname: "Mjesto: pretraži",
+          name: "Pretraži",
+        },
+      },
+    },
+  };
+
+  if (privatnost !== "privatno") {
+    ostaloFilters[3] = {
+      type: "hoverDropdown",
+      url: "",
+      fullname: "Autor",
+      name: "Autor",
+      children: {
+        1: {
+          type: "search",
+          fullname: "Autor: pretraži",
+          name: "Pretraži",
+        },
+      },
+    };
+  }
+  const [opremaFilters, setOpremaFilters] = useState({
+    1: {
+      type: "hoverDropdown",
+      url: "",
+      fullname: "Štap",
+      name: "Štap",
+      children: {
+        1: {
+          name: "Brand",
+          type: "dropdown",
+          children: [],
+        },
+
+        2: {
+          type: "search",
+          fullname: "Štap: pretraži",
+          name: "Pretraži",
+        },
+      },
+    },
+    2: {
+      type: "hoverDropdown",
+      url: "",
+      fullname: "Rola",
+      name: "Rola",
+      children: {
+        1: {
+          name: "Brand",
+          type: "dropdown",
+          children: [],
+        },
+
+        2: {
+          type: "search",
+          fullname: "Rola: pretraži",
+          name: "Pretraži",
+        },
+      },
+    },
+    3: {
+      type: "hoverDropdown",
+      url: "",
+      fullname: "Mamac",
+      name: "Mamac",
+      children: {
+        1: {
+          name: "Naziv",
+          type: "dropdown",
+          children: [],
+        },
+
+        2: {
+          type: "search",
+          fullname: "Mamac: pretraži",
+          name: "Pretraži",
+        },
+      },
+    },
+  });
+
+  useEffect(() => {
+    const fetchOprema = async () => {
+      try {
+        const response = await fetch(`${endpointUrl}/oprema`);
+        const data = await response.json();
+
+        const getUniqueBrands = (arr) => {
+          const map = new Map();
+          arr.forEach((item) => {
+            if (item.brend && !map.has(item.brend.toLowerCase())) {
+              map.set(item.brend.toLowerCase(), {
+                fullname: item.brend,
+                name: item.brend,
+              });
+            } else if (
+              !item.brand &&
+              item.model &&
+              !map.has(item.model.toLowerCase())
+            ) {
+              map.set(item.model.toLowerCase(), {
+                fullname: item.model,
+                name: item.model,
+              });
+            }
+          });
+          return Array.from(map.values());
+        };
+
+        const stapovi = getUniqueBrands(
+          data.filter((item) => item.tip.toLowerCase() === "štap")
+        );
+        const role = getUniqueBrands(
+          data.filter((item) => item.tip.toLowerCase() === "rola")
+        );
+        const mamac = getUniqueBrands(
+          data.filter((item) => item.tip.toLowerCase() === "mamac")
+        );
+
+        setOpremaFilters((prev) => ({
+          ...prev,
+          1: {
+            ...prev[1],
+            children: {
+              ...prev[1].children,
+              1: {
+                ...prev[1].children[1],
+                children: stapovi,
+              },
+            },
+          },
+          2: {
+            ...prev[2],
+            children: {
+              ...prev[2].children,
+              1: {
+                ...prev[2].children[1],
+                children: role,
+              },
+            },
+          },
+          3: {
+            ...prev[3],
+            children: {
+              ...prev[3].children,
+              1: {
+                ...prev[3].children[1],
+                children: mamac,
+              },
+            },
+          },
+        }));
+      } catch (error) {
+        console.error("Greška prilikom dohvaćanja opreme:", error);
+      }
+    };
+
+    fetchOprema();
+  }, [endpointUrl, setOpremaFilters]);
+
+  useEffect(() => {
+    const searchTerm = filter.includes("pretraži")
+      ? searchQuery
+      : filter || searchQuery || "";
+
+    if (!searchTerm) {
+      setJavniUlovi(originalJavniUloviRef.current || javniUlovi);
+      return;
+    }
+
+    const originalData = originalJavniUloviRef.current || javniUlovi;
+
+    const filtered = originalData.filter((item) => {
+      if (!filterField || filterField === "") {
+        const searchableFields = ["ime_ribe", "mjesto", "autor", "mamac"];
+
+        const stringFieldsMatch = searchableFields.some((field) => {
+          const fieldValue = item[field];
+          if (typeof fieldValue === "string") {
+            return fieldValue.toLowerCase().includes(searchTerm.toLowerCase());
+          }
+          return false;
+        });
+
+        const kombiniraniModelMatch =
+          item.kombinirani_model && Array.isArray(item.kombinirani_model)
+            ? item.kombinirani_model.some((el) =>
+                typeof el === "string"
+                  ? el.toLowerCase().includes(searchTerm.toLowerCase())
+                  : el.toString().includes(searchTerm)
+              )
+            : false;
+
+        return stringFieldsMatch || kombiniraniModelMatch;
+      }
+
+      const getFieldToFilter = () => {
+        if (filterField === "štap" || filterField === "rola") {
+          return "kombinirani_model";
+        }
+        if (filterField === "mamac") {
+          return "mamac";
+        }
+        if (filterField === "mjesto") {
+          return "mjesto";
+        }
+        if (filterField === "ime_ribe") {
+          return "ime_ribe";
+        }
+        if (filterField === "autor") {
+          return "autor";
+        }
+        return "kombinirani_model";
+      };
+
+      const fieldToFilter = getFieldToFilter();
+      const fieldValue = item[fieldToFilter];
+
+      if (!fieldValue) return false;
+
+      if (Array.isArray(fieldValue)) {
+        if (filterField === "štap") {
+          const firstElement = fieldValue[0];
+          return firstElement
+            ? firstElement.toLowerCase().includes(searchTerm.toLowerCase())
+            : false;
+        }
+
+        if (filterField === "rola") {
+          const secondElement = fieldValue[1];
+          return secondElement
+            ? secondElement.toLowerCase().includes(searchTerm.toLowerCase())
+            : false;
+        }
+
+        return fieldValue.some((el) =>
+          typeof el === "string"
+            ? el.toLowerCase().includes(searchTerm.toLowerCase())
+            : el.toString().includes(searchTerm)
+        );
+      }
+
+      if (typeof fieldValue === "string") {
+        return fieldValue.toLowerCase().includes(searchTerm.toLowerCase());
+      }
+
+      if (typeof fieldValue === "number") {
+        return fieldValue.toString().includes(searchTerm);
+      }
+
+      return false;
+    });
+
+    setJavniUlovi(filtered);
+  }, [filter, searchQuery, filterField]);
 
   return (
     <div
@@ -208,23 +455,57 @@ function ForumFilters({ setSortOptions, setSearchQuery, searchQuery }) {
       <ul
         className={`col-start-3 row-start-1 transition-all bg-moja_plava z-10  duration-500 ease-in flex flex-row justify-evenly justify-self-end [&>li]:inline-block px-7 border-white border-[3px] rounded-full -mr-10  h-min ${
           toggleFilteri
-            ? " w-[35rem] opacity-100 overflow-visible "
+            ? privatnost === "privatno"
+              ? " w-[35rem] opacity-100 overflow-visible "
+              : " w-[40rem] opacity-100 overflow-visible "
             : "w-0 opacity-0 overflow-hidden"
-        }${searchInput ? " !w-[40rem]" : ""}`}
+        }${
+          searchInput
+            ? privatnost === "privatno"
+              ? " !w-[40rem]"
+              : " !w-[45rem]"
+            : ""
+        }`}
       >
+        {privatnost === "privatno" ? (
+          ""
+        ) : (
+          <ForumFilterBtn
+            name="Popularno"
+            filters={popularnoFilters}
+            setFilter={setSortFilter}
+            toggleFilteri={toggleFilteri}
+            setSearchInput={setSearchInput}
+            setFilterField={setFilterField}
+            setSortOptions={setSortOptions}
+          />
+        )}
+
         <ForumFilterBtn
-          name="Popularno"
-          filters={popularnoFilters}
-          setFilter={setFilter}
+          name="Datum"
+          filters={datumFilters}
+          setFilter={setSortFilter}
           toggleFilteri={toggleFilteri}
           setSearchInput={setSearchInput}
+          setFilterField={setFilterField}
+          setSortOptions={setSortOptions}
         />
+
         <ForumFilterBtn
           name="Oprema"
           filters={opremaFilters}
           setFilter={setFilter}
           toggleFilteri={toggleFilteri}
           setSearchInput={setSearchInput}
+          setFilterField={setFilterField}
+        />
+        <ForumFilterBtn
+          name="Ostalo"
+          filters={ostaloFilters}
+          setFilter={setFilter}
+          toggleFilteri={toggleFilteri}
+          setSearchInput={setSearchInput}
+          setFilterField={setFilterField}
         />
         <input
           type="text"
@@ -248,7 +529,6 @@ function ForumFilters({ setSortOptions, setSearchQuery, searchQuery }) {
       {/* prikaz filtera aktivnih*/}
       <div className="flex flex-row col-start-2 row-start-2 gap-2 mt-10 -mb-4 place-self-start 3xl:ml-32">
         <div className=" text-white  font-glavno text-[1.1rem] font-medium">
-          {filter == "" ? setUrl(endpointUrl) : ""}
           {filter == "" ? (
             ""
           ) : (
@@ -256,8 +536,10 @@ function ForumFilters({ setSortOptions, setSearchQuery, searchQuery }) {
               onClick={() => {
                 setFilter("");
                 filter.includes("pretraži") ? setSearchQuery("") : "";
+                setJavniUlovi(originalJavniUloviRef.current);
+                setFilterField("");
               }}
-              className="group hover:cursor-pointer flex flex-row  border-white border-[3px] rounded-full justify-center items-center p-[0.5rem_1rem] hover:p-[0.5rem_1.5rem] transition-all duration-300 ease-in-out bg-red"
+              className="group hover:cursor-pointer flex flex-row  border-white border-[3px] rounded-full justify-center items-center p-[0.5rem_1rem] hover:p-[0.5rem_1.5rem] transition-all duration-300 ease-in-out mb-4"
             >
               <h6 className="relative flex items-center justify-center mr-4 mb-[-5px]">
                 {filter.includes("pretraži")
@@ -277,7 +559,7 @@ function ForumFilters({ setSortOptions, setSearchQuery, searchQuery }) {
             <div
               onClick={() => {
                 setSortFilter("");
-                setSortOptions("");
+                setSortOptions({ field: "datum_kreiranja", ascending: false });
               }}
               className="group hover:cursor-pointer flex flex-row  border-white border-[3px] rounded-full justify-center items-center p-[0.5rem_1rem] hover:p-[0.5rem_1.5rem] transition-all duration-300 ease-in-out bg-red"
             >

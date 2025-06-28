@@ -67,6 +67,47 @@ function MojiUlovi() {
   };
 
   useEffect(() => {
+    if (javniUlovi.length > 0 && sortOptions && sortOptions != "") {
+      const sorted = [...javniUlovi].sort((a, b) => {
+        const fieldA = a[sortOptions.field];
+        const fieldB = b[sortOptions.field];
+
+        if (
+          sortOptions.field === "datum_kreiranja" ||
+          sortOptions.field.includes("datum")
+        ) {
+          const dateA = new Date(fieldA);
+          const dateB = new Date(fieldB);
+
+          if (sortOptions.ascending) {
+            return dateA - dateB;
+          } else {
+            return dateB - dateA;
+          }
+        }
+
+        // Za stringove
+        if (typeof fieldA === "string" && typeof fieldB === "string") {
+          if (sortOptions.ascending) {
+            return fieldA.localeCompare(fieldB);
+          } else {
+            return fieldB.localeCompare(fieldA);
+          }
+        }
+
+        // Za brojeve
+        if (sortOptions.ascending) {
+          return fieldA - fieldB;
+        } else {
+          return fieldB - fieldA;
+        }
+      });
+
+      setJavniUlovi(sorted);
+    }
+  }, [sortOptions]);
+
+  useEffect(() => {
     fetchPosts();
   }, []);
 
@@ -85,6 +126,9 @@ function MojiUlovi() {
           setSortOptions={setSortOptions}
           setSearchQuery={setSearchQuery}
           searchQuery={searchQuery}
+          javniUlovi={javniUlovi}
+          setJavniUlovi={setJavniUlovi}
+          privatnost="privatno"
         />
 
         <div className="flex flex-col items-center w-full gap-16 mb-24 -mt-20">

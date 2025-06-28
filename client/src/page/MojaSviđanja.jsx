@@ -72,6 +72,58 @@ function MojaSviđanja() {
   };
 
   useEffect(() => {
+    if (javniUlovi.length > 0 && sortOptions && sortOptions != "") {
+      const sorted = [...javniUlovi].sort((a, b) => {
+        const fieldA = a[sortOptions.field];
+        const fieldB = b[sortOptions.field];
+
+        if (
+          sortOptions.field === "datum_kreiranja" ||
+          sortOptions.field.includes("datum")
+        ) {
+          const dateA = new Date(fieldA);
+          const dateB = new Date(fieldB);
+
+          if (sortOptions.ascending) {
+            return dateA - dateB;
+          } else {
+            return dateB - dateA;
+          }
+        }
+
+        // Za stringove
+        if (typeof fieldA === "string" && typeof fieldB === "string") {
+          if (sortOptions.ascending) {
+            return fieldA.localeCompare(fieldB);
+          } else {
+            return fieldB.localeCompare(fieldA);
+          }
+        }
+
+        if (sortOptions.field === "popularnost") {
+          const popularnostA = (a.broj_lajkova || 0) - (a.broj_dislajkova || 0);
+          const popularnostB = (b.broj_lajkova || 0) - (b.broj_dislajkova || 0);
+
+          if (sortOptions.ascending) {
+            return popularnostA - popularnostB;
+          } else {
+            return popularnostB - popularnostA;
+          }
+        }
+
+        // Za brojeve
+        if (sortOptions.ascending) {
+          return fieldA - fieldB;
+        } else {
+          return fieldB - fieldA;
+        }
+      });
+
+      setJavniUlovi(sorted);
+    }
+  }, [sortOptions]);
+
+  useEffect(() => {
     fetchPosts();
   }, []);
   useEffect(() => {
@@ -88,6 +140,8 @@ function MojaSviđanja() {
           setSortOptions={setSortOptions}
           setSearchQuery={setSearchQuery}
           searchQuery={searchQuery}
+          javniUlovi={javniUlovi}
+          setJavniUlovi={setJavniUlovi}
         />
 
         <div className="flex flex-col items-center w-full gap-16 mb-24 -mt-20">
