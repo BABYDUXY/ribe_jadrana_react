@@ -52,7 +52,14 @@ function MojiUlovi() {
 
   const fetchPosts = async () => {
     try {
-      const response = await fetch(`${endpointUrl}/privatni/ulovi`);
+      const token = sessionStorage.getItem("token");
+
+      const response = await fetch(`${endpointUrl}/privatni/ulovi`, {
+        method: "GET",
+        headers: {
+          Authorization: `Token ${token}`,
+        },
+      });
       const data = await response.json();
 
       // Sortiranje po najnovijima

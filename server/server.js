@@ -1198,7 +1198,8 @@ ORDER BY objava.datum_kreiranja DESC;`;
 
 /* Privatni ulovi */
 
-app.get("/privatni/ulovi", (req, res) => {
+app.get("/privatni/ulovi", verifyToken, (req, res) => {
+  const id = req.user.korisnik_id;
   const sql = `
   SELECT 
   ulov.ID AS ulov_id,
@@ -1244,13 +1245,14 @@ LEFT JOIN tip_opreme ON model_opreme.tip_id = tip_opreme.ID
 LEFT JOIN brend ON model_opreme.brend = brend.ID
 
 WHERE ulov.opis IS NOT NULL
+AND ulov.korisnik_id = ?
 
 GROUP BY ulov.ID
 ORDER BY ulov.datum_ulova DESC;
 ;
 `;
 
-  db.query(sql, (err, data) => {
+  db.query(sql, [id], (err, data) => {
     if (err) return res.json(err);
 
     const structuredData = data.map((row) => ({
